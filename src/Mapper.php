@@ -3,11 +3,11 @@
 namespace Falseclock\DBD\Entity;
 
 use Exception;
-use MP\Base\Singleton;
+use Falseclock\DBD\Common\Singleton;
 
 class MapperCache extends Singleton
 {
-	public $conversionCache = [];
+    public $conversionCache = [];
 }
 
 /**
@@ -18,65 +18,65 @@ class MapperCache extends Singleton
  */
 abstract class Mapper extends Singleton
 {
-	/**
-	 * @return array
-	 */
-	public function fields() {
-		/** @var Column[] $fields */
-		$fields = get_object_vars($this);
+    /**
+     * @return mixed|Singleton|static
+     * @throws Exception
+     */
+    public static function me()
+    {
 
-		foreach($fields as &$field) {
-			$field = $field->name;
-		}
+        /** @var Entity $self */
+        $self = self::getInstance(get_called_class());
 
-		return $fields;
-	}
+        if (!isset(MapperCache::me()->conversionCache[get_class($self)])) {
+            $vars = get_object_vars($self);
 
-	/**
-	 * @return mixed|Singleton|static
-	 * @throws Exception
-	 */
-	public static function me() {
+            foreach ($vars as $varName => $varValue) {
 
-		/** @var Entity $self */
-		$self = self::getInstance(get_called_class());
+                if (is_scalar($varValue)) {
+                    $self->$varName = new Column($varValue);
+                } else if (is_array($varValue)) {
+                    $varValue = (object)$varValue;
+                    $column = new Column();
 
-		if(!isset(MapperCache::me()->conversionCache[get_class($self)])) {
-			$vars = get_object_vars($self);
+                    foreach ($varValue as $key => $value) {
+                        if ($key == Column::TYPE) {
+                            $column->$key = new Primitive($value);
+                        } else {
+                            $column->$key = $value;
+                        }
+                    }
 
-			foreach($vars as $varName => $varValue) {
+                    $self->$varName = $column;
+                } else {
+                    throw new Exception("Unknown type of Mapper variable {$varName} in $self");
+                }
+            }
+            MapperCache::me()->conversionCache[get_class($self)] = true;
+        }
 
-				if(is_scalar($varValue)) {
-					$self->$varName = new Column($varValue);
-				}
-				else if(is_array($varValue)) {
-					$varValue = (object) $varValue;
-					$column = new Column();
+        return $self;
+    }
 
-					foreach($varValue as $key => $value) {
-						if($key == Column::TYPE) {
-							$column->$key = new Primitive($value);
-						}
-						else {
-							$column->$key = $value;
-						}
-					}
+    public function revers($string)
+    {
+        $revers = array_flip($this->fields());
 
-					$self->$varName = $column;
-				}
-				else {
-					throw new Exception("Unknown type of Mapper variable {$varName} in $self");
-				}
-			}
-			MapperCache::me()->conversionCache[get_class($self)] = true;
-		}
+        return $revers[$string];
+    }
 
-		return $self;
-	}
+    /**
+     * @return array
+     */
+    public function fields()
+    {
+        /** @var Column[] $fields */
+        $fields = get_object_vars($this);
 
-	public function revers($string) {
-		$revers = array_flip($this->fields());
+        foreach ($fields as &$field) {
+            $field = $field->name;
+        }
 
-		return $revers[$string];
-	}
+        return $fields;
+    }
 }

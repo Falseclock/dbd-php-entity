@@ -17,7 +17,8 @@
   ],
   "require": {
     "php": "^7.1",
-    "myclabs/php-enum": "^1.7.2"
+    "myclabs/php-enum": "^1.7.2",
+    "falseclock/dbd-php-common": "^1.0"
   },
   "require-dev": {
   },
