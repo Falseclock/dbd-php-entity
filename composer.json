@@ -1,0 +1,35 @@
+{
+  "name": "falseclock/dbd-php-entity",
+  "type": "library",
+  "description": "Entities annotation for PHP Database driver",
+  "keywords": [
+    "dbd",
+    "entity",
+    "primitive",
+    "database"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Nurlan Mukhanov",
+      "email": "nurike@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "myclabs/php-enum": "^1.7.2"
+  },
+  "require-dev": {
+  },
+  "suggest": {
+  },
+  "autoload": {
+    "psr-4": {
+      "Falseclock\\DBD\\Entity\\": "src/"
+    }
+  },
+  "autoload-dev": {
+  },
+  "config": {
+  }
+}
