@@ -2,11 +2,13 @@
 
 namespace Falseclock\DBD\Entity;
 
-use Exception;
+use Falseclock\DBD\Common\DBDException;
 use Falseclock\DBD\Common\Enforcer;
+use ReflectionException;
 
 /**
  * Абстрактный класс для моделирования объектов данных. Все поля должны быть замаплены через переменную map
+ * TODO: make EntityException instead of DBDException
  */
 abstract class EntityCache
 {
@@ -36,7 +38,8 @@ abstract class Entity
 	 * @param int  $maxLevels
 	 * @param int  $currentLevel
 	 *
-	 * @throws Exception
+	 * @throws DBDException
+	 * @throws ReflectionException
 	 */
 	public function __construct($data = null, int $maxLevels = 2, int $currentLevel = 1) {
 
@@ -64,7 +67,7 @@ abstract class Entity
 
 	/**
 	 * @return Mapper
-	 * @throws Exception
+	 * @throws DBDException
 	 */
 	final public static function map() {
 		return self::readMap();
@@ -72,7 +75,7 @@ abstract class Entity
 
 	/**
 	 * @return Mapper
-	 * @throws Exception
+	 * @throws DBDException
 	 */
 	final private static function readMap() {
 		$calledClass = get_called_class();
@@ -82,7 +85,7 @@ abstract class Entity
 			$mapClass = $calledClass . "Map";
 			$mapClass = $mapClass::me();
 		}
-		catch(Exception $e) {
+		catch(DBDException $e) {
 			trigger_error("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
 		}
 

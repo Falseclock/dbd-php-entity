@@ -2,7 +2,7 @@
 
 namespace Falseclock\DBD\Entity;
 
-use Exception;
+use Falseclock\DBD\Common\DBDException;
 use Falseclock\DBD\Common\Singleton;
 
 class MapperCache extends Singleton
@@ -20,7 +20,7 @@ abstract class Mapper extends Singleton
 {
     /**
      * @return mixed|Singleton|static
-     * @throws Exception
+     * @throws DBDException
      */
     public static function me()
     {
@@ -49,7 +49,7 @@ abstract class Mapper extends Singleton
 
                     $self->$varName = $column;
                 } else {
-                    throw new Exception("Unknown type of Mapper variable {$varName} in $self");
+                    throw new DBDException("Unknown type of Mapper variable {$varName} in $self");
                 }
             }
             MapperCache::me()->conversionCache[get_class($self)] = true;
