@@ -23,8 +23,6 @@ abstract class EntityCache
  */
 abstract class Entity
 {
-	const ASCENDING  = "ASC";
-	const DESCENDING = "DESC";
 	const SCHEME     = "abstract";
 	const TABLE      = "abstract";
 	protected $objects = [/* create me */ ];
