@@ -4,19 +4,22 @@ namespace Falseclock\DBD\Entity;
 
 class Column
 {
-	const ANNOTATION = "annotation";
-	const DEFAULT    = "defaultValue";
-	const KEY        = "key";
-	const MAXLENGTH  = "maxLength";
-	const NAME       = "name";
-	const NULLABLE   = "nullable";
-	const PRECISION  = "precision";
-	const SCALE      = "scale";
-	const TYPE       = "type";
+	const ANNOTATION  = "annotation";
+	const DEFAULT     = "defaultValue";
+	const KEY         = "key";
+	const MAXLENGTH   = "maxLength";
+	const NAME        = "name";
+	const NULLABLE    = "nullable";
+	const ORIGIN_TYPE = "originType";
+	const PRECISION   = "precision";
+	const SCALE       = "scale";
+	const TYPE        = "type";
 	/** @var string $annotation TODO: Annotation|Annotation[] */
 	public $annotation;
 	/** @var string $name Column name */
 	public $name;
+	/** @var string $type */
+	public $originType;
 	/** @var Primitive $type */
 	public $type;
 	/** @var bool $nullable */
