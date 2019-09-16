@@ -10,4 +10,6 @@ class Constraint
 	public $foreignTable;
 	/** @var Column $foreignColumn */
 	public $foreignColumn;
+	/** @var Join $joinType */
+	public $join;
 }
