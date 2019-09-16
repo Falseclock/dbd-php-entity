@@ -4,8 +4,8 @@ namespace Falseclock\DBD\Entity;
 
 class Table
 {
-	/** @var Column[] $field */
-	public $field;
+	/** @var Column[] $columns */
+	public $columns;
 	/** @var Column[] $keys */
 	public $keys;
 	/** @var string $annotation */
