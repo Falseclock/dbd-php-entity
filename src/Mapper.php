@@ -23,6 +23,10 @@ abstract class Mapper extends Singleton
 {
 	const ANNOTATION = "abstract";
 
+	public function annotation() {
+		return $this::ANNOTATION;
+	}
+
 	/**
 	 * @return array
 	 */
