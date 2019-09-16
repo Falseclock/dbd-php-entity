@@ -4,6 +4,7 @@ namespace Falseclock\DBD\Entity;
 
 use Falseclock\DBD\Common\DBDException;
 use Falseclock\DBD\Common\Enforcer;
+use Falseclock\DBD\Common\Singleton;
 use ReflectionException;
 
 /**
@@ -12,6 +13,9 @@ use ReflectionException;
  */
 abstract class EntityCache
 {
+	const ARRAY_MAP = "arrayMap";
+	const ARRAY_REVERSE = "reverseMap";
+
 	public static $mapCache = [];
 }
 
@@ -23,10 +27,8 @@ abstract class EntityCache
  */
 abstract class Entity
 {
-	const ASCENDING  = "ASC";
-	const DESCENDING = "DESC";
-	const SCHEME     = "abstract";
-	const TABLE      = "abstract";
+	const SCHEME = "abstract";
+	const TABLE  = "abstract";
 	protected $objects = [/* create me */ ];
 	protected $json    = [/* set me */ ];
 
@@ -52,10 +54,10 @@ abstract class Entity
 
 			if(!isset(EntityCache::$mapCache[$calledClass])) {
 
-				$map = self::readMap();
+				$map = self::mappingClass();
 
-				EntityCache::$mapCache[$calledClass]['arrayMap'] = $map->fields();
-				EntityCache::$mapCache[$calledClass]['reverseMap'] = array_flip(EntityCache::$mapCache[$calledClass]['arrayMap']);
+				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $map->fields();
+				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE] = array_flip(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP]);
 			}
 
 			$this->setModelData($data, $maxLevels, $currentLevel);
@@ -66,20 +68,11 @@ abstract class Entity
 	}
 
 	/**
-	 * @return Mapper
-	 * @throws DBDException
+	 * @return Singleton|Mapper|static
 	 */
-	final public static function map() {
-		return self::readMap();
-	}
-
-	/**
-	 * @return Mapper
-	 * @throws DBDException
-	 */
-	final private static function readMap() {
+	final public static function mappingClass() {
 		$calledClass = get_called_class();
-		$mapClass = null;
+
 		try {
 			/** @var Mapper $mapClass */
 			$mapClass = $calledClass . "Map";
@@ -89,7 +82,16 @@ abstract class Entity
 			trigger_error("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
 		}
 
-		return $mapClass::me();
+		return $mapClass;
+	}
+
+	/**
+	 * Return table name with scheme prefix
+	 *
+	 * @return string
+	 */
+	public static function table() {
+		return get_called_class()::SCHEME . "." . get_called_class()::TABLE;
 	}
 
 	final private function setModelData($data, $maxLevels, $currentLevel) {
@@ -99,8 +101,8 @@ abstract class Entity
 		if($data !== null) {
 			$calledClass = get_called_class();
 
-			$arrayMap = EntityCache::$mapCache[$calledClass]['arrayMap']; //$this->arrayMap;
-			$reverseMap = EntityCache::$mapCache[$calledClass]['reverseMap']; //$this->reverseMap;
+			$arrayMap = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP];
+			$reverseMap = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE];
 
 			// Сперва бегаем по каждому полю в выборке и сэтим его как переменную класса
 			if(count($reverseMap)) {
