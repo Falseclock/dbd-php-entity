@@ -10,4 +10,6 @@ class Table
 	public $keys;
 	/** @var string $annotation */
 	public $annotation;
+	/** @var Constraint $constraints */
+	public $constraints;
 }
