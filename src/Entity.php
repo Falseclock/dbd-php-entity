@@ -4,6 +4,7 @@ namespace Falseclock\DBD\Entity;
 
 use Falseclock\DBD\Common\DBDException;
 use Falseclock\DBD\Common\Enforcer;
+use Falseclock\DBD\Common\Singleton;
 use ReflectionException;
 
 /**
@@ -23,8 +24,8 @@ abstract class EntityCache
  */
 abstract class Entity
 {
-	const SCHEME     = "abstract";
-	const TABLE      = "abstract";
+	const SCHEME = "abstract";
+	const TABLE  = "abstract";
 	protected $objects = [/* create me */ ];
 	protected $json    = [/* set me */ ];
 
@@ -50,7 +51,7 @@ abstract class Entity
 
 			if(!isset(EntityCache::$mapCache[$calledClass])) {
 
-				$map = self::readMap();
+				$map = self::mappingClass();
 
 				EntityCache::$mapCache[$calledClass]['arrayMap'] = $map->fields();
 				EntityCache::$mapCache[$calledClass]['reverseMap'] = array_flip(EntityCache::$mapCache[$calledClass]['arrayMap']);
@@ -64,28 +65,11 @@ abstract class Entity
 	}
 
 	/**
-	 * @return Mapper
-	 * @throws DBDException
+	 * @return Singleton|Mapper|static
 	 */
-	final public static function map() {
-		return self::readMap();
-	}
-
-	/**
-	 * Return table name with scheme prefix
-	 * @return string
-	 */
-	public static function table() {
-		return get_called_class()::SCHEME . "." . get_called_class()::TABLE;
-	}
-
-	/**
-	 * @return Mapper
-	 * @throws DBDException
-	 */
-	final private static function readMap() {
+	final public static function mappingClass() {
 		$calledClass = get_called_class();
-		$mapClass = null;
+
 		try {
 			/** @var Mapper $mapClass */
 			$mapClass = $calledClass . "Map";
@@ -95,7 +79,16 @@ abstract class Entity
 			trigger_error("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
 		}
 
-		return $mapClass::me();
+		return $mapClass;
+	}
+
+	/**
+	 * Return table name with scheme prefix
+	 *
+	 * @return string
+	 */
+	public static function table() {
+		return get_called_class()::SCHEME . "." . get_called_class()::TABLE;
 	}
 
 	final private function setModelData($data, $maxLevels, $currentLevel) {
