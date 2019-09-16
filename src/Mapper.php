@@ -3,7 +3,9 @@
 namespace Falseclock\DBD\Entity;
 
 use Falseclock\DBD\Common\DBDException;
+use Falseclock\DBD\Common\Enforcer;
 use Falseclock\DBD\Common\Singleton;
+use ReflectionException;
 
 class MapperCache extends Singleton
 {
@@ -37,14 +39,14 @@ abstract class Mapper extends Singleton
 	/**
 	 * @return mixed|Singleton|static
 	 * @throws DBDException
+	 * @throws ReflectionException
 	 */
 	public static function me() {
 
 		/** @var Entity $self */
 		$self = self::getInstance(get_called_class());
 
-		// FIXME: uncomment me
-		//Enforcer::__add(__CLASS__, get_called_class());
+		Enforcer::__add(__CLASS__, get_called_class());
 
 		if(!isset(MapperCache::me()->conversionCache[get_class($self)])) {
 			$vars = get_object_vars($self);
