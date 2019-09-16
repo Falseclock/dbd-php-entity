@@ -2,20 +2,19 @@
 
 namespace Falseclock\DBD\Entity;
 
-use Falseclock\DBD\Common\DBDException;
-use Falseclock\DBD\Common\Enforcer;
+use Exception;
 use Falseclock\DBD\Common\Singleton;
+use Falseclock\DBD\Entity\Common\Enforcer;
+use Falseclock\DBD\Entity\Common\EntityException;
 use ReflectionException;
 
 /**
  * Абстрактный класс для моделирования объектов данных. Все поля должны быть замаплены через переменную map
- * TODO: make EntityException instead of DBDException
  */
 abstract class EntityCache
 {
-	const ARRAY_MAP = "arrayMap";
+	const ARRAY_MAP     = "arrayMap";
 	const ARRAY_REVERSE = "reverseMap";
-
 	public static $mapCache = [];
 }
 
@@ -40,7 +39,7 @@ abstract class Entity
 	 * @param int  $maxLevels
 	 * @param int  $currentLevel
 	 *
-	 * @throws DBDException
+	 * @throws EntityException
 	 * @throws ReflectionException
 	 */
 	public function __construct($data = null, int $maxLevels = 2, int $currentLevel = 1) {
@@ -69,6 +68,7 @@ abstract class Entity
 
 	/**
 	 * @return Singleton|Mapper|static
+	 * @throws EntityException
 	 */
 	final public static function mappingClass() {
 		$calledClass = get_called_class();
@@ -78,8 +78,8 @@ abstract class Entity
 			$mapClass = $calledClass . "Map";
 			$mapClass = $mapClass::me();
 		}
-		catch(DBDException $e) {
-			trigger_error("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
+		catch(Exception $e) {
+			throw new EntityException("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
 		}
 
 		return $mapClass;
@@ -94,6 +94,13 @@ abstract class Entity
 		return get_called_class()::SCHEME . "." . get_called_class()::TABLE;
 	}
 
+	/**
+	 * @param $data
+	 * @param $maxLevels
+	 * @param $currentLevel
+	 *
+	 * @throws EntityException
+	 */
 	final private function setModelData($data, $maxLevels, $currentLevel) {
 
 		$currentLevel++;
@@ -137,7 +144,7 @@ abstract class Entity
 				}
 			}
 			else {
-				trigger_error(get_class($this) . " does not have mapping", E_USER_ERROR);
+				throw new EntityException(get_class($this) . " does not have mapping");
 			}
 
 			// Защита от зацикливания если дочерний класс и родительский класс ссылаются друг на друга
@@ -146,7 +153,7 @@ abstract class Entity
 			// Теперь пробегаемся по все объектам в классе и создаем объекты
 			foreach($this->objects as $classVariableName => $classFullNamespace) {
 				if(is_null($classFullNamespace)) {
-					trigger_error("Class '$classVariableName' does not have CLASS_NAME constant", E_USER_ERROR);
+					throw new EntityException("Class '$classVariableName' does not have CLASS_NAME constant");
 				}
 
 				// FIXME: проверить как работает если мы ссылаемся на класс через 3-ий и выше класс и вообще возможность такой ситуации

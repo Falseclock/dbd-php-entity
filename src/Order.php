@@ -2,14 +2,19 @@
 
 namespace Falseclock\DBD\Entity;
 
-use Falseclock\DBD\Common\DBDException;
+use Exception;
 
 final class Order
 {
 	const ASCENDING  = "ASC";
 	const DESCENDING = "DESC";
 
+	/**
+	 * Order constructor.
+	 *
+	 * @throws Exception
+	 */
 	public function __construct() {
-		throw new DBDException("Cannot create instance of static util class");
+		throw new Exception("Cannot create instance of static util class");
 	}
 }
