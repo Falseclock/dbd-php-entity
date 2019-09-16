@@ -6,7 +6,9 @@ use Exception;
 use Falseclock\DBD\Common\Singleton;
 use Falseclock\DBD\Entity\Common\Enforcer;
 use Falseclock\DBD\Entity\Common\EntityException;
+use ReflectionClass;
 use ReflectionException;
+use ReflectionProperty;
 
 class MapperCache extends Singleton
 {
@@ -39,6 +41,15 @@ abstract class Mapper extends Singleton
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * @throws ReflectionException
+	 */
+	public function getConstraints() {
+		$reflect = new ReflectionClass($this);
+		$constraints = $reflect->getProperties(ReflectionProperty::IS_PROTECTED);
+
 	}
 
 	/**

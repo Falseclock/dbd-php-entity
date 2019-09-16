@@ -24,8 +24,7 @@ class Join
 	 * @throws ReflectionException
 	 */
 	public function __construct($type) {
-		$r = new ReflectionClass(self::class);
-		foreach($r->getConstants() as $name => $value) {
+		foreach($this->getConstants() as $name => $value) {
 			if($value == $type) {
 				$this->type = $type;
 
@@ -37,8 +36,32 @@ class Join
 
 	/**
 	 * @return string
+	 * @throws DBDException
+	 * @throws ReflectionException
+	 */
+	public function getConstantName(): string {
+		foreach($this->getConstants() as $name => $value) {
+			if($value == $this->type) {
+				return $name;
+			}
+		}
+		throw new DBDException("Something strange happen");
+	}
+
+	/**
+	 * @return string
 	 */
 	public function getType(): string {
 		return $this->type;
+	}
+
+	/**
+	 * @return array
+	 * @throws ReflectionException
+	 */
+	private function getConstants(): iterable {
+		$r = new ReflectionClass(self::class);
+
+		return $r->getConstants();
 	}
 }
