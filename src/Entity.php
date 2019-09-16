@@ -74,6 +74,14 @@ abstract class Entity
 	}
 
 	/**
+	 * Return table name with scheme prefix
+	 * @return string
+	 */
+	public static function table() {
+		return get_called_class()::SCHEME . "." . get_called_class()::TABLE;
+	}
+
+	/**
 	 * @return Mapper
 	 * @throws DBDException
 	 */
