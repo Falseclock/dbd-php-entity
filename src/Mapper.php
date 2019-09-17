@@ -6,9 +6,7 @@ use Exception;
 use Falseclock\DBD\Common\Singleton;
 use Falseclock\DBD\Entity\Common\Enforcer;
 use Falseclock\DBD\Entity\Common\EntityException;
-use ReflectionClass;
 use ReflectionException;
-use ReflectionProperty;
 
 class MapperCache extends Singleton
 {
@@ -24,6 +22,11 @@ class MapperCache extends Singleton
 abstract class Mapper extends Singleton
 {
 	const ANNOTATION = "abstract";
+
+	public function __get(string $propertyName) {
+
+		return null;
+	}
 
 	public function annotation() {
 		return $this::ANNOTATION;
@@ -44,12 +47,18 @@ abstract class Mapper extends Singleton
 	}
 
 	/**
-	 * @throws ReflectionException
+	 * @return Constraint[]
 	 */
 	public function getConstraints() {
-		$reflect = new ReflectionClass($this);
-		$constraints = $reflect->getProperties(ReflectionProperty::IS_PROTECTED);
 
+		$constraints = [];
+		foreach(get_object_vars($this) as $varName => $varValue) {
+			if($varValue instanceof Constraint) {
+				$constraints[$varName] = $varValue;
+			}
+		}
+
+		return $constraints;
 	}
 
 	/**
@@ -60,7 +69,7 @@ abstract class Mapper extends Singleton
 	 */
 	public static function me() {
 
-		/** @var Entity $self */
+		/** @var Mapper $self */
 		$self = self::getInstance(get_called_class());
 
 		Enforcer::__add(__CLASS__, get_called_class());
@@ -70,32 +79,73 @@ abstract class Mapper extends Singleton
 
 			foreach($vars as $varName => $varValue) {
 
+				// This is fix for all annotation when we used only column name as variable
 				if(is_scalar($varValue)) {
 					$self->$varName = new Column($varValue);
 				}
 				else if(is_array($varValue)) {
+
 					$varValue = (object) $varValue;
+
+					$constraintCheck = Constraint::FOREIGN_COLUMN;
+					if(isset($varValue->$constraintCheck)) {
+						// all constraints should be parsed after all columns processed
+						continue;
+					}
+
 					$column = new Column();
 
 					foreach($varValue as $key => $value) {
-						if($key == Column::TYPE) {
+						if($key == Column::TYPE)
 							$column->$key = new Primitive($value);
-						}
-						else {
+						else
 							$column->$key = $value;
-						}
 					}
 
 					$self->$varName = $column;
+					unset($vars[$varName]);
 				}
 				else {
 					throw new EntityException("Unknown type of Mapper variable {$varName} in $self");
 				}
 			}
+
+			// All constraints should be processed after columns
+			foreach($vars as $varName => $varValue) {
+				if(!is_array($varValue))
+					continue;
+
+				$varValue = (object) $varValue;
+				$constraintCheck = Constraint::FOREIGN_COLUMN;
+
+				if(isset($varValue->$constraintCheck)) {
+					$constraint = new Constraint();
+					$constraint->column = self::findColumnByOriginName($self, $varValue->column);
+
+					$self->$varName = $constraint;
+				}
+			}
+
 			MapperCache::me()->conversionCache[get_class($self)] = true;
 		}
 
 		return $self;
+	}
+
+	/**
+	 * @param Mapper $self
+	 * @param string $columnOriginName
+	 *
+	 * @return Column
+	 * @throws Exception
+	 */
+	private static function findColumnByOriginName(Mapper $self, string $columnOriginName): Column {
+		foreach(get_object_vars($self) as $column) {
+			if ($column instanceof Column and $column->name == $columnOriginName) {
+				return $column;
+			}
+		}
+		throw new Exception("Can't find column {$columnOriginName}");
 	}
 
 	public function revers($string) {
