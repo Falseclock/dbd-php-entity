@@ -6,7 +6,12 @@ use Exception;
 use Falseclock\DBD\Common\Singleton;
 use Falseclock\DBD\Entity\Common\Enforcer;
 use Falseclock\DBD\Entity\Common\EntityException;
+use Falseclock\DBD\Entity\Join\ManyToMany;
+use Falseclock\DBD\Entity\Join\ManyToOne;
+use Falseclock\DBD\Entity\Join\OneToMany;
+use Falseclock\DBD\Entity\Join\OneToOne;
 use ReflectionException;
+use stdClass;
 
 class MapperCache extends Singleton
 {
@@ -46,6 +51,25 @@ abstract class Mapper extends Singleton
 		return $fields;
 	}
 
+	public function getAnnotation() {
+		return $this::ANNOTATION;
+	}
+
+	/**
+	 * @return Column[]
+	 */
+	public function getColumns() {
+		$columns = [];
+		$fields = get_object_vars($this);
+
+		foreach($fields as $field) {
+			if($field instanceof Column)
+				$columns[] = $field;
+		}
+
+		return $columns;
+	}
+
 	/**
 	 * @return Constraint[]
 	 */
@@ -59,6 +83,21 @@ abstract class Mapper extends Singleton
 		}
 
 		return $constraints;
+	}
+
+	/**
+	 * @return Key[]
+	 */
+	public function getKeys() {
+		$columns = $this->getColumns();
+		$keys = [];
+		foreach($columns as $column) {
+			if($column->key === true) {
+				$keys[] = $column;
+			}
+		}
+
+		return $keys;
 	}
 
 	/**
@@ -111,18 +150,42 @@ abstract class Mapper extends Singleton
 			}
 
 			// All constraints should be processed after columns
-			foreach($vars as $varName => $varValue) {
-				if(!is_array($varValue))
+			foreach($vars as $constraintName => $constraintValue) {
+				if(!is_array($constraintValue))
 					continue;
 
-				$varValue = (object) $varValue;
+				$constraintValue = (object) $constraintValue;
 				$constraintCheck = Constraint::FOREIGN_COLUMN;
 
-				if(isset($varValue->$constraintCheck)) {
+				if(isset($constraintValue->$constraintCheck)) {
 					$constraint = new Constraint();
-					$constraint->column = self::findColumnByOriginName($self, $varValue->column);
+					$constraint->foreignTable = self::getForeignTable($constraintValue);
 
-					$self->$varName = $constraint;
+					$constraint->foreignColumn = self::findColumnByOriginName(self::getMapByClass($constraintValue->baseClass), $constraintValue->foreignColumn);
+					$constraint->column = $constraint->foreignColumn;
+					$constraint->column->name = $constraintValue->column;
+					// Own field definition could have own values and annotations
+					unset($constraint->column->defaultValue);
+					unset($constraint->column->key);
+					unset($constraint->column->annotation);
+
+					switch($constraintValue->joinType) {
+						case Join::MANY_TO_ONE:
+							$constraint->join = new ManyToOne();
+							break;
+						case Join::MANY_TO_MANY:
+							$constraint->join = new ManyToMany();
+							break;
+						case Join::ONE_TO_ONE:
+							$constraint->join = new OneToOne();
+							break;
+						case Join::ONE_TO_MANY:
+							$constraint->join = new OneToMany();
+							break;
+					}
+					$constraint->class = $constraintValue->baseClass;
+
+					$self->$constraintName = $constraint;
 				}
 			}
 
@@ -132,25 +195,56 @@ abstract class Mapper extends Singleton
 		return $self;
 	}
 
+	public function revers($string) {
+		$revers = array_flip($this->fields());
+
+		return $revers[$string];
+	}
+
 	/**
-	 * @param Mapper $self
+	 * @param Mapper $mapper
 	 * @param string $columnOriginName
 	 *
 	 * @return Column
 	 * @throws Exception
 	 */
-	private static function findColumnByOriginName(Mapper $self, string $columnOriginName): Column {
-		foreach(get_object_vars($self) as $column) {
-			if ($column instanceof Column and $column->name == $columnOriginName) {
+	private static function findColumnByOriginName(Mapper $mapper, string $columnOriginName): Column {
+		foreach(get_object_vars($mapper) as $column) {
+			if($column instanceof Column and $column->name == $columnOriginName) {
 				return $column;
 			}
 		}
 		throw new Exception("Can't find column {$columnOriginName}");
 	}
 
-	public function revers($string) {
-		$revers = array_flip($this->fields());
+	/**
+	 * @param stdClass $tableDefinition
+	 *
+	 * @return Table
+	 */
+	private static function getForeignTable(stdClass $tableDefinition) {
 
-		return $revers[$string];
+		$map = self::getMapByClass($tableDefinition->baseClass);
+
+		$table = new Table();
+		$table->name = $tableDefinition->foreignTable;
+		$table->scheme = $tableDefinition->foreignScheme;
+		$table->columns = $map->getColumns();
+		$table->constraints = $map->getConstraints();
+		$table->keys = $map->getKeys();
+		$table->annotation = $map->getAnnotation();
+
+		return $table;
+	}
+
+	/**
+	 * @param string $class
+	 *
+	 * @return Mapper
+	 */
+	private static function getMapByClass(string $class) {
+		$mapClass = sprintf("\%sMap", $class);
+
+		return call_user_func($mapClass . "::me");
 	}
 }

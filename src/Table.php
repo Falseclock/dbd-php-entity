@@ -10,7 +10,7 @@ class Table
 	public $scheme;
 	/** @var Column[] $columns */
 	public $columns;
-	/** @var Column[] $keys */
+	/** @var Key[] $keys */
 	public $keys;
 	/** @var string $annotation */
 	public $annotation;

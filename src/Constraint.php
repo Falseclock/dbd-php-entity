@@ -4,6 +4,7 @@ namespace Falseclock\DBD\Entity;
 
 class Constraint
 {
+	const BASE_CLASS     = "baseClass";
 	const COLUMN         = "column";
 	const FOREIGN_COLUMN = "foreignColumn";
 	const FOREIGN_SCHEME = "foreignScheme";
@@ -17,4 +18,6 @@ class Constraint
 	public $foreignColumn;
 	/** @var Join $joinType */
 	public $join;
+	/** @var string $class */
+	public $class;
 }
