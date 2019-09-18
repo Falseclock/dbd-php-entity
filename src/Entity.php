@@ -53,9 +53,9 @@ abstract class Entity
 
 			if(!isset(EntityCache::$mapCache[$calledClass])) {
 
-				$map = self::mappingClass();
+				$map = self::mappingInstance();
 
-				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $map->fields();
+				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $map->getOriginFieldNames();
 				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE] = array_flip(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP]);
 			}
 
@@ -67,31 +67,43 @@ abstract class Entity
 	}
 
 	/**
+	 * Returns table scheme name
+	 *
+	 * @return mixed
+	 */
+	public static function getSchemeName() {
+		return get_called_class()::SCHEME;
+	}
+
+	/**
+	 * Returns table name
+	 *
+	 * @return string
+	 */
+	public static function getTableName() {
+		return get_called_class()::TABLE;
+	}
+
+	/**
 	 * @return Singleton|Mapper|static
 	 * @throws EntityException
 	 */
-	final public static function mappingClass() {
+	final public static function mappingInstance() {
 		$calledClass = get_called_class();
 
 		try {
+
+			//echo "Getting Mapper instance for $calledClass\n";
+
 			/** @var Mapper $mapClass */
 			$mapClass = $calledClass . "Map";
-			$mapClass = $mapClass::me();
+			$mapClass = $mapClass::init($calledClass);
 		}
 		catch(Exception $e) {
 			throw new EntityException("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
 		}
 
 		return $mapClass;
-	}
-
-	/**
-	 * Return table name with scheme prefix
-	 *
-	 * @return string
-	 */
-	public static function table() {
-		return get_called_class()::SCHEME . "." . get_called_class()::TABLE;
 	}
 
 	/**
