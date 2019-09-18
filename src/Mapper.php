@@ -5,7 +5,6 @@ namespace Falseclock\DBD\Entity;
 use Exception;
 use Falseclock\DBD\Common\Singleton;
 use Falseclock\DBD\Entity\Common\Enforcer;
-use Falseclock\DBD\Entity\Common\EntityException;
 use InvalidArgumentException;
 use ReflectionException;
 use ReflectionProperty;
@@ -133,8 +132,13 @@ abstract class Mapper extends Singleton
 		/** @var Column[] $fields */
 		$fields = get_object_vars($this);
 
-		foreach($fields as &$field) {
-			$field = $field->name;
+		foreach($fields as $entityColumnName => $column) {
+			if($column instanceof Column) {
+				$fields[$entityColumnName] = $column->name;
+			}
+			else {
+				unset($fields[$entityColumnName]);
+			}
 		}
 
 		return $fields;
@@ -142,11 +146,6 @@ abstract class Mapper extends Singleton
 
 	/**
 	 * Used for quick access to the mapper without instantiating it and have only one instance
-	 *
-	 * @return Mapper|Singleton|static
-	 * @throws EntityException
-	 * @throws ReflectionException
-	 * @throws Exception
 	 */
 	public static function me() {
 

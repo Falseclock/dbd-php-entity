@@ -6,6 +6,8 @@ use Exception;
 use Falseclock\DBD\Common\Singleton;
 use Falseclock\DBD\Entity\Common\Enforcer;
 use Falseclock\DBD\Entity\Common\EntityException;
+use Falseclock\DBD\Entity\Join\ManyToMany;
+use Falseclock\DBD\Entity\Join\OneToMany;
 use ReflectionException;
 
 /**
@@ -28,8 +30,6 @@ abstract class Entity
 {
 	const SCHEME = "abstract";
 	const TABLE  = "abstract";
-	protected $objects = [/* create me */ ];
-	protected $json    = [/* set me */ ];
 
 	/**
 	 * Конструктор модели
@@ -51,18 +51,15 @@ abstract class Entity
 			// Эте сделано для того, чтобы сотни раз не делать одно и тоже когда большие выборки
 			$calledClass = get_called_class();
 
-			if(!isset(EntityCache::$mapCache[$calledClass])) {
+			$map = self::mappingInstance();
 
-				$map = self::mappingInstance();
+			if(!isset(EntityCache::$mapCache[$calledClass])) {
 
 				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $map->getOriginFieldNames();
 				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE] = array_flip(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP]);
 			}
 
-			$this->setModelData($data, $maxLevels, $currentLevel);
-
-			unset($this->json);
-			unset($this->objects);
+			$this->setModelData($data, $map, $maxLevels, $currentLevel);
 		}
 	}
 
@@ -105,13 +102,171 @@ abstract class Entity
 	}
 
 	/**
+	 * Reads public variables and set them to the self instance
+	 *
+	 * @param array  $rowData associative array where key is column name and value is column fetched data
+	 * @param Mapper $mapper
+	 * @param string $calledClass
+	 */
+	final private function setBaseColumns(array $rowData, Mapper $mapper, string $calledClass) {
+		/** @var array $fieldMapping array where KEY is database origin column name and VALUE is Entity class field declaration */
+		$fieldMapping = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE];
+
+		/**
+		 * @var string $originColumnName database origin column name
+		 * @var mixed  $columnValue      value of this columns
+		 */
+		foreach($rowData as $originColumnName => $columnValue) {
+			// process only if Entity class has such field declaration
+			if(isset($fieldMapping[$originColumnName])) {
+				/** @var string $property name of field declaration in Entity class */
+				$property = $fieldMapping[$originColumnName];
+
+				/** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
+				$setterMethod = "set{$property}";
+
+				/** @var Column $fieldDefinition */
+				$fieldDefinition = $mapper->$property;
+
+				/** We can define setter method for field definition in Entity class, so let's check it first */
+				if(method_exists($this, $setterMethod)) {
+					$this->$setterMethod($columnValue);
+				}
+				else {
+					/** If initially column type is json, then let's parse it as JSON */
+					if(stripos($fieldDefinition->originType, "json") !== false) {
+						$this->$property = (object) json_decode($columnValue, true);
+					}
+					else {
+						/**
+						 * Entity public variables should not have default values.
+						 * But some times we need to have default value for column in case of $rowData has null value
+						 * In this case we should not override default value if $columnValue is null
+						 */
+						if(!isset($this->$property) and isset($columnValue)) {
+							$this->$property = $columnValue;
+						}
+					}
+				}
+			}
+		}
+
+		return;
+	}
+
+	final  private function setConstraints(array $rowData, Mapper $mapper, $maxLevels, $currentLevel) {
+
+		foreach($mapper->getConstraints() as $entityName => $constraint) {
+			/**
+			 * Check we have data for this constraint
+			 * Проверяем, что у нас есть данные для данного constraint
+			 */
+
+			$constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
+
+			$testForJsonString = null;
+
+			if(isset($constraintValue) and is_string($constraintValue)) {
+				$testForJsonString = json_decode($constraintValue);
+			}
+			// Мы данные в первом прогоне могли уже сформировать в полноценный массив
+			// Но в дочерние классы мы должны передавать  JSON строкой, а массивом,
+			// Поэтому вертаем все назад как было
+			if(isset($constraintValue) and is_array($constraintValue)) {
+				$testForJsonString = $constraintValue;
+				$constraintValue = json_encode($constraintValue, JSON_NUMERIC_CHECK);
+			}
+
+			// Если у нас действительно json строка
+			if($testForJsonString !== null) {
+				// Если это массив объектов
+				if(is_array($testForJsonString)) {
+					if($constraint->join instanceof ManyToMany or $constraint->join instanceof OneToMany) {
+						// Разбиваем на нормальный массив, чтобы затолкать в переменную
+						$jsonDecodedField = json_decode($constraintValue, true);
+						$classVariableValue = [];
+
+						foreach($jsonDecodedField as $object) {
+							$classVariableValue[] = new $constraint->class($object, $maxLevels, $currentLevel);
+						}
+						$this->$entityName = $classVariableValue;
+					}
+					else {
+						throw new EntityException("Variable '$entityName' of class {$this}");
+					}
+				}
+				else {
+					$jsonDecodedField = json_decode($constraintValue, true);
+					$this->$entityName = new $constraint->class($jsonDecodedField, $maxLevels, $currentLevel);
+				}
+			}
+			else {
+
+				/**
+				 * Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
+				 * то просто их прогоняем через класс и на выходе получим готовый объект
+				 */
+				if(isset($constraintValue)) {
+					$newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
+				}
+				else {
+					//throw new EntityException("Понять какие это случаи и описать их тут");
+					// Мы можем создать view, в которой не вытаскиваем данные по определенному constraint, потому что они нам не нужны
+					$newConstraintValue = null;
+
+/*					if($keyFromMap === null && !isset($arrayMap[$entityName])) {
+
+						$newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
+					}
+					else {
+						$newConstraintValue = null;
+					}*/
+				}
+
+				$setterMethod = "set" . ucfirst($entityName);
+
+				if(method_exists($this, $setterMethod)) {
+					$this->$setterMethod($newConstraintValue);
+				}
+				else
+					// Если у нас переменная класа уже инициализирована, и нету значения из базы
+					// то скорее всего этот объект является массивом данных
+					if(isset($this->$entityName) and !isset($newConstraintValue)) {
+
+					}
+					else {
+						$this->$entityName = $newConstraintValue;
+					}
+			}
+		}
+
+		return;
+	}
+
+	final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void {
+		$currentLevel++;
+
+		// We always should provide data
+		if(!isset($data))
+			return;
+
+		$calledClass = get_called_class();
+
+		$this->setBaseColumns($data, $map, $calledClass);
+
+		$this->setConstraints($data, $map, $maxLevels, $currentLevel);
+
+		return;
+	}
+
+	/**
 	 * @param $data
 	 * @param $maxLevels
 	 * @param $currentLevel
 	 *
 	 * @throws EntityException
 	 */
-	final private function setModelData($data, $maxLevels, $currentLevel) {
+	final private function setModelDataOld(array $data, Mapper $map, int $maxLevels, int $currentLevel) {
 
 		$currentLevel++;
 
@@ -174,6 +329,7 @@ abstract class Entity
 					if(isset($arrayMap[$classVariableName])) {
 						$keyFromMap = $arrayMap[$classVariableName];
 					}
+
 					$jsonTest = null;
 					if(isset($data[$keyFromMap]) && is_string($data[$keyFromMap])) {
 						$jsonTest = json_decode($data[$keyFromMap]);
@@ -217,6 +373,7 @@ abstract class Entity
 						else {
 							// Тот случай, когда мы вытаскиваем солянку колонк из вьюшки и определяем колонки только в объектах
 							if($keyFromMap === null && !isset($arrayMap[$classVariableName])) {
+								/** @see setModelDataOld */
 								$newClassValue = new $classFullNamespace($data, $maxLevels, $currentLevel);
 							}
 							else {

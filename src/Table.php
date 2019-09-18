@@ -196,7 +196,7 @@ class Table
 				return $column;
 			}
 		}
-		throw new EntityException("Can't find column {$columnOriginName}");
+		throw new EntityException("Can't find column '{$columnOriginName}' in table '{$table->name}'. Looks like this column not described in Mapper class.");
 	}
 
 	private static function getKeys(Table $table) {
