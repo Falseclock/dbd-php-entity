@@ -2,6 +2,7 @@
 
 namespace Falseclock\DBD\Entity;
 
+use Exception;
 use Falseclock\DBD\Common\DBDException;
 use Falseclock\DBD\Entity\Common\EntityException;
 use Falseclock\DBD\Entity\Join\ManyToMany;
@@ -122,6 +123,7 @@ class Table
 	 * @throws EntityException
 	 * @throws DBDException
 	 * @throws ReflectionException
+	 * @throws Exception
 	 */
 	private static function convertVariables(Table &$table, Mapper $mapper): void {
 
