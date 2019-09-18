@@ -140,10 +140,15 @@ class Table
 			// It should be array always? otherwise throw exception
 			if(is_array($columnValue)) {
 				$table->columns[$columnName] = self::convertToColumn($columnValue);
+				continue;
 			}
-			else {
-				throw new EntityException("Unknown type of Mapper variable {$columnName} in {$mapper}");
+
+			if($columnValue instanceof Column) {
+				$table->columns[$columnName] = $columnValue;
+				continue;
 			}
+
+			throw new EntityException("Unknown type of Mapper variable {$columnName} in {$mapper}");
 		}
 
 		foreach($variables->otherColumns as $otherColumnName) {

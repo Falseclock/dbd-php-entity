@@ -93,11 +93,9 @@ abstract class Entity
 
 		try {
 
-			//echo "Getting Mapper instance for $calledClass\n";
-
 			/** @var Mapper $mapClass */
-			$mapClass = $calledClass . "Map";
-			$mapClass = $mapClass::init($calledClass);
+			$mapClass = $calledClass . Mapper::POSTFIX;
+			$mapClass = $mapClass::me();
 		}
 		catch(Exception $e) {
 			throw new EntityException("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
