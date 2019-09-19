@@ -51,7 +51,7 @@ abstract class Entity
 			// Эте сделано для того, чтобы сотни раз не делать одно и тоже когда большие выборки
 			$calledClass = get_called_class();
 
-			$map = self::mappingInstance();
+			$map = self::map();
 
 			if(!isset(EntityCache::$mapCache[$calledClass])) {
 
@@ -85,7 +85,7 @@ abstract class Entity
 	 * @return Singleton|Mapper|static
 	 * @throws EntityException
 	 */
-	final public static function mappingInstance() {
+	final public static function map() {
 		$calledClass = get_called_class();
 
 		try {
@@ -95,7 +95,7 @@ abstract class Entity
 			$mapClass = $mapClass::me();
 		}
 		catch(Exception $e) {
-			throw new EntityException("Parsing '$calledClass' end up with error: {$e->getMessage()}", E_USER_ERROR);
+			throw new EntityException("Parsing '$calledClass' end up with error: {$e->getMessage()}");
 		}
 
 		return $mapClass;
@@ -126,7 +126,14 @@ abstract class Entity
 				$setterMethod = "set{$property}";
 
 				/** @var Column $fieldDefinition */
+				if(!property_exists($mapper, $property)) {
+					return;
+				}
+
 				$fieldDefinition = $mapper->$property;
+				if(is_array($fieldDefinition)) {
+					$fieldDefinition = new Column($fieldDefinition);
+				}
 
 				/** We can define setter method for field definition in Entity class, so let's check it first */
 				if(method_exists($this, $setterMethod)) {
@@ -162,7 +169,13 @@ abstract class Entity
 			 * Проверяем, что у нас есть данные для данного constraint
 			 */
 
-			$constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
+			if($constraint->localColumn instanceof Column) {
+				$constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
+			}
+			else {
+				/** @var ConstraintRaw $constraint */
+				$constraintValue = isset($rowData[$constraint->localColumn]) ? $rowData[$constraint->localColumn] : null;
+			}
 
 			$testForJsonString = null;
 
@@ -213,14 +226,13 @@ abstract class Entity
 					//throw new EntityException("Понять какие это случаи и описать их тут");
 					// Мы можем создать view, в которой не вытаскиваем данные по определенному constraint, потому что они нам не нужны
 					$newConstraintValue = null;
+					/*					if($keyFromMap === null && !isset($arrayMap[$entityName])) {
 
-/*					if($keyFromMap === null && !isset($arrayMap[$entityName])) {
-
-						$newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-					}
-					else {
-						$newConstraintValue = null;
-					}*/
+											$newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
+										}
+										else {
+											$newConstraintValue = null;
+										}*/
 				}
 
 				$setterMethod = "set" . ucfirst($entityName);

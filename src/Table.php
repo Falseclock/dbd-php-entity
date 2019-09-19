@@ -39,7 +39,7 @@ class Table
 	public static function getFromMapper(Mapper $mapper) {
 		$table = new Table();
 
-		/** @var Entity $entityClass */
+		/** @var Entity $entityClass Getting class name from Mapper instance, which can be used as class instance */
 		$entityClass = $mapper->getEntityClass();
 
 		$table->name = $entityClass::getTableName();
@@ -89,8 +89,17 @@ class Table
 		/** @var Entity $foreignClass */
 		$foreignClass = $constraintValue->class;
 
-		$constraint->foreignTable = self::getFromMapper($foreignClass::mappingInstance());
-		$constraint->foreignColumn = self::findColumnByOriginName($constraint->foreignTable, $constraintValue->foreignColumn);
+		$foreignClassMapInstance = $foreignClass::map();
+		$foreignTable = $foreignClassMapInstance->getTable();
+
+		if($foreignTable !== null) {
+			$constraint->foreignTable = $foreignTable;
+			$constraint->foreignColumn = self::findColumnByOriginName($foreignTable, $constraintValue->foreignColumn);
+		}
+		else {
+			$constraint->foreignTable = self::getFromMapper($foreignClass::map());
+			$constraint->foreignColumn = self::findColumnByOriginName($constraint->foreignTable, $constraintValue->foreignColumn);
+		}
 
 		$constraint->localTable = $table;
 		$constraint->localColumn = self::findColumnByOriginName($table, $constraintValue->localColumn);
@@ -198,7 +207,7 @@ class Table
 				return $column;
 			}
 		}
-		throw new EntityException("Can't find column '{$columnOriginName}' in table '{$table->name}'. Looks like this column not described in Mapper class.");
+		throw new EntityException("can't find column '{$columnOriginName}' in table '{$table->name}'. Looks like this column not described in Mapper class.");
 	}
 
 	private static function getKeys(Table $table) {

@@ -2,7 +2,7 @@
 
 namespace Falseclock\DBD\Entity;
 
-class Constraint
+class ConstraintRaw extends Constraint
 {
 	const BASE_CLASS     = "class";
 	const FOREIGN_COLUMN = "foreignColumn";
@@ -11,17 +11,24 @@ class Constraint
 	const JOIN_TYPE      = "join";
 	const LOCAL_COLUMN   = "localColumn";
 	const LOCAL_TABLE    = "localTable";
-	/** @var Column $localColumn */
+	/** @var string $localColumn */
 	public $localColumn;
-	/** @var Table $localTable */
+	/** @var string $localTable */
 	public $localTable;
-	/** @var Table $foreignTable */
+	/** @var string $foreignTable */
 	public $foreignTable;
-	/** @var Column $foreignColumn */
+	/** @var string $foreignColumn */
 	public $foreignColumn;
-	/** @var Join $joinType */
+	/** @var string $joinType */
 	public $join;
 	/** @var string $class */
 	public $class;
 
+	public function __construct(?array $constraint = null) {
+		if(isset($constraint)) {
+			foreach($constraint as $key => $value) {
+				$this->$key = $value;
+			}
+		}
+	}
 }

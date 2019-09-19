@@ -5,8 +5,8 @@ namespace Falseclock\DBD\Entity;
 use Exception;
 use Falseclock\DBD\Common\Singleton;
 use Falseclock\DBD\Entity\Common\Enforcer;
+use Falseclock\DBD\Entity\Common\EntityException;
 use InvalidArgumentException;
-use ReflectionException;
 use ReflectionProperty;
 
 /**
@@ -15,7 +15,7 @@ use ReflectionProperty;
  * @property Column $id
  * @property Column $constant
  */
-abstract class Mapper extends Singleton
+class Mapper extends Singleton
 {
 	const ANNOTATION = "abstract";
 	const POSTFIX    = "Map";
@@ -24,23 +24,19 @@ abstract class Mapper extends Singleton
 	 * Special getter to access protected and private properties
 	 * Unfortunately abstract class doesn't have access to child class,
 	 * that is why we use Reflection.
-	 * TODO: set all to public with some markers to identify fields and constraints
+	 * TODO: set all to public with some markers to identify fields, constraints and complex
 	 *
 	 * @param $name
 	 *
 	 * @return mixed
-	 * @throws ReflectionException
 	 */
 	public function __get($name) {
-		$name = chop($name);
+
 		if(!property_exists($this, $name)) {
 			throw new InvalidArgumentException("Getting the field '$name' is not valid for '{$this}");
 		}
 
-		$reflection = new ReflectionProperty($this, $name);
-		$reflection->setAccessible($name);
-
-		return $reflection->getValue($this);
+		return $this->$name;
 	}
 
 	/**
@@ -57,13 +53,13 @@ abstract class Mapper extends Singleton
 	 * Used when we need convert Mapper to Table instance
 	 *
 	 * @return MapperVariables
-	 * @throws Exception
+	 * @throws EntityException
 	 */
 	public function getAllVariables() {
 
-		if(!isset(MapperCache::me()->variablesCache["{$this}"])) {
+		if(!isset(MapperCache::me()->allVariables[$this->name()])) {
 
-			$allVars = get_class_vars($this);
+			$allVars = get_object_vars($this);
 			$columns = Utils::getObjectVars($this);
 			$protectedVars = Utils::arrayDiff($allVars, $columns);
 
@@ -82,16 +78,33 @@ abstract class Mapper extends Singleton
 					}
 				}
 				else {
-					throw new Exception("This should not happen!");
+					throw new EntityException("variable '{$varName}' of '{$this}' is type of " . gettype($varValue));
 				}
 			}
 
-			MapperCache::me()->variablesCache["{$this}"] = new MapperVariables($columns, $constraints, $otherColumns);
+			if(!isset(MapperCache::me()->columns[$this->name()])) {
+				foreach(array_merge($columns, $otherColumns) as $columnName => $columnValue) {
+					$this->$columnName = new Column($columnValue);
+					MapperCache::me()->columns[$this->name()][$columnName] = $this->$columnName;
+				}
+			}
+
+			if(!isset(MapperCache::me()->constraints[$this->name()])) {
+				foreach($constraints as $constraintName => $constraintValue) {
+					$this->$constraintName = new ConstraintRaw($constraintValue);
+					MapperCache::me()->constraints[$this->name()][$constraintName] = $this->$constraintName;
+				}
+			}
+
+			MapperCache::me()->allVariables[$this->name()] = new MapperVariables($columns, $constraints, $otherColumns);
 		}
 
-		return MapperCache::me()->variablesCache["{$this}"];
+		return MapperCache::me()->allVariables[$this->name()];
 	}
 
+	public function name() {
+		return (substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
+	}
 	/**
 	 * Returns table comment
 	 *
@@ -103,32 +116,18 @@ abstract class Mapper extends Singleton
 
 	/**
 	 * @return Column[]
+	 * @throws Exception
 	 */
 	public function getColumns() {
-
-		$columns = [];
-		foreach(get_object_vars($this) as $columnName => $columnValue) {
-			if($columnValue instanceof Column) {
-				$columns[$columnName] = $columnValue;
-			}
-		}
-
-		return $columns;
+		return MapperCache::me()->columns[$this->name()];
 	}
 
 	/**
 	 * @return Constraint[]
+	 * @throws Exception
 	 */
 	public function getConstraints() {
-
-		$constraints = [];
-		foreach(get_object_vars($this) as $varName => $varValue) {
-			if($varValue instanceof Constraint) {
-				$constraints[$varName] = $varValue;
-			}
-		}
-
-		return $constraints;
+		return MapperCache::me()->constraints[$this->name()];
 	}
 
 	/**
@@ -138,26 +137,26 @@ abstract class Mapper extends Singleton
 	 */
 	public function getEntityClass() {
 		return substr("{$this}", 0, strlen(self::POSTFIX) * -1);
-		//return rtrim("$this", self::POSTFIX);
 	}
 
 	/**
 	 * @return array
+	 * @throws Exception
 	 */
 	public function getOriginFieldNames() {
-		/** @var Column[] $fields */
-		$fields = get_object_vars($this);
 
-		foreach($fields as $entityColumnName => $column) {
-			if($column instanceof Column) {
-				$fields[$entityColumnName] = $column->name;
-			}
-			else {
-				unset($fields[$entityColumnName]);
+		if(!isset(MapperCache::me()->originFieldNames[$this->name()])) {
+
+			foreach($this->getColumns() as $columnName => $column) {
+				MapperCache::me()->originFieldNames[$this->name()][$columnName] = $column->name;
 			}
 		}
 
-		return $fields;
+		return MapperCache::me()->originFieldNames[$this->name()];
+	}
+
+	public function getTable() {
+		return MapperCache::me()->table[$this->name()];
 	}
 
 	/**
@@ -165,60 +164,54 @@ abstract class Mapper extends Singleton
 	 */
 	public static function me() {
 
+		/** @var static $self */
+		$self = parent::me();
+
 		$calledClass = get_called_class();
 
-		/** @var Mapper $self */
-		$self = self::getInstance($calledClass);
+		if(!MapperCache::me()->fullyInstantiated[$self->name()]) {
 
-		// Check we set ANNOTATION properly in Mapper instance
-		Enforcer::__add(__CLASS__, $calledClass);
+			// Check we set ANNOTATION properly in Mapper instance
+			Enforcer::__add(__CLASS__, $calledClass);
 
-		if(!in_array("{$calledClass}", MapperCache::me()->conversionCache)) {
+			$self->getAllVariables();
 
-			$table = Table::getFromMapper($self);
+			MapperCache::me()->fullyInstantiated[$self->name()] = true;
 
-			// Convert arrays to Column
-			foreach(array_merge($table->columns, $table->otherColumns) as $columnName => $columnValue) {
-				$self->$columnName = $columnValue;
-			}
-
-			foreach($table->constraints as $constraint) {
-				$varName = $self->getConstraintVariableNameByFieldName($constraint->localColumn->name);
-				$self->$varName = $constraint;
-			}
-
-			MapperCache::me()->conversionCache[] = "{$calledClass}";
+			return $self;
 		}
 
 		return $self;
 	}
 
+	/**
+	 * @param $string
+	 *
+	 * @return mixed
+	 * @throws Exception
+	 * @deprecated
+	 */
 	public function revers($string) {
 		$revers = array_flip($this->getOriginFieldNames());
 
 		return $revers[$string];
 	}
-
-	/**
-	 * @param string $lookUpName
-	 *
-	 * @return string
-	 * @throws Exception
-	 */
-	private function getConstraintVariableNameByFieldName(string $lookUpName): string {
-		foreach(get_object_vars($this) as $varName => $varValue) {
-			if(is_array($varValue) and isset($varValue[Constraint::LOCAL_COLUMN]) and $varValue[Constraint::LOCAL_COLUMN] == $lookUpName) {
-				return $varName;
-			}
-		}
-		throw new Exception("Can't find constraint");
-	}
 }
 
 class MapperCache extends Singleton
 {
-	public $conversionCache = [];
-	public $variablesCache  = [];
+	/** @var array $table */
+	public $table;
+	/** @var array $fullyInstantiated */
+	public $fullyInstantiated ;
+	/** @var array $allVariables */
+	public $allVariables;
+	/** @var array $columns */
+	public $columns;
+	/** @var array $constraints */
+	public $constraints;
+	/** @var array $originFieldNames */
+	public $originFieldNames;
 }
 
 final class MapperVariables

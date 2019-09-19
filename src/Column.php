@@ -35,9 +35,17 @@ class Column
 	/** @var boolean $key Flag of Primary key */
 	public $key;
 
-	public function __construct(string $columnName = null) {
-		if(isset($columnName)) {
-			$this->name = $columnName;
+	public function __construct($columnNameOrArray = null) {
+		if(isset($columnNameOrArray)) {
+			if(is_string($columnNameOrArray)) {
+				$this->name = $columnNameOrArray;
+			}
+
+			if(is_array($columnNameOrArray)) {
+				foreach($columnNameOrArray as $key => $value) {
+					$this->$key = $value;
+				}
+			}
 		}
 	}
 }
