@@ -102,6 +102,21 @@ abstract class Mapper extends Singleton
 	}
 
 	/**
+	 * @return Column[]
+	 */
+	public function getColumns() {
+
+		$columns = [];
+		foreach(get_object_vars($this) as $columnName => $columnValue) {
+			if($columnValue instanceof Column) {
+				$columns[$columnName] = $columnValue;
+			}
+		}
+
+		return $columns;
+	}
+
+	/**
 	 * @return Constraint[]
 	 */
 	public function getConstraints() {
@@ -122,7 +137,8 @@ abstract class Mapper extends Singleton
 	 * @return string
 	 */
 	public function getEntityClass() {
-		return rtrim($this, self::POSTFIX);
+		return substr("{$this}", 0, strlen(self::POSTFIX) * -1);
+		//return rtrim("$this", self::POSTFIX);
 	}
 
 	/**

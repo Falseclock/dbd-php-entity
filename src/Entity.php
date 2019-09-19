@@ -95,7 +95,7 @@ abstract class Entity
 			$mapClass = $mapClass::me();
 		}
 		catch(Exception $e) {
-			throw new EntityException("Entity class $calledClass does not have mapping: {$e->getMessage()}", E_USER_ERROR);
+			throw new EntityException("Parsing '$calledClass' end up with error: {$e->getMessage()}", E_USER_ERROR);
 		}
 
 		return $mapClass;
