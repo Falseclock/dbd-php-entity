@@ -43,7 +43,12 @@ class Column
 
 			if(is_array($columnNameOrArray)) {
 				foreach($columnNameOrArray as $key => $value) {
-					$this->$key = $value;
+					if($key == self::TYPE) {
+						$this->type = new Primitive($value);
+					}
+					else {
+						$this->$key = $value;
+					}
 				}
 			}
 		}

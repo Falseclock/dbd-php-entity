@@ -54,6 +54,7 @@ class Mapper extends Singleton
 	 *
 	 * @return MapperVariables
 	 * @throws EntityException
+	 * @throws Exception
 	 */
 	public function getAllVariables() {
 
@@ -83,25 +84,36 @@ class Mapper extends Singleton
 			}
 
 			if(!isset(MapperCache::me()->columns[$this->name()])) {
-				foreach(array_merge($columns, $otherColumns) as $columnName => $columnValue) {
+				foreach($columns as $columnName => $columnValue) {
 					$this->$columnName = new Column($columnValue);
+					MapperCache::me()->baseColumns[$this->name()][$columnName] = $this->$columnName;
 					MapperCache::me()->columns[$this->name()][$columnName] = $this->$columnName;
 				}
-				// У нас может не быть колонок
-				if (!isset(MapperCache::me()->columns[$this->name()])) {
-					MapperCache::me()->columns[$this->name()] = [];
+				foreach($otherColumns as $columnName => $columnValue) {
+					$this->$columnName = new Column($columnValue);
+					MapperCache::me()->otherColumns[$this->name()][$columnName] = $this->$columnName;
+					MapperCache::me()->columns[$this->name()][$columnName] = $this->$columnName;
 				}
+			}
+
+			// У нас может не быть колонок
+			if(!isset(MapperCache::me()->columns[$this->name()])) {
+				MapperCache::me()->columns[$this->name()] = [];
 			}
 
 			if(!isset(MapperCache::me()->constraints[$this->name()])) {
 				foreach($constraints as $constraintName => $constraintValue) {
-					$this->$constraintName = new ConstraintRaw($constraintValue);
+					$temporaryConstraint = new ConstraintRaw($constraintValue);
+					$temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
+					$temporaryConstraint->localTable = $this->getTable();
+					$this->$constraintName = $temporaryConstraint;
+
 					MapperCache::me()->constraints[$this->name()][$constraintName] = $this->$constraintName;
 				}
-				// У нас может не быть констрейнтов
-				if (!isset(MapperCache::me()->constraints[$this->name()])) {
-					MapperCache::me()->constraints[$this->name()] = [];
-				}
+			}
+			// У нас может не быть констрейнтов
+			if(!isset(MapperCache::me()->constraints[$this->name()])) {
+				MapperCache::me()->constraints[$this->name()] = [];
 			}
 
 			MapperCache::me()->allVariables[$this->name()] = new MapperVariables($columns, $constraints, $otherColumns);
@@ -117,6 +129,14 @@ class Mapper extends Singleton
 	 */
 	public function getAnnotation() {
 		return $this::ANNOTATION;
+	}
+
+	/**
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function getBaseColumns() {
+		return MapperCache::me()->baseColumns[$this->name()];
 	}
 
 	/**
@@ -159,12 +179,46 @@ class Mapper extends Singleton
 		return MapperCache::me()->originFieldNames[$this->name()];
 	}
 
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getOtherColumns() {
+		if(!isset(MapperCache::me()->otherColumns[$this->name()])) {
+			return [];
+		}
+
+		return MapperCache::me()->otherColumns[$this->name()];
+	}
+
+	/**
+	 * @return mixed
+	 * @throws Exception
+	 */
 	public function getTable() {
+
+		if(!isset(MapperCache::me()->table[$this->name()])) {
+			$parentClass = $this->getEntityClass();
+			$table = new Table();
+			/** @var Entity $parentClass */
+			$table->name = $parentClass::getTableName();
+			$table->scheme = $parentClass::getSchemeName();
+			$table->columns = $this->getBaseColumns();
+			$table->otherColumns = $this->getOtherColumns();
+			$table->constraints = $this->getConstraints();
+			//$table->keys = $this->getKeys();
+			$table->annotation = $this->getAnnotation();
+
+			MapperCache::me()->table[$this->name()] = $table;
+		}
+
 		return MapperCache::me()->table[$this->name()];
 	}
 
 	/**
 	 * Used for quick access to the mapper without instantiating it and have only one instance
+	 *
+	 * @throws Exception
 	 */
 	public static function me() {
 
@@ -204,8 +258,28 @@ class Mapper extends Singleton
 
 		return $revers[$string];
 	}
+
+	/**
+	 * @param string $originName
+	 *
+	 * @return Column
+	 * @throws Exception
+	 */
+	public function findColumnByOriginName(string $originName) {
+		foreach($this->getColumns() as $column) {
+			if($column->name == $originName) {
+				return $column;
+			}
+		}
+		throw new Exception("Can't find origin column '{$originName}' in {$this}");
+	}
 }
 
+/**
+ * Class MapperCache used to avoid interfering with local variables in child classes
+ *
+ * @package Falseclock\DBD\Entity
+ */
 class MapperCache extends Singleton
 {
 	/** @var array $table */
@@ -216,6 +290,10 @@ class MapperCache extends Singleton
 	public $allVariables;
 	/** @var array $columns */
 	public $columns;
+	/** @var array $otherColumns */
+	public $otherColumns;
+	/** @var array $baseColumns */
+	public $baseColumns;
 	/** @var array $constraints */
 	public $constraints;
 	/** @var array $originFieldNames */
