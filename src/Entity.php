@@ -164,6 +164,8 @@ abstract class Entity
 	final private function setComplex(?array $data, Mapper $map) {
 		foreach($map->getComplexes() as $complexName => $complexValue) {
 
+			// TODO: do not override default class name if data is null
+
 			if(isset($data[$complexValue->viewColumn])) {
 				if(isset($complexValue->dbType) and $complexValue->dbType == Type::Json) {
 					$data[$complexValue->viewColumn] = json_decode($data[$complexValue->viewColumn], true);
