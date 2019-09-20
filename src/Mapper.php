@@ -49,6 +49,21 @@ class Mapper extends Singleton
 	}
 
 	/**
+	 * @param string $originName
+	 *
+	 * @return Column
+	 * @throws Exception
+	 */
+	public function findColumnByOriginName(string $originName) {
+		foreach($this->getColumns() as $column) {
+			if($column->name == $originName) {
+				return $column;
+			}
+		}
+		throw new Exception("Can't find origin column '{$originName}' in {$this}. If it is reference column, map it as protected");
+	}
+
+	/**
 	 * Read all public, private and protected variable names and their values.
 	 * Used when we need convert Mapper to Table instance
 	 *
@@ -66,7 +81,7 @@ class Mapper extends Singleton
 
 			$constraints = [];
 			$otherColumns = [];
-
+			$embedded = [];
 			$constraintCheck = Constraint::LOCAL_COLUMN;
 
 			foreach($protectedVars as $varName => $varValue) {
@@ -75,12 +90,25 @@ class Mapper extends Singleton
 						$constraints[$varName] = $varValue;
 					}
 					else {
-						$otherColumns[$varName] = $varValue;
+						if (isset($varValue[Embedded::TYPE])) {
+							$embedded[$varName] = $varValue;
+						} else {
+							$otherColumns[$varName] = $varValue;
+						}
 					}
 				}
 				else {
 					throw new EntityException("variable '{$varName}' of '{$this}' is type of " . gettype($varValue));
 				}
+			}
+
+			foreach($embedded as $embeddedName => $embeddedValue) {
+				$this->$embeddedName = new Embedded($embeddedValue);
+				MapperCache::me()->embedded[$this->name()][$embeddedName] = $this->$embeddedName;
+			}
+			// У нас может не быть колонок
+			if(!isset(MapperCache::me()->embedded[$this->name()])) {
+				MapperCache::me()->embedded[$this->name()] = [];
 			}
 
 			if(!isset(MapperCache::me()->columns[$this->name()])) {
@@ -116,7 +144,7 @@ class Mapper extends Singleton
 				MapperCache::me()->constraints[$this->name()] = [];
 			}
 
-			MapperCache::me()->allVariables[$this->name()] = new MapperVariables($columns, $constraints, $otherColumns);
+			MapperCache::me()->allVariables[$this->name()] = new MapperVariables($columns, $constraints, $otherColumns, $embedded);
 		}
 
 		return MapperCache::me()->allVariables[$this->name()];
@@ -205,7 +233,8 @@ class Mapper extends Singleton
 			$table->scheme = $parentClass::getSchemeName();
 			$table->columns = $this->getBaseColumns();
 			$table->otherColumns = $this->getOtherColumns();
-			$table->constraints = $this->getConstraints();
+			// FIXME:
+			//$table->constraints = $this->getConstraints();
 			//$table->keys = $this->getKeys();
 			$table->annotation = $this->getAnnotation();
 
@@ -258,21 +287,6 @@ class Mapper extends Singleton
 
 		return $revers[$string];
 	}
-
-	/**
-	 * @param string $originName
-	 *
-	 * @return Column
-	 * @throws Exception
-	 */
-	public function findColumnByOriginName(string $originName) {
-		foreach($this->getColumns() as $column) {
-			if($column->name == $originName) {
-				return $column;
-			}
-		}
-		throw new Exception("Can't find origin column '{$originName}' in {$this}");
-	}
 }
 
 /**
@@ -283,21 +297,23 @@ class Mapper extends Singleton
 class MapperCache extends Singleton
 {
 	/** @var array $table */
-	public $table;
+	public $table = [];
 	/** @var array $fullyInstantiated */
-	public $fullyInstantiated;
+	public $fullyInstantiated = [];
 	/** @var array $allVariables */
-	public $allVariables;
+	public $allVariables = [];
 	/** @var array $columns */
-	public $columns;
+	public $columns = [];
 	/** @var array $otherColumns */
-	public $otherColumns;
+	public $otherColumns = [];
 	/** @var array $baseColumns */
-	public $baseColumns;
+	public $baseColumns = [];
 	/** @var array $constraints */
-	public $constraints;
+	public $constraints = [];
 	/** @var array $originFieldNames */
-	public $originFieldNames;
+	public $originFieldNames = [];
+	/** @var array $embedded */
+	public $embedded = [];
 }
 
 final class MapperVariables
@@ -305,11 +321,13 @@ final class MapperVariables
 	public $columns;
 	public $constraints;
 	public $otherColumns;
+	public $embedded;
 
-	public function __construct($columns, $constraints, $otherColumns) {
+	public function __construct($columns, $constraints, $otherColumns, $embedded) {
 		$this->columns = $this->filter($columns);
 		$this->constraints = $this->filter($constraints);
 		$this->otherColumns = $this->filter($otherColumns);
+		$this->embedded = $this->filter($embedded);
 	}
 
 	/**
