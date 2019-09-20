@@ -87,12 +87,20 @@ class Mapper extends Singleton
 					$this->$columnName = new Column($columnValue);
 					MapperCache::me()->columns[$this->name()][$columnName] = $this->$columnName;
 				}
+				// У нас может не быть колонок
+				if (!isset(MapperCache::me()->columns[$this->name()])) {
+					MapperCache::me()->columns[$this->name()] = [];
+				}
 			}
 
 			if(!isset(MapperCache::me()->constraints[$this->name()])) {
 				foreach($constraints as $constraintName => $constraintValue) {
 					$this->$constraintName = new ConstraintRaw($constraintValue);
 					MapperCache::me()->constraints[$this->name()][$constraintName] = $this->$constraintName;
+				}
+				// У нас может не быть констрейнтов
+				if (!isset(MapperCache::me()->constraints[$this->name()])) {
+					MapperCache::me()->constraints[$this->name()] = [];
 				}
 			}
 
@@ -102,9 +110,6 @@ class Mapper extends Singleton
 		return MapperCache::me()->allVariables[$this->name()];
 	}
 
-	public function name() {
-		return (substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
-	}
 	/**
 	 * Returns table comment
 	 *
@@ -146,7 +151,6 @@ class Mapper extends Singleton
 	public function getOriginFieldNames() {
 
 		if(!isset(MapperCache::me()->originFieldNames[$this->name()])) {
-
 			foreach($this->getColumns() as $columnName => $column) {
 				MapperCache::me()->originFieldNames[$this->name()][$columnName] = $column->name;
 			}
@@ -169,7 +173,7 @@ class Mapper extends Singleton
 
 		$calledClass = get_called_class();
 
-		if(!MapperCache::me()->fullyInstantiated[$self->name()]) {
+		if(!isset(MapperCache::me()->fullyInstantiated[$self->name()])) {
 
 			// Check we set ANNOTATION properly in Mapper instance
 			Enforcer::__add(__CLASS__, $calledClass);
@@ -182,6 +186,10 @@ class Mapper extends Singleton
 		}
 
 		return $self;
+	}
+
+	public function name() {
+		return (substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
 	}
 
 	/**
@@ -203,7 +211,7 @@ class MapperCache extends Singleton
 	/** @var array $table */
 	public $table;
 	/** @var array $fullyInstantiated */
-	public $fullyInstantiated ;
+	public $fullyInstantiated;
 	/** @var array $allVariables */
 	public $allVariables;
 	/** @var array $columns */

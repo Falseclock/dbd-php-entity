@@ -95,7 +95,7 @@ abstract class Entity
 			$mapClass = $mapClass::me();
 		}
 		catch(Exception $e) {
-			throw new EntityException("Parsing '$calledClass' end up with error: {$e->getMessage()}");
+			throw new EntityException(sprintf("Parsing '%s' end up with error: '%s' in %s:%s", $calledClass, $e->getMessage(), basename($e->getFile()), $e->getLine()));
 		}
 
 		return $mapClass;
