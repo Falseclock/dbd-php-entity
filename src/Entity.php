@@ -142,7 +142,7 @@ abstract class Entity
 				else {
 					/** If initially column type is json, then let's parse it as JSON */
 					if(stripos($fieldDefinition->originType, "json") !== false) {
-						$this->$property = (object) json_decode($columnValue, true);
+						$this->$property = json_decode($columnValue, true);
 					}
 					else {
 						/**

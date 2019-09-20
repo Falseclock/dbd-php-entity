@@ -82,6 +82,7 @@ class Mapper extends Singleton
 			$constraints = [];
 			$otherColumns = [];
 			$embedded = [];
+			$complex = [];
 			$constraintCheck = Constraint::LOCAL_COLUMN;
 
 			foreach($protectedVars as $varName => $varValue) {
@@ -90,9 +91,13 @@ class Mapper extends Singleton
 						$constraints[$varName] = $varValue;
 					}
 					else {
-						if (isset($varValue[Embedded::TYPE])) {
+						if(isset($varValue[Embedded::TYPE])) {
 							$embedded[$varName] = $varValue;
-						} else {
+						}
+						else if(isset($varValue[Complex::VIEW_COLUMN])) {
+							$complex[$varName] = $varValue;
+						}
+						else {
 							$otherColumns[$varName] = $varValue;
 						}
 					}
@@ -101,16 +106,26 @@ class Mapper extends Singleton
 					throw new EntityException("variable '{$varName}' of '{$this}' is type of " . gettype($varValue));
 				}
 			}
-
+			/** ----------------------EMBEDDED------------------------ */
 			foreach($embedded as $embeddedName => $embeddedValue) {
 				$this->$embeddedName = new Embedded($embeddedValue);
 				MapperCache::me()->embedded[$this->name()][$embeddedName] = $this->$embeddedName;
 			}
-			// У нас может не быть колонок
+			// У нас может не быть эмбедов
 			if(!isset(MapperCache::me()->embedded[$this->name()])) {
 				MapperCache::me()->embedded[$this->name()] = [];
 			}
+			/** ----------------------COMPLEX------------------------ */
+			foreach($complex as $complexName => $complexValue) {
+				$this->$complexName = new Embedded($complexValue);
+				MapperCache::me()->complex[$this->name()][$complexName] = $this->$complexName;
+			}
+			// У нас может не быть комплексов
+			if(!isset(MapperCache::me()->complex[$this->name()])) {
+				MapperCache::me()->complex[$this->name()] = [];
+			}
 
+			/** ----------------------COLUMNS------------------------ */
 			if(!isset(MapperCache::me()->columns[$this->name()])) {
 				foreach($columns as $columnName => $columnValue) {
 					$this->$columnName = new Column($columnValue);
@@ -123,12 +138,12 @@ class Mapper extends Singleton
 					MapperCache::me()->columns[$this->name()][$columnName] = $this->$columnName;
 				}
 			}
-
 			// У нас может не быть колонок
 			if(!isset(MapperCache::me()->columns[$this->name()])) {
 				MapperCache::me()->columns[$this->name()] = [];
 			}
 
+			/** ----------------------CONSTRAINTS------------------------ */
 			if(!isset(MapperCache::me()->constraints[$this->name()])) {
 				foreach($constraints as $constraintName => $constraintValue) {
 					$temporaryConstraint = new ConstraintRaw($constraintValue);
@@ -144,7 +159,7 @@ class Mapper extends Singleton
 				MapperCache::me()->constraints[$this->name()] = [];
 			}
 
-			MapperCache::me()->allVariables[$this->name()] = new MapperVariables($columns, $constraints, $otherColumns, $embedded);
+			MapperCache::me()->allVariables[$this->name()] = new MapperVariables($columns, $constraints, $otherColumns, $embedded, $complex);
 		}
 
 		return MapperCache::me()->allVariables[$this->name()];
@@ -314,6 +329,8 @@ class MapperCache extends Singleton
 	public $originFieldNames = [];
 	/** @var array $embedded */
 	public $embedded = [];
+	/** @var array $complex */
+	public $complex = [];
 }
 
 final class MapperVariables
@@ -322,12 +339,14 @@ final class MapperVariables
 	public $constraints;
 	public $otherColumns;
 	public $embedded;
+	public $complex;
 
-	public function __construct($columns, $constraints, $otherColumns, $embedded) {
+	public function __construct($columns, $constraints, $otherColumns, $embedded, $complex) {
 		$this->columns = $this->filter($columns);
 		$this->constraints = $this->filter($constraints);
 		$this->otherColumns = $this->filter($otherColumns);
 		$this->embedded = $this->filter($embedded);
+		$this->complex = $this->filter($complex);
 	}
 
 	/**
