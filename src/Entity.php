@@ -161,6 +161,32 @@ abstract class Entity
 		return;
 	}
 
+	final private function setComplex(?array $data, Mapper $map) {
+		foreach($map->getComplexes() as $complexName => $complexValue) {
+
+			if(isset($data[$complexValue->viewColumn])) {
+				if(isset($complexValue->dbType) and $complexValue->dbType == Type::Json) {
+					$data[$complexValue->viewColumn] = json_decode($data[$complexValue->viewColumn], true);
+				}
+				if(isset($complexValue->entityClass)) {
+					if($complexValue->isIterable) {
+						$iterables = [];
+						foreach($data[$complexValue->viewColumn] as $value) {
+							$iterables[] = new $complexValue->entityClass($value);
+						}
+						$this->$complexName = $iterables;
+					}
+					else {
+						$this->$complexName = new $complexValue->entityClass($data[$complexValue->viewColumn]);
+					}
+				}
+				else {
+					$this->$complexName = $data[$complexValue->viewColumn];
+				}
+			}
+		}
+	}
+
 	final  private function setConstraints(array $rowData, Mapper $mapper, $maxLevels, $currentLevel) {
 
 		foreach($mapper->getConstraints() as $entityName => $constraint) {
@@ -267,6 +293,8 @@ abstract class Entity
 		$this->setBaseColumns($data, $map, $calledClass);
 
 		$this->setConstraints($data, $map, $maxLevels, $currentLevel);
+
+		$this->setComplex($data, $map);
 
 		return;
 	}

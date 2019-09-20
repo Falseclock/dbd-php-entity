@@ -117,7 +117,7 @@ class Mapper extends Singleton
 			}
 			/** ----------------------COMPLEX------------------------ */
 			foreach($complex as $complexName => $complexValue) {
-				$this->$complexName = new Embedded($complexValue);
+				$this->$complexName = new Complex($complexValue);
 				MapperCache::me()->complex[$this->name()][$complexName] = $this->$complexName;
 			}
 			// У нас может не быть комплексов
@@ -188,6 +188,14 @@ class Mapper extends Singleton
 	 */
 	public function getColumns() {
 		return MapperCache::me()->columns[$this->name()];
+	}
+
+	public function getComplexes() {
+		if(!isset(MapperCache::me()->complex[$this->name()])) {
+			return [];
+		}
+
+		return MapperCache::me()->complex[$this->name()];
 	}
 
 	/**

@@ -7,7 +7,7 @@ namespace Falseclock\DBD\Entity;
  *
  * @package Falseclock\DBD\Entity
  */
-class Complex extends Entity
+class Complex
 {
 	public const DB_TYPE      = "dbType";
 	public const ENTITY_CLASS = "entityClass";
@@ -21,4 +21,12 @@ class Complex extends Entity
 	public $entityClass;
 	/** @var Type $dbType */
 	public $dbType;
+
+	public function __construct($arrayOfValues = null) {
+		if(isset($arrayOfValues)) {
+			foreach($arrayOfValues as $key => $value) {
+				$this->$key = $value;
+			}
+		}
+	}
 }
