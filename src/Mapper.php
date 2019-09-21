@@ -77,15 +77,30 @@ class Mapper extends Singleton
 
 		if(!isset(MapperCache::me()->allVariables[$thisName])) {
 
+			/**
+			 * All available variables
+			 * Columns and Complex are always PUBLIC
+			 * Constraints and Embedded are always PROTECTED
+			 */
 			$allVars = get_object_vars($this);
-			$columns = Utils::getObjectVars($this);
-			$protectedVars = Utils::arrayDiff($allVars, $columns);
+			$publicVars = Utils::getObjectVars($this);
+			$protectedVars = Utils::arrayDiff($allVars, $publicVars);
 
 			$constraints = [];
 			$otherColumns = [];
 			$embedded = [];
 			$complex = [];
+			$columns = [];
 			$constraintCheck = Constraint::LOCAL_COLUMN;
+
+			foreach($publicVars as $varName => $varValue) {
+				// Column::TYPE is mandatory for Columns
+				if(isset($varValue[Column::TYPE])) {
+					$columns[$varName] = $varValue;
+				} else {
+					$complex[$varName] = $varValue;
+				}
+			}
 
 			foreach($protectedVars as $varName => $varValue) {
 				if(is_array($varValue)) {
@@ -95,9 +110,6 @@ class Mapper extends Singleton
 					else {
 						if(isset($varValue[Embedded::TYPE])) {
 							$embedded[$varName] = $varValue;
-						}
-						else if(isset($varValue[Complex::VIEW_COLUMN])) {
-							$complex[$varName] = $varValue;
 						}
 						else {
 							$otherColumns[$varName] = $varValue;
@@ -197,10 +209,18 @@ class Mapper extends Singleton
 		return MapperCache::me()->columns[$this->name()];
 	}
 
+	/**
+	 * @return Complex[]
+	 * @throws Exception
+	 */
 	public function getComplexes() {
 		return MapperCache::me()->complex[$this->name()];
 	}
 
+	/**
+	 * @return Embedded[]
+	 * @throws Exception
+	 */
 	public function getEmbedded() {
 		return MapperCache::me()->embedded[$this->name()];
 	}

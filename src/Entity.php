@@ -147,24 +147,24 @@ abstract class Entity
 
 			// TODO: do not override default class name if data is null
 
-			if(isset($data[$complexValue->viewColumn])) {
+			if(isset($data[$complexValue->name])) {
 				if(isset($complexValue->dbType) and $complexValue->dbType == Type::Json) {
-					$data[$complexValue->viewColumn] = json_decode($data[$complexValue->viewColumn], true);
+					$data[$complexValue->name] = json_decode($data[$complexValue->name], true);
 				}
 				if(isset($complexValue->entityClass)) {
 					if($complexValue->isIterable) {
 						$iterables = [];
-						foreach($data[$complexValue->viewColumn] as $value) {
+						foreach($data[$complexValue->name] as $value) {
 							$iterables[] = new $complexValue->entityClass($value);
 						}
 						$this->$complexName = $iterables;
 					}
 					else {
-						$this->$complexName = new $complexValue->entityClass($data[$complexValue->viewColumn]);
+						$this->$complexName = new $complexValue->entityClass($data[$complexValue->name]);
 					}
 				}
 				else {
-					$this->$complexName = $data[$complexValue->viewColumn];
+					$this->$complexName = $data[$complexValue->name];
 				}
 			}
 		}
@@ -288,145 +288,5 @@ abstract class Entity
 		$this->setEmbedded($data, $map, $maxLevels, $currentLevel);
 
 		return;
-	}
-
-	/**
-	 * @param $data
-	 * @param $maxLevels
-	 * @param $currentLevel
-	 *
-	 * @throws EntityException
-	 */
-	final private function setModelDataOld(array $data, Mapper $map, int $maxLevels, int $currentLevel) {
-
-		$currentLevel++;
-
-		if($data !== null) {
-			$calledClass = get_called_class();
-
-			$arrayMap = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP];
-			$reverseMap = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE];
-
-			// Сперва бегаем по каждому полю в выборке и сэтим его как переменную класса
-			if(count($reverseMap)) {
-				foreach($data as $key => $value) {
-					if(isset($reverseMap[$key])) {
-						$property = $reverseMap[$key];
-
-						// Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration.
-						$setterMethod = "set{$property}"; //. ucfirst($property);
-
-						// Сразу парсим JSON поля
-						if(isset($this->json[$key])) {
-							if(method_exists($this, $setterMethod)) {
-								$this->$setterMethod(json_decode($value, true));
-							}
-							else {
-								$this->$property = json_decode($value, true);
-							}
-						}
-						else {
-							if(method_exists($this, $setterMethod)) {
-								$this->$setterMethod($value);
-							}
-							else {
-								// У нас могут быть стандартно задефайненные переменные, в основном объекты, которые обозначены как массивы
-								if(!isset($this->$property) and isset($value)) {
-									$this->$property = $value;
-								}
-							}
-						}
-					}
-				}
-			}
-			else {
-				throw new EntityException(get_class($this) . " does not have mapping");
-			}
-
-			// Защита от зацикливания если дочерний класс и родительский класс ссылаются друг на друга
-			$data['ALL_CLASSES_CHAIN'][] = get_class($this);
-
-			// Теперь пробегаемся по все объектам в классе и создаем объекты
-			foreach($this->objects as $classVariableName => $classFullNamespace) {
-				if(is_null($classFullNamespace)) {
-					throw new EntityException("Class '$classVariableName' does not have CLASS_NAME constant");
-				}
-
-				// FIXME: проверить как работает если мы ссылаемся на класс через 3-ий и выше класс и вообще возможность такой ситуации
-				// Чтобы не было перецикливания, проверяем был ли уже проход через класс
-				if(!in_array($classFullNamespace, $data['ALL_CLASSES_CHAIN'])) {
-
-					$keyFromMap = null;
-					if(isset($arrayMap[$classVariableName])) {
-						$keyFromMap = $arrayMap[$classVariableName];
-					}
-
-					$jsonTest = null;
-					if(isset($data[$keyFromMap]) && is_string($data[$keyFromMap])) {
-						$jsonTest = json_decode($data[$keyFromMap]);
-					}
-					// Мы данные в первом прогоне могли уже сформировать в полноценный массив
-					// Но в дочерние классы мы должны передавать  JSON строкой, а массивом,
-					// Поэтому вертаем все назад как было
-					if(isset($data[$keyFromMap]) && is_array($data[$keyFromMap])) {
-						$jsonTest = $data[$keyFromMap];
-						$data[$keyFromMap] = json_encode($data[$keyFromMap], JSON_NUMERIC_CHECK);
-					}
-
-					// Есди у нас действительно json строка
-					if($jsonTest !== null) {
-						//Если это массив объектов
-						if(is_array($jsonTest)) {
-							// Разбиваем на нормальный массив
-							$jsonDecodedField = json_decode($data[$keyFromMap], true);
-							$classVariableValue = [];
-
-							foreach($jsonDecodedField as $object) {
-								//Пакуем каждый объект в класс и добавляем в массив
-								$object['ALL_CLASSES_CHAIN'] = $data['ALL_CLASSES_CHAIN'];
-								$classVariableValue[] = new $classFullNamespace($object);
-							}
-							$this->$classVariableName = $classVariableValue;
-						}
-						else {
-							$jsonDecodedField = json_decode($data[$keyFromMap], true);
-							$jsonDecodedField['ALL_CLASSES_CHAIN'] = $data['ALL_CLASSES_CHAIN'];
-							$this->$classVariableName = new $classFullNamespace($jsonDecodedField);
-						}
-					}
-					else {
-						$setterMethod = "set" . ucfirst($classVariableName);
-
-						// У нас не понятно что, поэтому пытаемся распарсить как есть
-						if(isset($data[$keyFromMap]) && $data[$keyFromMap] != null) {
-							$newClassValue = new $classFullNamespace($data);
-						}
-						else {
-							// Тот случай, когда мы вытаскиваем солянку колонк из вьюшки и определяем колонки только в объектах
-							if($keyFromMap === null && !isset($arrayMap[$classVariableName])) {
-								/** @see setModelDataOld */
-								$newClassValue = new $classFullNamespace($data, $maxLevels, $currentLevel);
-							}
-							else {
-								$newClassValue = null;
-							}
-						}
-
-						if(method_exists($this, $setterMethod)) {
-							$this->$setterMethod($newClassValue);
-						}
-						else
-							// Если у нас переменная класа уже инициализирована, и нету значения из базы
-							// то скорее всего этот объект является массивом данных
-							if(isset($this->$classVariableName) and !isset($newClassValue)) {
-
-							}
-							else {
-								$this->$classVariableName = $newClassValue;
-							}
-					}
-				}
-			}
-		}
 	}
 }
