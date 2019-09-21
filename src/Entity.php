@@ -44,12 +44,11 @@ abstract class Entity
 	 */
 	public function __construct($data = null, int $maxLevels = 2, int $currentLevel = 1) {
 
-		Enforcer::__add(__CLASS__, get_called_class());
+		$calledClass = get_class($this);
+
+		Enforcer::__add(__CLASS__, $calledClass);
 
 		if($currentLevel <= $maxLevels) {
-
-			// Эте сделано для того, чтобы сотни раз не делать одно и тоже когда большие выборки
-			$calledClass = get_called_class();
 
 			$map = self::map();
 
@@ -61,24 +60,6 @@ abstract class Entity
 
 			$this->setModelData($data, $map, $maxLevels, $currentLevel);
 		}
-	}
-
-	/**
-	 * Returns table scheme name
-	 *
-	 * @return mixed
-	 */
-	public static function getSchemeName() {
-		return get_called_class()::SCHEME;
-	}
-
-	/**
-	 * Returns table name
-	 *
-	 * @return string
-	 */
-	public static function getTableName() {
-		return get_called_class()::TABLE;
 	}
 
 	/**
@@ -283,6 +264,12 @@ abstract class Entity
 		return;
 	}
 
+	private function setEmbedded(?array $data, Mapper $map, $maxLevels, $currentLevel) {
+		foreach($map->getEmbedded() as $embeddedName => $embeddedValue) {
+			$this->$embeddedName = new $embeddedValue->typeClass($data, $maxLevels, $currentLevel);
+		}
+	}
+
 	final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void {
 		$currentLevel++;
 
@@ -297,6 +284,8 @@ abstract class Entity
 		$this->setConstraints($data, $map, $maxLevels, $currentLevel);
 
 		$this->setComplex($data, $map);
+
+		$this->setEmbedded($data, $map, $maxLevels, $currentLevel);
 
 		return;
 	}

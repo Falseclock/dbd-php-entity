@@ -73,7 +73,9 @@ class Mapper extends Singleton
 	 */
 	public function getAllVariables() {
 
-		if(!isset(MapperCache::me()->allVariables[$this->name()])) {
+		$thisName = $this->name();
+
+		if(!isset(MapperCache::me()->allVariables[$thisName])) {
 
 			$allVars = get_object_vars($this);
 			$columns = Utils::getObjectVars($this);
@@ -106,63 +108,68 @@ class Mapper extends Singleton
 					throw new EntityException("variable '{$varName}' of '{$this}' is type of " . gettype($varValue));
 				}
 			}
+
 			/** ----------------------EMBEDDED------------------------ */
 			foreach($embedded as $embeddedName => $embeddedValue) {
 				$this->$embeddedName = new Embedded($embeddedValue);
-				MapperCache::me()->embedded[$this->name()][$embeddedName] = $this->$embeddedName;
+				MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
 			}
 			// У нас может не быть эмбедов
-			if(!isset(MapperCache::me()->embedded[$this->name()])) {
-				MapperCache::me()->embedded[$this->name()] = [];
+			if(!isset(MapperCache::me()->embedded[$thisName])) {
+				MapperCache::me()->embedded[$thisName] = [];
 			}
+
 			/** ----------------------COMPLEX------------------------ */
 			foreach($complex as $complexName => $complexValue) {
 				$this->$complexName = new Complex($complexValue);
-				MapperCache::me()->complex[$this->name()][$complexName] = $this->$complexName;
+				MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
 			}
 			// У нас может не быть комплексов
-			if(!isset(MapperCache::me()->complex[$this->name()])) {
-				MapperCache::me()->complex[$this->name()] = [];
+			if(!isset(MapperCache::me()->complex[$thisName])) {
+				MapperCache::me()->complex[$thisName] = [];
 			}
 
 			/** ----------------------COLUMNS------------------------ */
-			if(!isset(MapperCache::me()->columns[$this->name()])) {
+			if(!isset(MapperCache::me()->columns[$thisName])) {
 				foreach($columns as $columnName => $columnValue) {
 					$this->$columnName = new Column($columnValue);
-					MapperCache::me()->baseColumns[$this->name()][$columnName] = $this->$columnName;
-					MapperCache::me()->columns[$this->name()][$columnName] = $this->$columnName;
+					MapperCache::me()->baseColumns[$thisName][$columnName] = $this->$columnName;
+					MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
 				}
 				foreach($otherColumns as $columnName => $columnValue) {
 					$this->$columnName = new Column($columnValue);
-					MapperCache::me()->otherColumns[$this->name()][$columnName] = $this->$columnName;
-					MapperCache::me()->columns[$this->name()][$columnName] = $this->$columnName;
+					MapperCache::me()->otherColumns[$thisName][$columnName] = $this->$columnName;
+					MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
 				}
 			}
 			// У нас может не быть колонок
-			if(!isset(MapperCache::me()->columns[$this->name()])) {
-				MapperCache::me()->columns[$this->name()] = [];
+			if(!isset(MapperCache::me()->columns[$thisName])) {
+				MapperCache::me()->columns[$thisName] = [];
+			}
+			if(!isset(MapperCache::me()->otherColumns[$thisName])) {
+				MapperCache::me()->otherColumns[$thisName] = [];
 			}
 
 			/** ----------------------CONSTRAINTS------------------------ */
-			if(!isset(MapperCache::me()->constraints[$this->name()])) {
+			if(!isset(MapperCache::me()->constraints[$thisName])) {
 				foreach($constraints as $constraintName => $constraintValue) {
 					$temporaryConstraint = new ConstraintRaw($constraintValue);
 					$temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
 					$temporaryConstraint->localTable = $this->getTable();
 					$this->$constraintName = $temporaryConstraint;
 
-					MapperCache::me()->constraints[$this->name()][$constraintName] = $this->$constraintName;
+					MapperCache::me()->constraints[$thisName][$constraintName] = $this->$constraintName;
 				}
 			}
 			// У нас может не быть констрейнтов
-			if(!isset(MapperCache::me()->constraints[$this->name()])) {
-				MapperCache::me()->constraints[$this->name()] = [];
+			if(!isset(MapperCache::me()->constraints[$thisName])) {
+				MapperCache::me()->constraints[$thisName] = [];
 			}
 
-			MapperCache::me()->allVariables[$this->name()] = new MapperVariables($columns, $constraints, $otherColumns, $embedded, $complex);
+			MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $otherColumns, $embedded, $complex);
 		}
 
-		return MapperCache::me()->allVariables[$this->name()];
+		return MapperCache::me()->allVariables[$thisName];
 	}
 
 	/**
@@ -191,11 +198,11 @@ class Mapper extends Singleton
 	}
 
 	public function getComplexes() {
-		if(!isset(MapperCache::me()->complex[$this->name()])) {
-			return [];
-		}
-
 		return MapperCache::me()->complex[$this->name()];
+	}
+
+	public function getEmbedded() {
+		return MapperCache::me()->embedded[$this->name()];
 	}
 
 	/**
@@ -221,13 +228,14 @@ class Mapper extends Singleton
 	 */
 	public function getOriginFieldNames() {
 
-		if(!isset(MapperCache::me()->originFieldNames[$this->name()])) {
+		$thisName = $this->name();
+		if(!isset(MapperCache::me()->originFieldNames[$thisName])) {
 			foreach($this->getColumns() as $columnName => $column) {
-				MapperCache::me()->originFieldNames[$this->name()][$columnName] = $column->name;
+				MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
 			}
 		}
 
-		return MapperCache::me()->originFieldNames[$this->name()];
+		return MapperCache::me()->originFieldNames[$thisName];
 	}
 
 	/**
@@ -235,10 +243,6 @@ class Mapper extends Singleton
 	 * @throws Exception
 	 */
 	public function getOtherColumns() {
-		if(!isset(MapperCache::me()->otherColumns[$this->name()])) {
-			return [];
-		}
-
 		return MapperCache::me()->otherColumns[$this->name()];
 	}
 
@@ -248,12 +252,14 @@ class Mapper extends Singleton
 	 */
 	public function getTable() {
 
-		if(!isset(MapperCache::me()->table[$this->name()])) {
+		$thisName = $this->name();
+
+		if(!isset(MapperCache::me()->table[$thisName])) {
 			$parentClass = $this->getEntityClass();
 			$table = new Table();
 			/** @var Entity $parentClass */
-			$table->name = $parentClass::getTableName();
-			$table->scheme = $parentClass::getSchemeName();
+			$table->name = $parentClass::TABLE;
+			$table->scheme = $parentClass::SCHEME;
 			$table->columns = $this->getBaseColumns();
 			$table->otherColumns = $this->getOtherColumns();
 			// FIXME:
@@ -261,10 +267,10 @@ class Mapper extends Singleton
 			//$table->keys = $this->getKeys();
 			$table->annotation = $this->getAnnotation();
 
-			MapperCache::me()->table[$this->name()] = $table;
+			MapperCache::me()->table[$thisName] = $table;
 		}
 
-		return MapperCache::me()->table[$this->name()];
+		return MapperCache::me()->table[$thisName];
 	}
 
 	/**
@@ -277,12 +283,10 @@ class Mapper extends Singleton
 		/** @var static $self */
 		$self = parent::me();
 
-		$calledClass = get_called_class();
-
 		if(!isset(MapperCache::me()->fullyInstantiated[$self->name()])) {
 
 			// Check we set ANNOTATION properly in Mapper instance
-			Enforcer::__add(__CLASS__, $calledClass);
+			Enforcer::__add(__CLASS__, get_class($self));
 
 			$self->getAllVariables();
 
@@ -294,8 +298,9 @@ class Mapper extends Singleton
 		return $self;
 	}
 
-	public function name() {
-		return (substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
+	private function name() {
+		$name = get_class($this);
+		return (substr($name, strrpos($name, '\\') + 1));
 	}
 
 	/**

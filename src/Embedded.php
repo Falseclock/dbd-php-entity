@@ -3,7 +3,8 @@
 namespace Falseclock\DBD\Entity;
 
 /**
- * Class Embedded used when you join other table and want to get variable which is child of Entity
+ * Class Embedded is like JOIN table
+ * Используется, когда к основному Entity джоинится таблица, не описанная в Entity
  *
  * @package Falseclock\DBD\Entity
  */
@@ -17,12 +18,12 @@ class Embedded
 	public $isIterable = false;
 
 	public function __construct($embeddedNameOrArray = null) {
-		if(isset($embedded)) {
+		if(isset($embeddedNameOrArray)) {
 			if(is_string($embeddedNameOrArray)) {
 				$this->typeClass = $embeddedNameOrArray;
 			}
 			else {
-				foreach($embedded as $key => $value) {
+				foreach($embeddedNameOrArray as $key => $value) {
 					$this->$key = $value;
 				}
 			}

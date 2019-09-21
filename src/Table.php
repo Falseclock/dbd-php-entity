@@ -42,8 +42,8 @@ class Table
 		/** @var Entity $entityClass Getting class name from Mapper instance, which can be used as class instance */
 		$entityClass = $mapper->getEntityClass();
 
-		$table->name = $entityClass::getTableName();
-		$table->scheme = $entityClass::getSchemeName();
+		$table->name = $entityClass::TABLE;
+		$table->scheme = $entityClass::SCHEME;
 
 		self::convertVariables($table, $mapper);
 
