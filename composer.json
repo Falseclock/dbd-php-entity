@@ -21,7 +21,6 @@
     "falseclock/dbd-php-common": "dev-master"
   },
   "require-dev": {
-    "apache/log4php":            "^2.3"
   },
   "suggest": {
   },
