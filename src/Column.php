@@ -16,9 +16,9 @@ class Column
 	const TYPE        = "type";
 	/** @var string $annotation TODO: Annotation|Annotation[] */
 	public $annotation;
-	/** @var string $name Column name */
+	/** @var string $name name of column in database */
 	public $name;
-	/** @var string $type */
+	/** @var string $type type of column as written in database */
 	public $originType;
 	/** @var Primitive $type */
 	public $type;
