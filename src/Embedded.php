@@ -3,29 +3,30 @@
 namespace Falseclock\DBD\Entity;
 
 /**
- * Class Embedded is like JOIN table
- * Используется, когда к основному Entity джоинится таблица, не описанная в Entity
+ * Class Embedded used when you generate value with view or with calculations
+ * Should be always public when mapped in Mapper
  *
  * @package Falseclock\DBD\Entity
  */
 class Embedded
 {
-	const ITERABLE = "isIterable";
-	const TYPE     = "typeClass";
-	/** @var string $type full class name with namespace */
-	public $typeClass;
+	public const DB_TYPE      = "dbType";
+	public const ENTITY_CLASS = "entityClass";
+	public const IS_ITERABLE  = "isIterable";
+	public const NAME         = "name";
+	/** @var string $name name of the columns in view or selected with AS */
+	public $name;
 	/** @var bool $isIterable */
 	public $isIterable = false;
+	/** @var string $entityClass default empty. Will be converted to Entity if not null */
+	public $entityClass;
+	/** @var Type $dbType */
+	public $dbType;
 
-	public function __construct($embeddedNameOrArray = null) {
-		if(isset($embeddedNameOrArray)) {
-			if(is_string($embeddedNameOrArray)) {
-				$this->typeClass = $embeddedNameOrArray;
-			}
-			else {
-				foreach($embeddedNameOrArray as $key => $value) {
-					$this->$key = $value;
-				}
+	public function __construct($arrayOfValues = null) {
+		if(isset($arrayOfValues)) {
+			foreach($arrayOfValues as $key => $value) {
+				$this->$key = $value;
 			}
 		}
 	}

@@ -108,7 +108,7 @@ class Mapper extends Singleton
 						$constraints[$varName] = $varValue;
 					}
 					else {
-						if(isset($varValue[Embedded::TYPE])) {
+						if(isset($varValue[Complex::TYPE])) {
 							$embedded[$varName] = $varValue;
 						}
 						else {
@@ -121,24 +121,24 @@ class Mapper extends Singleton
 				}
 			}
 
-			/** ----------------------EMBEDDED------------------------ */
+			/** ----------------------COMPLEX------------------------ */
 			foreach($embedded as $embeddedName => $embeddedValue) {
-				$this->$embeddedName = new Embedded($embeddedValue);
-				MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
+				$this->$embeddedName = new Complex($embeddedValue);
+				MapperCache::me()->complex[$thisName][$embeddedName] = $this->$embeddedName;
 			}
 			// У нас может не быть эмбедов
-			if(!isset(MapperCache::me()->embedded[$thisName])) {
-				MapperCache::me()->embedded[$thisName] = [];
-			}
-
-			/** ----------------------COMPLEX------------------------ */
-			foreach($complex as $complexName => $complexValue) {
-				$this->$complexName = new Complex($complexValue);
-				MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
-			}
-			// У нас может не быть комплексов
 			if(!isset(MapperCache::me()->complex[$thisName])) {
 				MapperCache::me()->complex[$thisName] = [];
+			}
+
+			/** ----------------------EMBEDDED------------------------ */
+			foreach($complex as $complexName => $complexValue) {
+				$this->$complexName = new Embedded($complexValue);
+				MapperCache::me()->embedded[$thisName][$complexName] = $this->$complexName;
+			}
+			// У нас может не быть комплексов
+			if(!isset(MapperCache::me()->embedded[$thisName])) {
+				MapperCache::me()->embedded[$thisName] = [];
 			}
 
 			/** ----------------------COLUMNS------------------------ */
@@ -210,19 +210,19 @@ class Mapper extends Singleton
 	}
 
 	/**
-	 * @return Complex[]
-	 * @throws Exception
-	 */
-	public function getComplexes() {
-		return MapperCache::me()->complex[$this->name()];
-	}
-
-	/**
 	 * @return Embedded[]
 	 * @throws Exception
 	 */
 	public function getEmbedded() {
 		return MapperCache::me()->embedded[$this->name()];
+	}
+
+	/**
+	 * @return Complex[]
+	 * @throws Exception
+	 */
+	public function getComplex() {
+		return MapperCache::me()->complex[$this->name()];
 	}
 
 	/**
@@ -360,10 +360,10 @@ class MapperCache extends Singleton
 	public $constraints = [];
 	/** @var array $originFieldNames */
 	public $originFieldNames = [];
-	/** @var array $embedded */
-	public $embedded = [];
 	/** @var array $complex */
 	public $complex = [];
+	/** @var array $embedded */
+	public $embedded = [];
 }
 
 final class MapperVariables

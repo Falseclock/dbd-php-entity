@@ -142,31 +142,9 @@ abstract class Entity
 		return;
 	}
 
-	final private function setComplex(?array $data, Mapper $map) {
-		foreach($map->getComplexes() as $complexName => $complexValue) {
-
-			// TODO: do not override default class name if data is null
-
-			if(isset($data[$complexValue->name])) {
-				if(isset($complexValue->dbType) and $complexValue->dbType == Type::Json) {
-					$data[$complexValue->name] = json_decode($data[$complexValue->name], true);
-				}
-				if(isset($complexValue->entityClass)) {
-					if($complexValue->isIterable) {
-						$iterables = [];
-						foreach($data[$complexValue->name] as $value) {
-							$iterables[] = new $complexValue->entityClass($value);
-						}
-						$this->$complexName = $iterables;
-					}
-					else {
-						$this->$complexName = new $complexValue->entityClass($data[$complexValue->name]);
-					}
-				}
-				else {
-					$this->$complexName = $data[$complexValue->name];
-				}
-			}
+	private function setComplex(?array $data, Mapper $map, $maxLevels, $currentLevel) {
+		foreach($map->getComplex() as $complexName => $complexValue) {
+			$this->$complexName = new $complexValue->typeClass($data, $maxLevels, $currentLevel);
 		}
 	}
 
@@ -264,9 +242,31 @@ abstract class Entity
 		return;
 	}
 
-	private function setEmbedded(?array $data, Mapper $map, $maxLevels, $currentLevel) {
+	final private function setEmbedded(?array $data, Mapper $map) {
 		foreach($map->getEmbedded() as $embeddedName => $embeddedValue) {
-			$this->$embeddedName = new $embeddedValue->typeClass($data, $maxLevels, $currentLevel);
+
+			// TODO: do not override default class name if data is null
+
+			if(isset($data[$embeddedValue->name])) {
+				if(isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
+					$data[$embeddedValue->name] = json_decode($data[$embeddedValue->name], true);
+				}
+				if(isset($embeddedValue->entityClass)) {
+					if($embeddedValue->isIterable) {
+						$iterables = [];
+						foreach($data[$embeddedValue->name] as $value) {
+							$iterables[] = new $embeddedValue->entityClass($value);
+						}
+						$this->$embeddedName = $iterables;
+					}
+					else {
+						$this->$embeddedName = new $embeddedValue->entityClass($data[$embeddedValue->name]);
+					}
+				}
+				else {
+					$this->$embeddedName = $data[$embeddedValue->name];
+				}
+			}
 		}
 	}
 
@@ -283,9 +283,9 @@ abstract class Entity
 
 		$this->setConstraints($data, $map, $maxLevels, $currentLevel);
 
-		$this->setComplex($data, $map);
+		$this->setEmbedded($data, $map);
 
-		$this->setEmbedded($data, $map, $maxLevels, $currentLevel);
+		$this->setComplex($data, $map, $maxLevels, $currentLevel);
 
 		return;
 	}
