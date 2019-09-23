@@ -41,6 +41,7 @@ abstract class Entity
 	 *
 	 * @throws EntityException
 	 * @throws ReflectionException
+	 * @throws Exception
 	 */
 	public function __construct($data = null, int $maxLevels = 2, int $currentLevel = 1) {
 
@@ -142,13 +143,30 @@ abstract class Entity
 		return;
 	}
 
+	/**
+	 * @param array|null $data
+	 * @param Mapper     $map
+	 * @param            $maxLevels
+	 * @param            $currentLevel
+	 *
+	 * @throws Exception
+	 */
 	private function setComplex(?array $data, Mapper $map, $maxLevels, $currentLevel) {
 		foreach($map->getComplex() as $complexName => $complexValue) {
 			$this->$complexName = new $complexValue->typeClass($data, $maxLevels, $currentLevel);
 		}
 	}
 
-	final  private function setConstraints(array $rowData, Mapper $mapper, $maxLevels, $currentLevel) {
+	/**
+	 * @param array  $rowData
+	 * @param Mapper $mapper
+	 * @param        $maxLevels
+	 * @param        $currentLevel
+	 *
+	 * @throws EntityException
+	 * @throws Exception
+	 */
+	final private function setConstraints(array $rowData, Mapper $mapper, $maxLevels, $currentLevel) {
 
 		foreach($mapper->getConstraints() as $entityName => $constraint) {
 			/**
@@ -242,6 +260,12 @@ abstract class Entity
 		return;
 	}
 
+	/**
+	 * @param array|null $data
+	 * @param Mapper     $map
+	 *
+	 * @throws Exception
+	 */
 	final private function setEmbedded(?array $data, Mapper $map) {
 		foreach($map->getEmbedded() as $embeddedName => $embeddedValue) {
 
@@ -270,6 +294,15 @@ abstract class Entity
 		}
 	}
 
+	/**
+	 * @param array|null $data
+	 * @param Mapper     $map
+	 * @param int        $maxLevels
+	 * @param int        $currentLevel
+	 *
+	 * @throws EntityException
+	 * @throws Exception
+	 */
 	final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void {
 		$currentLevel++;
 
