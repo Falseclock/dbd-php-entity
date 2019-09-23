@@ -6,6 +6,7 @@ use Exception;
 use Falseclock\DBD\Common\Singleton;
 use Falseclock\DBD\Entity\Common\Enforcer;
 use Falseclock\DBD\Entity\Common\EntityException;
+use Falseclock\DBD\Entity\Common\Utils;
 use InvalidArgumentException;
 use ReflectionProperty;
 

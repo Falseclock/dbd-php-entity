@@ -1,6 +1,6 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace Falseclock\DBD\Entity\Common;
 
 class Utils
 {
