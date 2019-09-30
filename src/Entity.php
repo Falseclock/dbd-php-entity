@@ -64,6 +64,16 @@ abstract class Entity
 	}
 
 	/**
+	 * get Entity table name
+	 * @return string
+	 */
+	public static function table() {
+		$calledClass = get_called_class();
+
+		return $calledClass::SCHEME . "." . $calledClass::TABLE;
+	}
+
+	/**
 	 * @return Singleton|Mapper|static
 	 * @throws EntityException
 	 */
