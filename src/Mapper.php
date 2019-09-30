@@ -274,7 +274,7 @@ class Mapper extends Singleton
 	}
 
 	/**
-	 * @return array
+	 * @return Column[]
 	 * @throws Exception
 	 */
 	public function getOtherColumns() {
