@@ -6,6 +6,7 @@ class Column
 {
 	const ANNOTATION  = "annotation";
 	const DEFAULT     = "defaultValue";
+	const IS_AUTO     = "isAuto";
 	const KEY         = "key";
 	const MAXLENGTH   = "maxLength";
 	const NAME        = "name";
@@ -34,6 +35,8 @@ class Column
 	public $defaultValue;
 	/** @var boolean $key Flag of Primary key */
 	public $key;
+	/** @var boolean $isAuto is column has auto increment or auto generated value? */
+	public $isAuto = false;
 
 	public function __construct($columnNameOrArray = null) {
 		if(isset($columnNameOrArray)) {
