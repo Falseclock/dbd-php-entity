@@ -227,6 +227,20 @@ class Mapper extends Singleton
 	}
 
 	/**
+	 * @return Column[]
+	 * @throws Exception
+	 */
+	public function getPrimaryKey() {
+		$keys = [];
+		foreach(MapperCache::me()->columns[$this->name()] as $columnName => $column) {
+			if(isset($column->key) and $column->key == true) {
+				$keys[$columnName] = $column;
+			}
+		}
+		return $keys;
+	}
+
+	/**
 	 * @return Constraint[]
 	 * @throws Exception
 	 */
