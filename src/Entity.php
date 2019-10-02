@@ -262,7 +262,11 @@ abstract class Entity
 
 					}
 					else {
-						$this->$entityName = $newConstraintValue;
+						if (isset($newConstraintValue)) {
+							$this->$entityName = $newConstraintValue;
+						} else {
+							$this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
+						}
 					}
 			}
 		}
