@@ -18,6 +18,7 @@ use MyCLabs\Enum\Enum;
 class Type extends Enum
 {
 	public const BigInt  = "bigint";
+	public const Boolean = "boolean";
 	public const Char    = "char";
 	public const Double  = "double";
 	public const Int     = "int";
