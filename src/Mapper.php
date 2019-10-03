@@ -162,7 +162,9 @@ class Mapper extends Singleton
 			if(!isset(MapperCache::me()->otherColumns[$thisName])) {
 				MapperCache::me()->otherColumns[$thisName] = [];
 			}
-
+			if(!isset(MapperCache::me()->baseColumns[$thisName])) {
+				MapperCache::me()->baseColumns[$thisName] = [];
+			}
 			/** ----------------------CONSTRAINTS------------------------ */
 			if(!isset(MapperCache::me()->constraints[$thisName])) {
 				foreach($constraints as $constraintName => $constraintValue) {
