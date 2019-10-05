@@ -1,8 +1,8 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace DBD\Entity;
 
-use Falseclock\DBD\Entity\Common\EntityException;
+use DBD\Entity\Common\EntityException;
 use ReflectionException;
 
 /**

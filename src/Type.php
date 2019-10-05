@@ -1,6 +1,6 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace DBD\Entity;
 
 use MyCLabs\Enum\Enum;
 

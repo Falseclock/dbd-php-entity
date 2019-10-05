@@ -1,8 +1,8 @@
 <?php
 
-namespace Falseclock\DBD\Entity\Join;
+namespace DBD\Entity\Join;
 
-use Falseclock\DBD\Entity\Join;
+use DBD\Entity\Join;
 
 final class ManyToOne extends Join
 {

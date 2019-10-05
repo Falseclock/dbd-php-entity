@@ -1,14 +1,14 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace DBD\Entity;
 
+use DBD\Common\DBDException;
+use DBD\Entity\Common\EntityException;
+use DBD\Entity\Join\ManyToMany;
+use DBD\Entity\Join\ManyToOne;
+use DBD\Entity\Join\OneToMany;
+use DBD\Entity\Join\OneToOne;
 use Exception;
-use Falseclock\DBD\Common\DBDException;
-use Falseclock\DBD\Entity\Common\EntityException;
-use Falseclock\DBD\Entity\Join\ManyToMany;
-use Falseclock\DBD\Entity\Join\ManyToOne;
-use Falseclock\DBD\Entity\Join\OneToMany;
-use Falseclock\DBD\Entity\Join\OneToOne;
 use ReflectionException;
 
 class Table

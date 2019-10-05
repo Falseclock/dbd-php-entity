@@ -1,12 +1,12 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace DBD\Entity;
 
+use DBD\Common\Singleton;
+use DBD\Entity\Common\Enforcer;
+use DBD\Entity\Common\EntityException;
+use DBD\Entity\Common\Utils;
 use Exception;
-use Falseclock\DBD\Common\Singleton;
-use Falseclock\DBD\Entity\Common\Enforcer;
-use Falseclock\DBD\Entity\Common\EntityException;
-use Falseclock\DBD\Entity\Common\Utils;
 use InvalidArgumentException;
 use ReflectionProperty;
 

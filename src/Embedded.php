@@ -1,6 +1,6 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace DBD\Entity;
 
 /**
  * Class Embedded used when you generate value with view or with calculations

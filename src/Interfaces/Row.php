@@ -1,6 +1,6 @@
 <?php
 
-namespace Falseclock\DBD\Entity\Interfaces;
+namespace DBD\Entity\Interfaces;
 
 interface Row
 {

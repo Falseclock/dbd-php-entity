@@ -1,6 +1,6 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace DBD\Entity;
 
 class ConstraintRaw extends Constraint
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Falseclock\DBD\Entity;
+namespace DBD\Entity;
 
+use DBD\Common\Singleton;
+use DBD\Entity\Common\Enforcer;
+use DBD\Entity\Common\EntityException;
+use DBD\Entity\Join\ManyToMany;
+use DBD\Entity\Join\OneToMany;
 use Exception;
-use Falseclock\DBD\Common\Singleton;
-use Falseclock\DBD\Entity\Common\Enforcer;
-use Falseclock\DBD\Entity\Common\EntityException;
-use Falseclock\DBD\Entity\Join\ManyToMany;
-use Falseclock\DBD\Entity\Join\OneToMany;
 use ReflectionException;
 
 /**
