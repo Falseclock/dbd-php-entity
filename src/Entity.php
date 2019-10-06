@@ -287,7 +287,9 @@ abstract class Entity
 
 			if(isset($data[$embeddedValue->name])) {
 				if(isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
-					$data[$embeddedValue->name] = json_decode($data[$embeddedValue->name], true);
+					if (is_string($data[$embeddedValue->name])) {
+						$data[$embeddedValue->name] = json_decode($data[$embeddedValue->name], true);
+					}
 				}
 				if(isset($embeddedValue->entityClass)) {
 					if($embeddedValue->isIterable) {

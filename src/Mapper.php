@@ -34,19 +34,10 @@ class Mapper extends Singleton
 	public function __get($name) {
 
 		if(!property_exists($this, $name)) {
-			throw new InvalidArgumentException("Getting the field '$name' is not valid for '{$this}");
+			throw new InvalidArgumentException(sprintf("Getting the field '%s' is not valid for '%s'", $name, get_class($this)));
 		}
 
 		return $this->$name;
-	}
-
-	/**
-	 * To print class name if used as a string in exceptions
-	 *
-	 * @return string
-	 */
-	public function __toString(): string {
-		return get_class($this);
 	}
 
 	/**
@@ -61,7 +52,7 @@ class Mapper extends Singleton
 				return $column;
 			}
 		}
-		throw new Exception("Can't find origin column '{$originName}' in {$this}. If it is reference column, map it as protected");
+		throw new Exception(sprintf("Can't find origin column '%s' in %s. If it is reference column, map it as protected", $originName, get_class($this)));
 	}
 
 	/**
@@ -92,25 +83,28 @@ class Mapper extends Singleton
 			$embedded = [];
 			$complex = [];
 			$columns = [];
-			$constraintCheck = Constraint::LOCAL_COLUMN;
 
 			foreach($publicVars as $varName => $varValue) {
 				// Column::TYPE is mandatory for Columns
 				if(isset($varValue[Column::TYPE])) {
 					$columns[$varName] = $varValue;
-				} else {
-					$complex[$varName] = $varValue;
+				}
+				else {
+					$otherColumns[$varName] = $varValue;
 				}
 			}
 
 			foreach($protectedVars as $varName => $varValue) {
 				if(is_array($varValue)) {
-					if(isset($varValue[$constraintCheck])) {
+					if(isset($varValue[Constraint::LOCAL_COLUMN])) {
 						$constraints[$varName] = $varValue;
 					}
 					else {
-						if(isset($varValue[Complex::TYPE])) {
+						if(isset($varValue[Embedded::DB_TYPE])) {
 							$embedded[$varName] = $varValue;
+						}
+						else if(isset($varValue[Complex::TYPE])) {
+							$complex[$varName] = $varValue;
 						}
 						else {
 							$otherColumns[$varName] = $varValue;
@@ -118,26 +112,26 @@ class Mapper extends Singleton
 					}
 				}
 				else {
-					throw new EntityException("variable '{$varName}' of '{$this}' is type of " . gettype($varValue));
+					throw new EntityException(sprintf("variable '%s' of '%s' is type of %s", $varName, get_class($this), gettype($varValue)));
 				}
 			}
 
 			/** ----------------------COMPLEX------------------------ */
-			foreach($embedded as $embeddedName => $embeddedValue) {
-				$this->$embeddedName = new Complex($embeddedValue);
-				MapperCache::me()->complex[$thisName][$embeddedName] = $this->$embeddedName;
+			foreach($complex as $complexName => $complexValue) {
+				$this->$complexName = new Complex($complexValue);
+				MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
 			}
-			// У нас может не быть эмбедов
+			// У нас может не быть комплексов
 			if(!isset(MapperCache::me()->complex[$thisName])) {
 				MapperCache::me()->complex[$thisName] = [];
 			}
 
 			/** ----------------------EMBEDDED------------------------ */
-			foreach($complex as $complexName => $complexValue) {
-				$this->$complexName = new Embedded($complexValue);
-				MapperCache::me()->embedded[$thisName][$complexName] = $this->$complexName;
+			foreach($embedded as $embeddedName => $embeddedValue) {
+				$this->$embeddedName = new Embedded($embeddedValue);
+				MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
 			}
-			// У нас может не быть комплексов
+			// У нас может не быть эмбедов
 			if(!isset(MapperCache::me()->embedded[$thisName])) {
 				MapperCache::me()->embedded[$thisName] = [];
 			}
@@ -213,33 +207,11 @@ class Mapper extends Singleton
 	}
 
 	/**
-	 * @return Embedded[]
-	 * @throws Exception
-	 */
-	public function getEmbedded() {
-		return MapperCache::me()->embedded[$this->name()];
-	}
-
-	/**
 	 * @return Complex[]
 	 * @throws Exception
 	 */
 	public function getComplex() {
 		return MapperCache::me()->complex[$this->name()];
-	}
-
-	/**
-	 * @return Column[]
-	 * @throws Exception
-	 */
-	public function getPrimaryKey() {
-		$keys = [];
-		foreach(MapperCache::me()->columns[$this->name()] as $columnName => $column) {
-			if(isset($column->key) and $column->key == true) {
-				$keys[$columnName] = $column;
-			}
-		}
-		return $keys;
 	}
 
 	/**
@@ -251,12 +223,20 @@ class Mapper extends Singleton
 	}
 
 	/**
+	 * @return Embedded[]
+	 * @throws Exception
+	 */
+	public function getEmbedded() {
+		return MapperCache::me()->embedded[$this->name()];
+	}
+
+	/**
 	 * Returns Entity class name which uses this Mapper
 	 *
 	 * @return string
 	 */
 	public function getEntityClass() {
-		return substr("{$this}", 0, strlen(self::POSTFIX) * -1);
+		return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
 	}
 
 	/**
@@ -281,6 +261,21 @@ class Mapper extends Singleton
 	 */
 	public function getOtherColumns() {
 		return MapperCache::me()->otherColumns[$this->name()];
+	}
+
+	/**
+	 * @return Column[]
+	 * @throws Exception
+	 */
+	public function getPrimaryKey() {
+		$keys = [];
+		foreach(MapperCache::me()->columns[$this->name()] as $columnName => $column) {
+			if(isset($column->key) and $column->key == true) {
+				$keys[$columnName] = $column;
+			}
+		}
+
+		return $keys;
 	}
 
 	/**
@@ -335,11 +330,6 @@ class Mapper extends Singleton
 		return $self;
 	}
 
-	private function name() {
-		$name = get_class($this);
-		return (substr($name, strrpos($name, '\\') + 1));
-	}
-
 	/**
 	 * @param $string
 	 *
@@ -351,6 +341,12 @@ class Mapper extends Singleton
 		$revers = array_flip($this->getOriginFieldNames());
 
 		return $revers[$string];
+	}
+
+	private function name() {
+		$name = get_class($this);
+
+		return (substr($name, strrpos($name, '\\') + 1));
 	}
 }
 
