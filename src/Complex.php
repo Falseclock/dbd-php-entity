@@ -20,6 +20,11 @@ class Complex
 	/** @var bool $nullable If no value is specified for a single-valued property, the Nullable attribute defaults to true. */
 	public $nullable = true;
 
+	/**
+	 * Complex constructor.
+	 *
+	 * @param null $embeddedNameOrArray
+	 */
 	public function __construct($embeddedNameOrArray = null) {
 		if(isset($embeddedNameOrArray)) {
 			if(is_string($embeddedNameOrArray)) {

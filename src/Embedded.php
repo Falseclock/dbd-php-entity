@@ -23,6 +23,11 @@ class Embedded
 	/** @var Type $dbType */
 	public $dbType;
 
+	/**
+	 * Embedded constructor.
+	 *
+	 * @param null $arrayOfValues
+	 */
 	public function __construct($arrayOfValues = null) {
 		if(isset($arrayOfValues)) {
 			foreach($arrayOfValues as $key => $value) {

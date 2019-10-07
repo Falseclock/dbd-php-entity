@@ -387,6 +387,15 @@ final class MapperVariables
 	public $embedded;
 	public $complex;
 
+	/**
+	 * MapperVariables constructor.
+	 *
+	 * @param $columns
+	 * @param $constraints
+	 * @param $otherColumns
+	 * @param $embedded
+	 * @param $complex
+	 */
 	public function __construct($columns, $constraints, $otherColumns, $embedded, $complex) {
 		$this->columns = $this->filter($columns);
 		$this->constraints = $this->filter($constraints);

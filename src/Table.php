@@ -210,6 +210,11 @@ class Table
 		throw new EntityException("can't find column '{$columnOriginName}' in table '{$table->name}'. Looks like this column not described in Mapper class.");
 	}
 
+	/**
+	 * @param Table $table
+	 *
+	 * @return array
+	 */
 	private static function getKeys(Table $table) {
 		$keys = [];
 		foreach(array_merge($table->columns, $table->otherColumns) as $column) {

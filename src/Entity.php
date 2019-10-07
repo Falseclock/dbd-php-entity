@@ -35,7 +35,6 @@ abstract class Entity
 	 * Конструктор модели
 	 *
 	 * @param null $data
-	 *
 	 * @param int  $maxLevels
 	 * @param int  $currentLevel
 	 *
@@ -64,16 +63,6 @@ abstract class Entity
 	}
 
 	/**
-	 * get Entity table name
-	 * @return string
-	 */
-	public static function table() {
-		$calledClass = get_called_class();
-
-		return $calledClass::SCHEME . "." . $calledClass::TABLE;
-	}
-
-	/**
 	 * @return Singleton|Mapper|static
 	 * @throws EntityException
 	 */
@@ -91,6 +80,17 @@ abstract class Entity
 		}
 
 		return $mapClass;
+	}
+
+	/**
+	 * get Entity table name
+	 *
+	 * @return string
+	 */
+	public static function table() {
+		$calledClass = get_called_class();
+
+		return $calledClass::SCHEME . "." . $calledClass::TABLE;
 	}
 
 	/**
@@ -262,9 +262,10 @@ abstract class Entity
 
 					}
 					else {
-						if (isset($newConstraintValue)) {
+						if(isset($newConstraintValue)) {
 							$this->$entityName = $newConstraintValue;
-						} else {
+						}
+						else {
 							$this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
 						}
 					}
@@ -287,7 +288,7 @@ abstract class Entity
 
 			if(isset($data[$embeddedValue->name])) {
 				if(isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
-					if (is_string($data[$embeddedValue->name])) {
+					if(is_string($data[$embeddedValue->name])) {
 						$data[$embeddedValue->name] = json_decode($data[$embeddedValue->name], true);
 					}
 				}

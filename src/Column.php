@@ -38,6 +38,11 @@ class Column
 	/** @var boolean $isAuto is column has auto increment or auto generated value? */
 	public $isAuto = false;
 
+	/**
+	 * Column constructor.
+	 *
+	 * @param null $columnNameOrArray
+	 */
 	public function __construct($columnNameOrArray = null) {
 		if(isset($columnNameOrArray)) {
 			if(is_string($columnNameOrArray)) {

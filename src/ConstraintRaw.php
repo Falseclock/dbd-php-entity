@@ -24,6 +24,11 @@ class ConstraintRaw extends Constraint
 	/** @var string $class */
 	public $class;
 
+	/**
+	 * ConstraintRaw constructor.
+	 *
+	 * @param array|null $constraint
+	 */
 	public function __construct(?array $constraint = null) {
 		if(isset($constraint)) {
 			foreach($constraint as $key => $value) {

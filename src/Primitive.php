@@ -7,7 +7,7 @@ use MyCLabs\Enum\Enum;
 /**
  * Class Primitive
  *
- * @see     https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/csprd05/odata-csdl-xml-v4.01-csprd05.html#sec_PrimitiveTypes
+ * @see https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/csprd05/odata-csdl-xml-v4.01-csprd05.html#sec_PrimitiveTypes
  * @method static Primitive Binary()
  * @method static Primitive Boolean()
  * @method static Primitive Byte()
