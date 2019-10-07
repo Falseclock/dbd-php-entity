@@ -161,14 +161,14 @@ class Mapper extends Singleton
 			}
 			/** ----------------------CONSTRAINTS------------------------ */
 			if(!isset(MapperCache::me()->constraints[$thisName])) {
-				$entityClass = $this->getEntityClass();
+				$entityClass = get_parent_class($this->getEntityClass());
 
 				foreach($constraints as $constraintName => $constraintValue) {
 					$temporaryConstraint = new ConstraintRaw($constraintValue);
 					$temporaryConstraint->localTable = $this->getTable();
 
 					// If we use View - we do not always need to define constraint fields
-					if(get_parent_class($entityClass) !== View::class) {
+					if($entityClass !== View::class) {
 						$temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
 					}
 
