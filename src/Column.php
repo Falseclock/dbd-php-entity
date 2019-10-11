@@ -4,17 +4,21 @@ namespace DBD\Entity;
 
 class Column
 {
-	const ANNOTATION  = "annotation";
-	const DEFAULT     = "defaultValue";
-	const IS_AUTO     = "isAuto";
-	const KEY         = "key";
-	const MAXLENGTH   = "maxLength";
-	const NAME        = "name";
-	const NULLABLE    = "nullable";
-	const ORIGIN_TYPE = "originType";
-	const PRECISION   = "precision";
-	const SCALE       = "scale";
-	const TYPE        = "type";
+	const ANNOTATION     = "annotation";
+	const DEFAULT        = "defaultValue";
+	const IS_AUTO        = "isAuto";
+	const KEY            = "key";
+	const MAXLENGTH      = "maxLength";
+	const NAME           = "name";
+	const NULLABLE       = "nullable";
+	const ORIGIN_TYPE    = "originType";
+	const PRECISION      = "precision";
+	const SCALE          = "scale";
+	/**
+	 * @see Primitive
+	 * @var string Primitive Type
+	 */
+	const PRIMITIVE_TYPE = "type";
 	/** @var string $annotation TODO: Annotation|Annotation[] */
 	public $annotation;
 	/** @var string $name name of column in database */
@@ -51,7 +55,7 @@ class Column
 
 			if(is_array($columnNameOrArray)) {
 				foreach($columnNameOrArray as $key => $value) {
-					if($key == self::TYPE) {
+					if($key == self::PRIMITIVE_TYPE) {
 						$this->type = new Primitive($value);
 					}
 					else {

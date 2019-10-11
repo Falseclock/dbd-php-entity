@@ -63,7 +63,7 @@ class Table
 		$column = new Column();
 
 		foreach($columnValue as $key => $value) {
-			if($key == Column::TYPE)
+			if($key == Column::PRIMITIVE_TYPE)
 				$column->$key = new Primitive($value);
 			else
 				$column->$key = $value;
