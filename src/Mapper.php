@@ -85,7 +85,7 @@ class Mapper extends Singleton
 			$columns = [];
 
 			foreach($publicVars as $varName => $varValue) {
-				// Column::TYPE is mandatory for Columns
+				// Column::PRIMITIVE_TYPE is mandatory for Columns
 				if(isset($varValue[Column::PRIMITIVE_TYPE])) {
 					$columns[$varName] = $varValue;
 				}
