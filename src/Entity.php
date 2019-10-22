@@ -23,8 +23,8 @@ abstract class EntityCache
 /**
  * Class Entity
  *
- * @property Column id       это поле класса, которое, как правило, является serial полем
- * @property Column constant это также поля класса
+ * @property mixed id       это поле класса, которое, как правило, является serial полем
+ * @property mixed constant это также поля класса
  */
 abstract class Entity
 {
