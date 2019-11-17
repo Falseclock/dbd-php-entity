@@ -38,7 +38,7 @@ abstract class View extends Entity
 	 */
 	function __get($name) {
 		if(!property_exists($this, $name)) {
-			throw new EntityException("Property '{$name}' of '{$this}' not exist or unset in constructor");
+			throw new EntityException(sprintf("Property '%s' of '%s' not exist or unset in constructor", $name, get_class($this)));
 		}
 
 		return $this->$name;
@@ -54,7 +54,8 @@ abstract class View extends Entity
 	 */
 	function __set($name, $value) {
 		if(!property_exists($this, $name)) {
-			throw new EntityException("Property '{$name}' of '{$this}' not exist or unset in constructor");
+
+			throw new EntityException(sprintf("Property '%s' of '%s' not exist or unset in constructor", $name, get_class($this)));
 		}
 
 		$this->$name = $value;
