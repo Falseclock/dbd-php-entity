@@ -31,7 +31,8 @@ class Embedded
 	public function __construct($arrayOfValues = null) {
 		if(isset($arrayOfValues)) {
 			foreach($arrayOfValues as $key => $value) {
-				$this->$key = $value;
+				if(property_exists($this, $key))
+					$this->$key = $value;
 			}
 		}
 	}
