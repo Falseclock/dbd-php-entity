@@ -313,6 +313,21 @@ class Mapper extends Singleton
 	}
 
 	/**
+	 * @param Column $column
+	 *
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function getVarNameByColumn(Column $column) {
+		foreach($this->getOriginFieldNames() as $varName => $originFieldName) {
+			if($originFieldName == $column->name)
+				return $varName;
+		}
+
+		return null;
+	}
+
+	/**
 	 * Used for quick access to the mapper without instantiating it and have only one instance
 	 *
 	 * @throws Exception
@@ -335,19 +350,6 @@ class Mapper extends Singleton
 		}
 
 		return $self;
-	}
-
-	/**
-	 * @param $string
-	 *
-	 * @return mixed
-	 * @throws Exception
-	 * @deprecated
-	 */
-	public function revers($string) {
-		$revers = array_flip($this->getOriginFieldNames());
-
-		return $revers[$string];
 	}
 
 	private function name() {
