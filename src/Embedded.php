@@ -10,6 +10,7 @@ namespace DBD\Entity;
  */
 class Embedded
 {
+	/** @var string MANDATORY option */
 	public const DB_TYPE      = "dbType";
 	public const ENTITY_CLASS = "entityClass";
 	public const IS_ITERABLE  = "isIterable";

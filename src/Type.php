@@ -14,9 +14,11 @@ use MyCLabs\Enum\Enum;
  * @method static Type BigInt()
  * @method static Type Double()
  * @method static Type Int()
+ * @method static Type Array()
  */
 class Type extends Enum
 {
+	public const Array   = "array";
 	public const BigInt  = "bigint";
 	public const Boolean = "boolean";
 	public const Char    = "char";
