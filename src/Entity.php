@@ -34,15 +34,14 @@ abstract class Entity
 	/**
 	 * Конструктор модели
 	 *
-	 * @param null $data
-	 * @param int  $maxLevels
-	 * @param int  $currentLevel
+	 * @param array $data
+	 * @param int   $maxLevels
+	 * @param int   $currentLevel
 	 *
 	 * @throws EntityException
 	 * @throws ReflectionException
-	 * @throws Exception
 	 */
-	public function __construct($data = null, int $maxLevels = 2, int $currentLevel = 1) {
+	public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 1) {
 
 		$calledClass = get_class($this);
 
