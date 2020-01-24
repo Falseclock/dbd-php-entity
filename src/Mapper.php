@@ -337,14 +337,16 @@ class Mapper extends Singleton
 		/** @var static $self */
 		$self = parent::me();
 
-		if(!isset(MapperCache::me()->fullyInstantiated[$self->name()])) {
+		$class = get_class($self);
+
+		if(!isset(MapperCache::me()->fullyInstantiated[$class])) {
 
 			// Check we set ANNOTATION properly in Mapper instance
-			Enforcer::__add(__CLASS__, get_class($self));
+			Enforcer::__add(__CLASS__, $class);
 
 			$self->getAllVariables();
 
-			MapperCache::me()->fullyInstantiated[$self->name()] = true;
+			MapperCache::me()->fullyInstantiated[$class] = true;
 
 			return $self;
 		}
