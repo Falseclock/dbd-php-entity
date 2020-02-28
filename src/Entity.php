@@ -162,6 +162,10 @@ abstract class Entity
 	 */
 	private function setComplex(?array $data, Mapper $map, $maxLevels, $currentLevel) {
 		foreach($map->getComplex() as $complexName => $complexValue) {
+
+			if(!property_exists($this, $complexName))
+				continue;
+
 			$this->$complexName = new $complexValue->typeClass($data, $maxLevels, $currentLevel);
 		}
 	}
@@ -182,6 +186,8 @@ abstract class Entity
 			 * Check we have data for this constraint
 			 * Проверяем, что у нас есть данные для данного constraint
 			 */
+			if(!property_exists($this, $entityName))
+				continue;
 
 			if($constraint->localColumn instanceof Column) {
 				$constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
