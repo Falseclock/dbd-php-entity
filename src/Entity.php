@@ -113,6 +113,9 @@ abstract class Entity
 				/** @var string $property name of field declaration in Entity class */
 				$property = $fieldMapping[$originColumnName];
 
+				if(!property_exists($this, $property))
+					continue;
+
 				/** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
 				$setterMethod = "set{$property}";
 
