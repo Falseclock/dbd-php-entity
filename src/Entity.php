@@ -41,7 +41,7 @@ abstract class Entity
 	 * @throws EntityException
 	 * @throws ReflectionException
 	 */
-	public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 1) {
+	public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0) {
 
 		$calledClass = get_class($this);
 
