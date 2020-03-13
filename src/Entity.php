@@ -9,19 +9,9 @@ use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Join\ManyToMany;
 use DBD\Entity\Join\OneToMany;
 use Exception;
+use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
-
-/**
- * Абстрактный класс для моделирования объектов данных. Все поля должны быть замаплены через переменную map
- */
-abstract class EntityCache
-{
-	const ARRAY_MAP           = "arrayMap";
-	const ARRAY_REVERSE_MAP   = "reverseMap";
-	const DECLARED_PROPERTIES = "declaredProperties";
-	public static $mapCache = [];
-}
 
 /**
  * Class Entity
@@ -48,6 +38,12 @@ abstract class Entity
 
 		$calledClass = get_class($this);
 
+		// Если мы определяем класс с интерыейсом OnlyDeclaredPropertiesEntity и экстендим его
+		// то по сути мы не можем знать какие переменные классам нам обязательны к обработке.
+		// Ладно еще если это 2 класса, а если цепочка?
+		//if($this instanceof OnlyDeclaredPropertiesEntity and !$reflectionObject->isFinal())
+		//	throw new EntityException("Class " . $reflectionObject->getParentClass()->getShortName() . " which implements OnlyDeclaredPropertiesEntity interface must be final");
+
 		Enforcer::__add(__CLASS__, $calledClass);
 
 		if($currentLevel <= $maxLevels) {
@@ -56,16 +52,23 @@ abstract class Entity
 
 			if(!isset(EntityCache::$mapCache[$calledClass])) {
 
-				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $map->getOriginFieldNames();
-				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP]);
+				$originFieldName = $map->getOriginFieldNames();
 
+				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $originFieldName;
+				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip($originFieldName);
+
+				$reflectionObject = new ReflectionObject($this);
+
+				// У нас может быть цепочка классов, где какой-то конечный уже не имеет интерфейса OnlyDeclaredPropertiesEntity
+				// соответственно нам надо собрать все переменные всех дочерних классов, даже если они расширяют друг друга
 				if($this instanceof OnlyDeclaredPropertiesEntity) {
-					$reflectionObject = new ReflectionObject($this);
+					$this->collectDeclarations($reflectionObject, $calledClass);
 
-					foreach($reflectionObject->getProperties() as $property) {
-						$declaringClass = $property->getDeclaringClass();
-						if($declaringClass->name == $calledClass)
-							EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][] = $property->name;
+					foreach(get_object_vars($this) as $varName => $varValue) {
+						if(!isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$varName])) {
+							unset($this->$varName);
+							EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$varName] = true;
+						}
 					}
 				}
 			}
@@ -82,7 +85,6 @@ abstract class Entity
 		$calledClass = get_called_class();
 
 		try {
-
 			/** @var Mapper $mapClass */
 			$mapClass = $calledClass . Mapper::POSTFIX;
 			$mapClass = $mapClass::me();
@@ -106,41 +108,69 @@ abstract class Entity
 	}
 
 	/**
+	 *
+	 */
+	protected function postProcessing(): void {
+
+	}
+
+	/**
+	 * @param ReflectionClass $reflectionObject
+	 * @param string          $calledClass
+	 * @param string|null     $parentClass
+	 */
+	private function collectDeclarations(ReflectionClass $reflectionObject, string $calledClass, string $parentClass = null): void {
+		foreach($reflectionObject->getProperties() as $property) {
+
+			$declaringClass = $property->getDeclaringClass();
+
+			if($declaringClass->name == $calledClass || $declaringClass->name == $parentClass)
+				EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$property->name] = true;
+		}
+
+		$parentClass = $reflectionObject->getParentClass();
+		$parentInterfaces = $parentClass->getInterfaces();
+
+		if(isset($parentInterfaces[OnlyDeclaredPropertiesEntity::class]))
+			$this->collectDeclarations($parentClass, $calledClass, $parentClass->name);
+
+		return;
+	}
+
+	/**
 	 * Reads public variables and set them to the self instance
 	 *
 	 * @param array  $rowData associative array where key is column name and value is column fetched data
 	 * @param Mapper $mapper
-	 * @param string $calledClass
 	 */
-	final private function setBaseColumns(array $rowData, Mapper $mapper, string $calledClass) {
+	final private function setBaseColumns(array $rowData, Mapper $mapper) {
 		/** @var array $fieldMapping array where KEY is database origin column name and VALUE is Entity class field declaration */
-		$fieldMapping = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP];
+		$fieldMapping = EntityCache::$mapCache[get_called_class()][EntityCache::ARRAY_REVERSE_MAP];
 
 		/**
 		 * @var string $originColumnName database origin column name
 		 * @var mixed  $columnValue      value of this columns
 		 */
 		foreach($rowData as $originColumnName => $columnValue) {
+
 			// process only if Entity class has such field declaration
 			if(isset($fieldMapping[$originColumnName])) {
 				/** @var string $property name of field declaration in Entity class */
 				$property = $fieldMapping[$originColumnName];
 
-				if(!property_exists($this, $property))
+				if(!property_exists($this, $property) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$property]))
 					continue;
 
 				/** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
 				$setterMethod = "set{$property}";
 
 				/** @var Column $fieldDefinition */
-				if(!property_exists($mapper, $property)) {
+				if(!property_exists($mapper, $property))
 					return;
-				}
 
 				$fieldDefinition = $mapper->$property;
-				if(is_array($fieldDefinition)) {
+				if(is_array($fieldDefinition))
 					$fieldDefinition = new Column($fieldDefinition);
-				}
 
 				/** We can define setter method for field definition in Entity class, so let's check it first */
 				if(method_exists($this, $setterMethod)) {
@@ -157,9 +187,8 @@ abstract class Entity
 						 * But some times we need to have default value for column in case of $rowData has null value
 						 * In this case we should not override default value if $columnValue is null
 						 */
-						if(!isset($this->$property) and isset($columnValue)) {
+						if(!isset($this->$property) and isset($columnValue))
 							$this->$property = $columnValue;
-						}
 					}
 				}
 			}
@@ -171,15 +200,15 @@ abstract class Entity
 	/**
 	 * @param array|null $data
 	 * @param Mapper     $map
-	 * @param            $maxLevels
-	 * @param            $currentLevel
+	 * @param int        $maxLevels
+	 * @param int        $currentLevel
 	 *
 	 * @throws Exception
 	 */
-	private function setComplex(?array $data, Mapper $map, $maxLevels, $currentLevel) {
+	private function setComplex(?array $data, Mapper $map, int $maxLevels, int $currentLevel) {
 		foreach($map->getComplex() as $complexName => $complexValue) {
 
-			if(!property_exists($this, $complexName))
+			if(!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
 				continue;
 
 			$this->$complexName = new $complexValue->typeClass($data, $maxLevels, $currentLevel);
@@ -189,20 +218,19 @@ abstract class Entity
 	/**
 	 * @param array  $rowData
 	 * @param Mapper $mapper
-	 * @param        $maxLevels
-	 * @param        $currentLevel
+	 * @param int    $maxLevels
+	 * @param int    $currentLevel
 	 *
 	 * @throws EntityException
-	 * @throws Exception
 	 */
-	final private function setConstraints(array $rowData, Mapper $mapper, $maxLevels, $currentLevel) {
+	final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel) {
 
 		foreach($mapper->getConstraints() as $entityName => $constraint) {
 			/**
 			 * Check we have data for this constraint
 			 * Проверяем, что у нас есть данные для данного constraint
 			 */
-			if(!property_exists($this, $entityName))
+			if(!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
 				continue;
 
 			if($constraint->localColumn instanceof Column) {
@@ -215,9 +243,9 @@ abstract class Entity
 
 			$testForJsonString = null;
 
-			if(isset($constraintValue) and is_string($constraintValue)) {
+			if(isset($constraintValue) and is_string($constraintValue))
 				$testForJsonString = json_decode($constraintValue);
-			}
+
 			// Мы данные в первом прогоне могли уже сформировать в полноценный массив
 			// Но в дочерние классы мы должны передавать  JSON строкой, а массивом,
 			// Поэтому вертаем все назад как было
@@ -235,9 +263,9 @@ abstract class Entity
 						$jsonDecodedField = json_decode($constraintValue, true);
 						$classVariableValue = [];
 
-						foreach($jsonDecodedField as $object) {
+						foreach($jsonDecodedField as $object)
 							$classVariableValue[] = new $constraint->class($object, $maxLevels, $currentLevel);
-						}
+
 						$this->$entityName = $classVariableValue;
 					}
 					else {
@@ -279,16 +307,11 @@ abstract class Entity
 				else
 					// Если у нас переменная класа уже инициализирована, и нету значения из базы
 					// то скорее всего этот объект является массивом данных
-					if(isset($this->$entityName) and !isset($newConstraintValue)) {
-
-					}
-					else {
-						if(isset($newConstraintValue)) {
+					if(!isset($this->$entityName) or isset($newConstraintValue)) {
+						if(isset($newConstraintValue))
 							$this->$entityName = $newConstraintValue;
-						}
-						else {
+						else
 							$this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
-						}
 					}
 			}
 		}
@@ -305,6 +328,9 @@ abstract class Entity
 	final private function setEmbedded(?array $data, Mapper $map) {
 		foreach($map->getEmbedded() as $embeddedName => $embeddedValue) {
 
+			if(!property_exists($this, $embeddedName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$embeddedName]))
+				continue;
+
 			// TODO: do not override default class name if data is null
 
 			if(isset($data[$embeddedValue->name])) {
@@ -316,9 +342,9 @@ abstract class Entity
 				if(isset($embeddedValue->entityClass)) {
 					if($embeddedValue->isIterable) {
 						$iterables = [];
-						foreach($data[$embeddedValue->name] as $value) {
+						foreach($data[$embeddedValue->name] as $value)
 							$iterables[] = new $embeddedValue->entityClass($value);
-						}
+
 						$this->$embeddedName = $iterables;
 					}
 					else {
@@ -348,15 +374,15 @@ abstract class Entity
 		if(!isset($data))
 			return;
 
-		$calledClass = get_called_class();
-
-		$this->setBaseColumns($data, $map, $calledClass);
+		$this->setBaseColumns($data, $map);
 
 		$this->setConstraints($data, $map, $maxLevels, $currentLevel);
 
 		$this->setEmbedded($data, $map);
 
 		$this->setComplex($data, $map, $maxLevels, $currentLevel);
+
+		$this->postProcessing();
 
 		return;
 	}

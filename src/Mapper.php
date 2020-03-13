@@ -8,7 +8,6 @@ use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\Utils;
 use Exception;
 use InvalidArgumentException;
-use ReflectionProperty;
 
 /**
  * Название переменной в дочернем классе, которая должна быть если мы вызываем BaseHandler
@@ -16,7 +15,7 @@ use ReflectionProperty;
  * @property Column $id
  * @property Column $constant
  */
-class Mapper extends Singleton
+abstract class Mapper extends Singleton
 {
 	const ANNOTATION = "abstract";
 	const POSTFIX    = "Map";
@@ -86,12 +85,10 @@ class Mapper extends Singleton
 
 			foreach($publicVars as $varName => $varValue) {
 				// Column::PRIMITIVE_TYPE is mandatory for Columns
-				if(isset($varValue[Column::PRIMITIVE_TYPE])) {
+				if(isset($varValue[Column::PRIMITIVE_TYPE]))
 					$columns[$varName] = $varValue;
-				}
-				else {
+				else
 					$otherColumns[$varName] = $varValue;
-				}
 			}
 
 			foreach($protectedVars as $varName => $varValue) {
@@ -100,15 +97,12 @@ class Mapper extends Singleton
 						$constraints[$varName] = $varValue;
 					}
 					else {
-						if(isset($varValue[Embedded::DB_TYPE])) {
+						if(isset($varValue[Embedded::DB_TYPE]))
 							$embedded[$varName] = $varValue;
-						}
-						else if(isset($varValue[Complex::TYPE])) {
+						else if(isset($varValue[Complex::TYPE]))
 							$complex[$varName] = $varValue;
-						}
-						else {
+						else
 							$otherColumns[$varName] = $varValue;
-						}
 					}
 				}
 				else {
@@ -122,9 +116,8 @@ class Mapper extends Singleton
 				MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
 			}
 			// У нас может не быть комплексов
-			if(!isset(MapperCache::me()->complex[$thisName])) {
+			if(!isset(MapperCache::me()->complex[$thisName]))
 				MapperCache::me()->complex[$thisName] = [];
-			}
 
 			/** ----------------------EMBEDDED------------------------ */
 			foreach($embedded as $embeddedName => $embeddedValue) {
@@ -132,9 +125,8 @@ class Mapper extends Singleton
 				MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
 			}
 			// У нас может не быть эмбедов
-			if(!isset(MapperCache::me()->embedded[$thisName])) {
+			if(!isset(MapperCache::me()->embedded[$thisName]))
 				MapperCache::me()->embedded[$thisName] = [];
-			}
 
 			/** ----------------------COLUMNS------------------------ */
 			if(!isset(MapperCache::me()->columns[$thisName])) {
@@ -150,15 +142,15 @@ class Mapper extends Singleton
 				}
 			}
 			// У нас может не быть колонок
-			if(!isset(MapperCache::me()->columns[$thisName])) {
+			if(!isset(MapperCache::me()->columns[$thisName]))
 				MapperCache::me()->columns[$thisName] = [];
-			}
-			if(!isset(MapperCache::me()->otherColumns[$thisName])) {
+
+			if(!isset(MapperCache::me()->otherColumns[$thisName]))
 				MapperCache::me()->otherColumns[$thisName] = [];
-			}
-			if(!isset(MapperCache::me()->baseColumns[$thisName])) {
+
+			if(!isset(MapperCache::me()->baseColumns[$thisName]))
 				MapperCache::me()->baseColumns[$thisName] = [];
-			}
+
 			/** ----------------------CONSTRAINTS------------------------ */
 			if(!isset(MapperCache::me()->constraints[$thisName])) {
 				$entityClass = get_parent_class($this->getEntityClass());
@@ -168,9 +160,8 @@ class Mapper extends Singleton
 					$temporaryConstraint->localTable = $this->getTable();
 
 					// If we use View - we do not always need to define constraint fields
-					if($entityClass !== View::class) {
+					if($entityClass !== View::class)
 						$temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
-					}
 
 					$this->$constraintName = $temporaryConstraint;
 
@@ -178,9 +169,8 @@ class Mapper extends Singleton
 				}
 			}
 			// У нас может не быть констрейнтов
-			if(!isset(MapperCache::me()->constraints[$thisName])) {
+			if(!isset(MapperCache::me()->constraints[$thisName]))
 				MapperCache::me()->constraints[$thisName] = [];
-			}
 
 			MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $otherColumns, $embedded, $complex);
 		}
@@ -254,9 +244,8 @@ class Mapper extends Singleton
 
 		$thisName = $this->name();
 		if(!isset(MapperCache::me()->originFieldNames[$thisName])) {
-			foreach($this->getColumns() as $columnName => $column) {
+			foreach($this->getColumns() as $columnName => $column)
 				MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
-			}
 		}
 
 		return MapperCache::me()->originFieldNames[$thisName];
@@ -277,9 +266,8 @@ class Mapper extends Singleton
 	public function getPrimaryKey() {
 		$keys = [];
 		foreach(MapperCache::me()->columns[$this->name()] as $columnName => $column) {
-			if(isset($column->key) and $column->key == true) {
+			if(isset($column->key) and $column->key == true)
 				$keys[$columnName] = $column;
-			}
 		}
 
 		return $keys;
@@ -358,74 +346,5 @@ class Mapper extends Singleton
 		$name = get_class($this);
 
 		return (substr($name, strrpos($name, '\\') + 1));
-	}
-}
-
-/**
- * Class MapperCache used to avoid interfering with local variables in child classes
- *
- * @package Falseclock\DBD\Entity
- */
-class MapperCache extends Singleton
-{
-	/** @var array $table */
-	public $table = [];
-	/** @var array $fullyInstantiated */
-	public $fullyInstantiated = [];
-	/** @var array $allVariables */
-	public $allVariables = [];
-	/** @var array $columns */
-	public $columns = [];
-	/** @var array $otherColumns */
-	public $otherColumns = [];
-	/** @var array $baseColumns */
-	public $baseColumns = [];
-	/** @var array $constraints */
-	public $constraints = [];
-	/** @var array $originFieldNames */
-	public $originFieldNames = [];
-	/** @var array $complex */
-	public $complex = [];
-	/** @var array $embedded */
-	public $embedded = [];
-}
-
-final class MapperVariables
-{
-	public $columns;
-	public $constraints;
-	public $otherColumns;
-	public $embedded;
-	public $complex;
-
-	/**
-	 * MapperVariables constructor.
-	 *
-	 * @param $columns
-	 * @param $constraints
-	 * @param $otherColumns
-	 * @param $embedded
-	 * @param $complex
-	 */
-	public function __construct($columns, $constraints, $otherColumns, $embedded, $complex) {
-		$this->columns = $this->filter($columns);
-		$this->constraints = $this->filter($constraints);
-		$this->otherColumns = $this->filter($otherColumns);
-		$this->embedded = $this->filter($embedded);
-		$this->complex = $this->filter($complex);
-	}
-
-	/**
-	 * @param ReflectionProperty[] $vars
-	 *
-	 * @return array
-	 */
-	private function filter(array $vars) {
-		$list = [];
-		foreach($vars as $varName => $varValue) {
-			$list[] = $varName;
-		}
-
-		return $list;
 	}
 }
