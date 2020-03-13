@@ -5,18 +5,21 @@ namespace DBD\Entity;
 use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Join\ManyToMany;
 use DBD\Entity\Join\OneToMany;
 use Exception;
 use ReflectionException;
+use ReflectionObject;
 
 /**
  * Абстрактный класс для моделирования объектов данных. Все поля должны быть замаплены через переменную map
  */
 abstract class EntityCache
 {
-	const ARRAY_MAP     = "arrayMap";
-	const ARRAY_REVERSE = "reverseMap";
+	const ARRAY_MAP           = "arrayMap";
+	const ARRAY_REVERSE_MAP   = "reverseMap";
+	const DECLARED_PROPERTIES = "declaredProperties";
 	public static $mapCache = [];
 }
 
@@ -54,7 +57,17 @@ abstract class Entity
 			if(!isset(EntityCache::$mapCache[$calledClass])) {
 
 				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $map->getOriginFieldNames();
-				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE] = array_flip(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP]);
+				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP]);
+
+				if($this instanceof OnlyDeclaredPropertiesEntity) {
+					$reflectionObject = new ReflectionObject($this);
+
+					foreach($reflectionObject->getProperties() as $property) {
+						$declaringClass = $property->getDeclaringClass();
+						if($declaringClass->name == $calledClass)
+							EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][] = $property->name;
+					}
+				}
 			}
 
 			$this->setModelData($data, $map, $maxLevels, $currentLevel);
@@ -101,7 +114,7 @@ abstract class Entity
 	 */
 	final private function setBaseColumns(array $rowData, Mapper $mapper, string $calledClass) {
 		/** @var array $fieldMapping array where KEY is database origin column name and VALUE is Entity class field declaration */
-		$fieldMapping = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE];
+		$fieldMapping = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP];
 
 		/**
 		 * @var string $originColumnName database origin column name
