@@ -63,12 +63,14 @@ abstract class Entity
 				// соответственно нам надо собрать все переменные всех дочерних классов, даже если они расширяют друг друга
 				if($this instanceof OnlyDeclaredPropertiesEntity) {
 					$this->collectDeclarations($reflectionObject, $calledClass);
+				}
+			}
 
-					foreach(get_object_vars($this) as $varName => $varValue) {
-						if(!isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$varName])) {
-							unset($this->$varName);
-							EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$varName] = true;
-						}
+			if($this instanceof OnlyDeclaredPropertiesEntity) {
+				foreach(get_object_vars($this) as $varName => $varValue) {
+					if(!isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$varName])) {
+						unset($this->$varName);
+						EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$varName] = true;
 					}
 				}
 			}
@@ -310,7 +312,7 @@ abstract class Entity
 					if(!isset($this->$entityName) or isset($newConstraintValue)) {
 						if(isset($newConstraintValue))
 							$this->$entityName = $newConstraintValue;
-						else
+						else if($currentLevel < $maxLevels)
 							$this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
 					}
 			}
