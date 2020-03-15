@@ -312,7 +312,7 @@ abstract class Entity
 					if(!isset($this->$entityName) or isset($newConstraintValue)) {
 						if(isset($newConstraintValue))
 							$this->$entityName = $newConstraintValue;
-						else if($currentLevel < $maxLevels)
+						else if($currentLevel <= $maxLevels)
 							$this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
 					}
 			}
