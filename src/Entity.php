@@ -27,9 +27,9 @@ abstract class Entity
 	/**
 	 * Конструктор модели
 	 *
-	 * @param array $data
-	 * @param int   $maxLevels
-	 * @param int   $currentLevel
+	 * @param array|null $data
+	 * @param int        $maxLevels
+	 * @param int        $currentLevel
 	 *
 	 * @throws EntityException
 	 * @throws ReflectionException
@@ -135,8 +135,6 @@ abstract class Entity
 
 		if(isset($parentInterfaces[OnlyDeclaredPropertiesEntity::class]))
 			$this->collectDeclarations($parentClass, $calledClass, $parentClass->name);
-
-		return;
 	}
 
 	/**
@@ -195,8 +193,6 @@ abstract class Entity
 				}
 			}
 		}
-
-		return;
 	}
 
 	/**
@@ -317,8 +313,6 @@ abstract class Entity
 					}
 			}
 		}
-
-		return;
 	}
 
 	/**
@@ -385,7 +379,5 @@ abstract class Entity
 		$this->setComplex($data, $map, $maxLevels, $currentLevel);
 
 		$this->postProcessing();
-
-		return;
 	}
 }
