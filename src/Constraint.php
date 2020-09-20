@@ -23,5 +23,6 @@ class Constraint
 	public $join;
 	/** @var string $class */
 	public $class;
-
+	/** @var string $foreignScheme */
+	public $foreignScheme;
 }
