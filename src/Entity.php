@@ -25,21 +25,6 @@ abstract class Entity
 	const TABLE  = "abstract";
 
 	/**
-	 * @param Entity $targetEntity
-	 *
-	 * @return Entity
-	 */
-	public function reCast(Entity $targetEntity) {
-		foreach(get_object_vars($this) as $propertyName => $propertyValue) {
-			if (property_exists($targetEntity, $propertyName)) {
-				$targetEntity->$propertyName = $propertyValue;
-			}
-		}
-
-		return $targetEntity;
-	}
-
-	/**
 	 * Конструктор модели
 	 *
 	 * @param array|null $data
