@@ -23,30 +23,29 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity;
+namespace DBD\Entity\Tests\Entities;
 
-use MyCLabs\Enum\Enum;
+use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 
-/**
- * Class Type describes DB types
- *
- * @package Falseclock\DBD\Entity
- * @method static Type Json()
- * @method static Type Varchar()
- * @method static Type Char()
- * @method static Type BigInt()
- * @method static Type Double()
- * @method static Type Int()
- * @method static Type Array()
- */
-class Type extends Enum
+class PersonOnlyDeclared extends Person implements OnlyDeclaredPropertiesEntity
 {
-    public const Array = "array";
-    public const BigInt = "bigint";
-    public const Boolean = "boolean";
-    public const Char = "char";
-    public const Double = "double";
-    public const Int = "int";
-    public const Json = "json";
-    public const Varchar = "varchar";
+    /**
+     * @var int $id
+     * @see PersonWithDefaultValuesMap::$id
+     */
+    public $id;
+    /**
+     * @var bool $isActive
+     * @see PersonWithDefaultValuesMap::$isActive
+     */
+    public $isActive = false;
+    /**
+     * @var string $name
+     * @see PersonWithDefaultValuesMap::$name
+     */
+    public $name;
+}
+
+class PersonOnlyDeclaredMap extends PersonMap
+{
 }

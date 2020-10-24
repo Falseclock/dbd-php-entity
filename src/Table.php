@@ -1,4 +1,27 @@
 <?php
+/*************************************************************************************
+ *   MIT License                                                                     *
+ *                                                                                   *
+ *   Copyright (C) 2020 by Nurlan Mukhanov <nurike@gmail.com>                        *
+ *                                                                                   *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy    *
+ *   of this software and associated documentation files (the "Software"), to deal   *
+ *   in the Software without restriction, including without limitation the rights    *
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       *
+ *   copies of the Software, and to permit persons to whom the Software is           *
+ *   furnished to do so, subject to the following conditions:                        *
+ *                                                                                   *
+ *   The above copyright notice and this permission notice shall be included in all  *
+ *   copies or substantial portions of the Software.                                 *
+ *                                                                                   *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      *
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE    *
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          *
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   *
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   *
+ *   SOFTWARE.                                                                       *
+ ************************************************************************************/
 
 namespace DBD\Entity;
 
@@ -13,216 +36,220 @@ use ReflectionException;
 
 class Table
 {
-	/** @var string $name */
-	public $name;
-	/** @var string $scheme */
-	public $scheme;
-	/** @var Column[] $columns */
-	public $columns = [];
-	/** @var Key[] $keys */
-	public $keys = [];
-	/** @var string $annotation */
-	public $annotation;
-	/** @var Constraint[] $constraints */
-	public $constraints = [];
-	/** @var Column[] $otherColumns */
-	public $otherColumns = [];
+    /** @var string $name */
+    public $name;
+    /** @var string $scheme */
+    public $scheme;
+    /** @var Column[] $columns */
+    public $columns = [];
+    /** @var Key[] $keys */
+    public $keys = [];
+    /** @var string $annotation */
+    public $annotation;
+    /** @var Constraint[] $constraints */
+    public $constraints = [];
+    /** @var Column[] $otherColumns */
+    public $otherColumns = [];
 
-	/**
-	 * @param Mapper $mapper
-	 *
-	 * @return Table
-	 * @throws DBDException
-	 * @throws EntityException
-	 * @throws ReflectionException
-	 */
-	public static function getFromMapper(Mapper $mapper) {
-		$table = new Table();
+    /**
+     * @param Table $table
+     * @param Constraint $constraintValue
+     *
+     * @return Constraint
+     * @throws DBDException
+     * @throws EntityException
+     * @throws ReflectionException
+     */
+    private static function convertToConstraint(Table &$table, $constraintValue): Constraint
+    {
+        $constraint = new Constraint();
 
-		/** @var Entity $entityClass Getting class name from Mapper instance, which can be used as class instance */
-		$entityClass = $mapper->getEntityClass();
+        $constraintValue = (object)$constraintValue;
 
-		$table->name = $entityClass::TABLE;
-		$table->scheme = $entityClass::SCHEME;
+        /** @var Entity $foreignClass */
+        $foreignClass = $constraintValue->class;
 
-		self::convertVariables($table, $mapper);
+        $foreignClassMapInstance = $foreignClass::map();
+        $foreignTable = $foreignClassMapInstance->getTable();
 
-		$table->annotation = $mapper->getAnnotation();
-		$table->keys = self::getKeys($table);
+        if ($foreignTable !== null) {
+            $constraint->foreignTable = $foreignTable;
+            $constraint->foreignColumn = self::findColumnByOriginName($foreignTable, $constraintValue->foreignColumn);
+        } else {
+            $constraint->foreignTable = self::getFromMapper($foreignClass::map());
+            $constraint->foreignColumn = self::findColumnByOriginName($constraint->foreignTable, $constraintValue->foreignColumn);
+        }
 
-		return $table;
-	}
+        $constraint->localTable = $table;
+        $constraint->localColumn = self::findColumnByOriginName($table, $constraintValue->localColumn);
 
-	/**
-	 * @param $columnValue
-	 *
-	 * @return Column
-	 */
-	private static function convertToColumn($columnValue): Column {
-		/** @var Column $columnValue Yes, we are 100% column annotation */
-		$column = new Column();
+        switch ($constraintValue->join) {
+            case Join::MANY_TO_ONE:
+                $constraint->join = new ManyToOne();
+                break;
+            case Join::MANY_TO_MANY:
+                $constraint->join = new ManyToMany();
+                break;
+            case Join::ONE_TO_ONE:
+                $constraint->join = new OneToOne();
+                break;
+            case Join::ONE_TO_MANY:
+                $constraint->join = new OneToMany();
+                break;
+        }
+        $constraint->class = $constraintValue->class;
 
-		foreach($columnValue as $key => $value) {
-			if($key == Column::PRIMITIVE_TYPE)
-				$column->$key = new Primitive($value);
-			else
-				$column->$key = $value;
-		}
+        return $constraint;
+    }
 
-		return $column;
-	}
+    /**
+     * @param Table $table
+     * @param string $columnOriginName
+     *
+     * @return Column
+     * @throws EntityException
+     */
+    private static function findColumnByOriginName(Table $table, string $columnOriginName): Column
+    {
+        foreach (array_merge($table->columns, $table->otherColumns) as $column) {
+            if ($column->name == $columnOriginName) {
+                return $column;
+            }
+        }
+        throw new EntityException("can't find column '{$columnOriginName}' in table '{$table->name}'. Looks like this column not described in Mapper class.");
+    }
 
-	/**
-	 * @param Table      $table
-	 * @param Constraint $constraintValue
-	 *
-	 * @return Constraint
-	 * @throws DBDException
-	 * @throws EntityException
-	 * @throws ReflectionException
-	 */
-	private static function convertToConstraint(Table &$table, $constraintValue): Constraint {
-		$constraint = new Constraint();
+    /**
+     * @param Mapper $mapper
+     *
+     * @return Table
+     * @throws DBDException
+     * @throws EntityException
+     * @throws ReflectionException
+     */
+    public static function getFromMapper(Mapper $mapper)
+    {
+        $table = new Table();
 
-		$constraintValue = (object) $constraintValue;
+        /** @var Entity $entityClass Getting class name from Mapper instance, which can be used as class instance */
+        $entityClass = $mapper->getEntityClass();
 
-		/** @var Entity $foreignClass */
-		$foreignClass = $constraintValue->class;
+        $table->name = $entityClass::TABLE;
+        $table->scheme = $entityClass::SCHEME;
 
-		$foreignClassMapInstance = $foreignClass::map();
-		$foreignTable = $foreignClassMapInstance->getTable();
+        self::convertVariables($table, $mapper);
 
-		if($foreignTable !== null) {
-			$constraint->foreignTable = $foreignTable;
-			$constraint->foreignColumn = self::findColumnByOriginName($foreignTable, $constraintValue->foreignColumn);
-		}
-		else {
-			$constraint->foreignTable = self::getFromMapper($foreignClass::map());
-			$constraint->foreignColumn = self::findColumnByOriginName($constraint->foreignTable, $constraintValue->foreignColumn);
-		}
+        $table->annotation = $mapper->getAnnotation();
+        $table->keys = self::getKeys($table);
 
-		$constraint->localTable = $table;
-		$constraint->localColumn = self::findColumnByOriginName($table, $constraintValue->localColumn);
+        return $table;
+    }
 
-		switch($constraintValue->join) {
-			case Join::MANY_TO_ONE:
-				$constraint->join = new ManyToOne();
-				break;
-			case Join::MANY_TO_MANY:
-				$constraint->join = new ManyToMany();
-				break;
-			case Join::ONE_TO_ONE:
-				$constraint->join = new OneToOne();
-				break;
-			case Join::ONE_TO_MANY:
-				$constraint->join = new OneToMany();
-				break;
-		}
-		$constraint->class = $constraintValue->class;
+    /**
+     * Converts vars to Column & Constraint
+     *
+     * @param Table $table
+     * @param Mapper $mapper
+     *
+     * @throws EntityException
+     * @throws DBDException
+     * @throws ReflectionException
+     * @throws Exception
+     */
+    private static function convertVariables(Table &$table, Mapper $mapper): void
+    {
 
-		return $constraint;
-	}
+        $variables = $mapper->getAllVariables();
 
-	/**
-	 * Converts vars to Column & Constraint
-	 *
-	 * @param Table  $table
-	 * @param Mapper $mapper
-	 *
-	 * @throws EntityException
-	 * @throws DBDException
-	 * @throws ReflectionException
-	 * @throws Exception
-	 */
-	private static function convertVariables(Table &$table, Mapper $mapper): void {
+        // Read all variables and convert to Column and Constraint
+        foreach ($variables->columns as $columnName) {
 
-		$variables = $mapper->getAllVariables();
+            $columnValue = $mapper->$columnName;
 
-		// Read all variables and convert to Column and Constraint
-		foreach($variables->columns as $columnName) {
+            // This is fix for old annotation when we used only column name as variable; TODO: remove after migration
+            if (is_string($columnValue)) {
+                $table->columns[$columnName] = new Column($columnValue);
+                continue;
+            }
+            // It should be array always? otherwise throw exception
+            if (is_array($columnValue)) {
+                $table->columns[$columnName] = self::convertToColumn($columnValue);
+                continue;
+            }
 
-			$columnValue = $mapper->$columnName;
+            if ($columnValue instanceof Column) {
+                $table->columns[$columnName] = $columnValue;
+                continue;
+            }
 
-			// This is fix for old annotation when we used only column name as variable; TODO: remove after migration
-			if(is_string($columnValue)) {
-				$table->columns[$columnName] = new Column($columnValue);
-				continue;
-			}
-			// It should be array always? otherwise throw exception
-			if(is_array($columnValue)) {
-				$table->columns[$columnName] = self::convertToColumn($columnValue);
-				continue;
-			}
+            throw new EntityException("Unknown type of Mapper variable {$columnName} in {$mapper}");
+        }
 
-			if($columnValue instanceof Column) {
-				$table->columns[$columnName] = $columnValue;
-				continue;
-			}
+        foreach ($variables->otherColumns as $otherColumnName) {
 
-			throw new EntityException("Unknown type of Mapper variable {$columnName} in {$mapper}");
-		}
+            $otherColumnValue = $mapper->$otherColumnName;
 
-		foreach($variables->otherColumns as $otherColumnName) {
+            // This is fix for old annotation when we used only column name as variable;
+            // TODO: remove after migration
+            if (is_string($otherColumnValue)) {
+                $table->otherColumns[$otherColumnName] = new Column($otherColumnValue);
+                continue;
+            }
+            // It should be array always? otherwise throw exception
+            if (is_array($otherColumnValue)) {
+                $table->otherColumns[$otherColumnName] = self::convertToColumn($otherColumnValue);
+            } else {
+                throw new EntityException("Unknown type of Mapper variable {$otherColumnName} in {$mapper}");
+            }
+        }
 
-			$otherColumnValue = $mapper->$otherColumnName;
+        // now parse all constraints
+        // All constraints should be processed after columns
+        foreach ($variables->constraints as $constraintName) {
 
-			// This is fix for old annotation when we used only column name as variable;
-			// TODO: remove after migration
-			if(is_string($otherColumnValue)) {
-				$table->otherColumns[$otherColumnName] = new Column($otherColumnValue);
-				continue;
-			}
-			// It should be array always? otherwise throw exception
-			if(is_array($otherColumnValue)) {
-				$table->otherColumns[$otherColumnName] = self::convertToColumn($otherColumnValue);
-			}
-			else {
-				throw new EntityException("Unknown type of Mapper variable {$otherColumnName} in {$mapper}");
-			}
-		}
+            /** @var Constraint $constraintValue */
+            $constraintValue = $mapper->$constraintName;
 
-		// now parse all constraints
-		// All constraints should be processed after columns
-		foreach($variables->constraints as $constraintName) {
+            $table->constraints[] = self::convertToConstraint($table, $constraintValue);
+        }
 
-			/** @var Constraint $constraintValue */
-			$constraintValue = $mapper->$constraintName;
+        return;
+    }
 
-			$table->constraints[] = self::convertToConstraint($table, $constraintValue);
-		}
+    /**
+     * @param $columnValue
+     *
+     * @return Column
+     */
+    private static function convertToColumn($columnValue): Column
+    {
+        /** @var Column $columnValue Yes, we are 100% column annotation */
+        $column = new Column();
 
-		return;
-	}
+        foreach ($columnValue as $key => $value) {
+            if ($key == Column::PRIMITIVE_TYPE)
+                $column->$key = new Primitive($value);
+            else
+                $column->$key = $value;
+        }
 
-	/**
-	 * @param Table  $table
-	 * @param string $columnOriginName
-	 *
-	 * @return Column
-	 * @throws EntityException
-	 */
-	private static function findColumnByOriginName(Table $table, string $columnOriginName): Column {
-		foreach(array_merge($table->columns, $table->otherColumns) as $column) {
-			if($column->name == $columnOriginName) {
-				return $column;
-			}
-		}
-		throw new EntityException("can't find column '{$columnOriginName}' in table '{$table->name}'. Looks like this column not described in Mapper class.");
-	}
+        return $column;
+    }
 
-	/**
-	 * @param Table $table
-	 *
-	 * @return array
-	 */
-	private static function getKeys(Table $table) {
-		$keys = [];
-		foreach(array_merge($table->columns, $table->otherColumns) as $column) {
-			if($column->key === true) {
-				$keys[] = new Key($column);
-			}
-		}
+    /**
+     * @param Table $table
+     *
+     * @return array
+     */
+    private static function getKeys(Table $table)
+    {
+        $keys = [];
+        foreach (array_merge($table->columns, $table->otherColumns) as $column) {
+            if ($column->key === true) {
+                $keys[] = new Key($column);
+            }
+        }
 
-		return $keys;
-	}
+        return $keys;
+    }
 }

@@ -23,30 +23,20 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity;
+namespace DBD\Entity\Tests\Fixtures;
 
-use MyCLabs\Enum\Enum;
+use DBD\Entity\Tests\Entities\PersonMap;
 
-/**
- * Class Type describes DB types
- *
- * @package Falseclock\DBD\Entity
- * @method static Type Json()
- * @method static Type Varchar()
- * @method static Type Char()
- * @method static Type BigInt()
- * @method static Type Double()
- * @method static Type Int()
- * @method static Type Array()
- */
-class Type extends Enum
+class Data
 {
-    public const Array = "array";
-    public const BigInt = "bigint";
-    public const Boolean = "boolean";
-    public const Char = "char";
-    public const Double = "double";
-    public const Int = "int";
-    public const Json = "json";
-    public const Varchar = "varchar";
+    public static function getPersonFullEntityData()
+    {
+        return [
+            PersonMap::me()->name->name => 'Alfa',
+            PersonMap::me()->id->name => '1',
+            PersonMap::me()->email->name => 'alfa@at.com',
+            PersonMap::me()->registrationDate->name => '2020-09-21 20:48:28.918366+06',
+            PersonMap::me()->isActive->name => 't',
+        ];
+    }
 }

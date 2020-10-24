@@ -1,11 +1,36 @@
 <?php
+/*************************************************************************************
+ *   MIT License                                                                     *
+ *                                                                                   *
+ *   Copyright (C) 2020 by Nurlan Mukhanov <nurike@gmail.com>                        *
+ *                                                                                   *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy    *
+ *   of this software and associated documentation files (the "Software"), to deal   *
+ *   in the Software without restriction, including without limitation the rights    *
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       *
+ *   copies of the Software, and to permit persons to whom the Software is           *
+ *   furnished to do so, subject to the following conditions:                        *
+ *                                                                                   *
+ *   The above copyright notice and this permission notice shall be included in all  *
+ *   copies or substantial portions of the Software.                                 *
+ *                                                                                   *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      *
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE    *
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          *
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   *
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   *
+ *   SOFTWARE.                                                                       *
+ ************************************************************************************/
 
 namespace DBD\Entity;
 
 use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Join\ManyToMany;
 use DBD\Entity\Join\OneToMany;
 use Exception;
@@ -21,366 +46,410 @@ use ReflectionObject;
  */
 abstract class Entity
 {
-	const SCHEME = "abstract";
-	const TABLE  = "abstract";
+    const SCHEME = "abstract";
+    const TABLE = "abstract";
 
-	/**
-	 * Конструктор модели
-	 *
-	 * @param array|null $data
-	 * @param int        $maxLevels
-	 * @param int        $currentLevel
-	 *
-	 * @throws EntityException
-	 * @throws ReflectionException
-	 */
-	public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0) {
+    /**
+     * Конструктор модели
+     *
+     * @param array|null $data
+     * @param int $maxLevels
+     * @param int $currentLevel
+     *
+     * @throws EntityException
+     * @throws ReflectionException
+     */
+    public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
+    {
 
-		if(!isset($data))
-			return;
+        // Instantiate Mapper for further operations and check Mapping exist
+        self::map();
 
-		$calledClass = get_class($this);
+        if (!isset($data))
+            return;
 
-		// Если мы определяем класс с интерыейсом OnlyDeclaredPropertiesEntity и экстендим его
-		// то по сути мы не можем знать какие переменные классам нам обязательны к обработке.
-		// Ладно еще если это 2 класса, а если цепочка?
-		//if($this instanceof OnlyDeclaredPropertiesEntity and !$reflectionObject->isFinal())
-		//	throw new EntityException("Class " . $reflectionObject->getParentClass()->getShortName() . " which implements OnlyDeclaredPropertiesEntity interface must be final");
+        $calledClass = get_class($this);
 
-		Enforcer::__add(__CLASS__, $calledClass);
+        // Если мы определяем класс с интерфейсом OnlyDeclaredPropertiesEntity и экстендим его
+        // то по сути мы не можем знать какие переменные классам нам обязательны к обработке.
+        // Ладно еще если это 2 класса, а если цепочка?
+        //if($this instanceof OnlyDeclaredPropertiesEntity and !$reflectionObject->isFinal())
+        //	throw new EntityException("Class " . $reflectionObject->getParentClass()->getShortName() . " which implements OnlyDeclaredPropertiesEntity interface must be final");
 
-		if($currentLevel <= $maxLevels) {
+        Enforcer::__add(__CLASS__, $calledClass);
 
-			$map = self::map();
+        if ($currentLevel <= $maxLevels) {
 
-			if(!isset(EntityCache::$mapCache[$calledClass])) {
+            $map = self::map();
 
-				$originFieldName = $map->getOriginFieldNames();
+            if (!isset(EntityCache::$mapCache[$calledClass])) {
 
-				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $originFieldName;
-				EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip($originFieldName);
+                $originFieldName = $map->getOriginFieldNames();
 
-				$reflectionObject = new ReflectionObject($this);
+                EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $originFieldName;
+                EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip($originFieldName);
 
-				// У нас может быть цепочка классов, где какой-то конечный уже не имеет интерфейса OnlyDeclaredPropertiesEntity
-				// соответственно нам надо собрать все переменные всех дочерних классов, даже если они расширяют друг друга
-				if($this instanceof OnlyDeclaredPropertiesEntity) {
-					$this->collectDeclarations($reflectionObject, $calledClass);
-				}
-			}
+                $reflectionObject = new ReflectionObject($this);
 
-			if($this instanceof OnlyDeclaredPropertiesEntity) {
-				foreach(get_object_vars($this) as $varName => $varValue) {
-					if(!isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$varName])) {
-						unset($this->$varName);
-						EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$varName] = true;
-					}
-				}
-			}
+                // У нас может быть цепочка классов, где какой-то конечный уже не имеет интерфейса OnlyDeclaredPropertiesEntity
+                // соответственно нам надо собрать все переменные всех дочерних классов, даже если они расширяют друг друга
+                if ($this instanceof OnlyDeclaredPropertiesEntity) {
+                    $this->collectDeclarations($reflectionObject, $calledClass);
+                }
+            }
 
-			$this->setModelData($data, $map, $maxLevels, $currentLevel);
-		}
-	}
+            if ($this instanceof OnlyDeclaredPropertiesEntity) {
+                foreach (get_object_vars($this) as $varName => $varValue) {
+                    if (!isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$varName])) {
+                        unset($this->$varName);
+                        EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$varName] = true;
+                    }
+                }
+            }
 
-	/**
-	 * @return Singleton|Mapper|static
-	 * @throws EntityException
-	 */
-	final public static function map() {
-		$calledClass = get_called_class();
+            $this->setModelData($data, $map, $maxLevels, $currentLevel);
+        }
+    }
 
-		try {
-			/** @var Mapper $mapClass */
-			$mapClass = $calledClass . Mapper::POSTFIX;
-			$mapClass = $mapClass::me();
-		}
-		catch(Exception $e) {
-			throw new EntityException(sprintf("Parsing '%s' end up with error: '%s' in %s:%s", $calledClass, $e->getMessage(), basename($e->getFile()), $e->getLine()));
-		}
+    /**
+     * @return Singleton|Mapper|static
+     * @throws EntityException
+     */
+    final public static function map()
+    {
+        $calledClass = get_called_class();
 
-		return $mapClass;
-	}
+        /** @var Mapper $mapClass */
+        $mapClass = $calledClass . Mapper::POSTFIX;
 
-	/**
-	 * get Entity table name
-	 *
-	 * @return string
-	 */
-	public static function table() {
-		$calledClass = get_called_class();
+        if (!class_exists($mapClass, false))
+            throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
 
-		return $calledClass::SCHEME . "." . $calledClass::TABLE;
-	}
+        try {
+            $mapClass = $mapClass::me();
+        } catch (Exception $e) {
+            throw new EntityException(sprintf("Parsing '%s' end up with error: '%s' in %s:%s", $calledClass, $e->getMessage(), basename($e->getFile()), $e->getLine()));
+        }
 
-	/**
-	 *
-	 */
-	protected function postProcessing(): void {
+        return $mapClass;
+    }
 
-	}
+    /**
+     * @param ReflectionClass $reflectionObject
+     * @param string $calledClass
+     * @param string|null $parentClass
+     */
+    private function collectDeclarations(ReflectionClass $reflectionObject, string $calledClass, string $parentClass = null): void
+    {
+        foreach ($reflectionObject->getProperties() as $property) {
 
-	/**
-	 * @param ReflectionClass $reflectionObject
-	 * @param string          $calledClass
-	 * @param string|null     $parentClass
-	 */
-	private function collectDeclarations(ReflectionClass $reflectionObject, string $calledClass, string $parentClass = null): void {
-		foreach($reflectionObject->getProperties() as $property) {
+            $declaringClass = $property->getDeclaringClass();
 
-			$declaringClass = $property->getDeclaringClass();
+            if ($declaringClass->name == $calledClass || $declaringClass->name == $parentClass)
+                EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$property->name] = true;
+        }
 
-			if($declaringClass->name == $calledClass || $declaringClass->name == $parentClass)
-				EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$property->name] = true;
-		}
+        $parentClass = $reflectionObject->getParentClass();
+        $parentInterfaces = $parentClass->getInterfaces();
 
-		$parentClass = $reflectionObject->getParentClass();
-		$parentInterfaces = $parentClass->getInterfaces();
+        if (isset($parentInterfaces[OnlyDeclaredPropertiesEntity::class]))
+            $this->collectDeclarations($parentClass, $calledClass, $parentClass->name);
 
-		if(isset($parentInterfaces[OnlyDeclaredPropertiesEntity::class]))
-			$this->collectDeclarations($parentClass, $calledClass, $parentClass->name);
-	}
+        // If we have defined declaredProperties key in out cache, we must exclude some keys from reverseMap and arrayMap
+        if (isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES])) {
+            foreach (EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] as $propertyName => $fieldName) {
+                if (!array_key_exists($propertyName, EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES])) {
+                    unset(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP][$propertyName]);
+                    unset(EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP][$fieldName]);
+                }
+            }
+        }
+    }
 
-	/**
-	 * Reads public variables and set them to the self instance
-	 *
-	 * @param array  $rowData associative array where key is column name and value is column fetched data
-	 * @param Mapper $mapper
-	 */
-	final private function setBaseColumns(array $rowData, Mapper $mapper) {
-		/** @var array $fieldMapping array where KEY is database origin column name and VALUE is Entity class field declaration */
-		$fieldMapping = EntityCache::$mapCache[get_called_class()][EntityCache::ARRAY_REVERSE_MAP];
+    /**
+     * @param array|null $data
+     * @param Mapper $map
+     * @param int $maxLevels
+     * @param int $currentLevel
+     *
+     * @throws EntityException
+     * @throws Exception
+     */
+    final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void
+    {
+        $currentLevel++;
 
-		/**
-		 * @var string $originColumnName database origin column name
-		 * @var mixed  $columnValue      value of this columns
-		 */
-		foreach($rowData as $originColumnName => $columnValue) {
+        // We always should provide data
+        if (!isset($data))
+            return;
 
-			// process only if Entity class has such field declaration
-			if(isset($fieldMapping[$originColumnName])) {
-				/** @var string $property name of field declaration in Entity class */
-				$property = $fieldMapping[$originColumnName];
+        $this->setBaseColumns($data, $map);
 
-				if(!property_exists($this, $property) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$property]))
-					continue;
+        $this->setConstraints($data, $map, $maxLevels, $currentLevel);
 
-				/** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
-				$setterMethod = "set{$property}";
+        $this->setEmbedded($data, $map);
 
-				/** @var Column $fieldDefinition */
-				if(!property_exists($mapper, $property))
-					return;
+        $this->setComplex($data, $map, $maxLevels, $currentLevel);
 
-				$fieldDefinition = $mapper->$property;
-				if(is_array($fieldDefinition))
-					$fieldDefinition = new Column($fieldDefinition);
+        $this->postProcessing();
+    }
 
-				/** We can define setter method for field definition in Entity class, so let's check it first */
-				if(method_exists($this, $setterMethod)) {
-					$this->$setterMethod($columnValue);
-				}
-				else {
-					/** If initially column type is json, then let's parse it as JSON */
-					if(stripos($fieldDefinition->originType, "json") !== false) {
-						$this->$property = json_decode($columnValue, true);
-					}
-					else {
-						/**
-						 * Entity public variables should not have default values.
-						 * But some times we need to have default value for column in case of $rowData has null value
-						 * In this case we should not override default value if $columnValue is null
-						 */
-						if(!isset($this->$property) and isset($columnValue))
-							$this->$property = $columnValue;
-					}
-				}
-			}
-		}
-	}
+    /**
+     * Reads public variables and set them to the self instance
+     *
+     * @param array $rowData associative array where key is column name and value is column fetched data
+     * @param Mapper $mapper
+     *
+     * @throws EntityException
+     */
+    final private function setBaseColumns(array $rowData, Mapper $mapper)
+    {
 
-	/**
-	 * @param array|null $data
-	 * @param Mapper     $map
-	 * @param int        $maxLevels
-	 * @param int        $currentLevel
-	 *
-	 * @throws Exception
-	 */
-	private function setComplex(?array $data, Mapper $map, int $maxLevels, int $currentLevel) {
-		foreach($map->getComplex() as $complexName => $complexValue) {
+        $calledClass = get_called_class();
 
-			if(!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
-				continue;
+        /**
+         * @var array $fieldMapping array
+         * where KEY is database origin column name and VALUE is Entity class field declaration
+         * Structure look like this:
+         * {
+         *        "person_email":             "email",
+         *        "person_id":                "id",
+         *        "person_is_active":         "isActive",
+         *        "person_name":              "name",
+         *        "person_registration_date": "registrationDate"
+         * }
+         * EntityCache declaration happens in out constructor only once for time savings
+         */
+        $fieldMapping = EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP];
 
-			$this->$complexName = new $complexValue->typeClass($data, $maxLevels, $currentLevel);
-		}
-	}
+        /** If it is FullEntity or StrictlyFilledEntity, we must ensure all database columns are provided */
+        if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
+            $intersection = array_intersect_key($fieldMapping, $rowData);
+            if ($intersection != $fieldMapping) {
+                throw new EntityException(sprintf("Missing columns for FullEntity or StrictlyFilledEntity: %s",
+                        json_encode(array_keys(array_diff_key($fieldMapping, $intersection)))
+                    )
+                );
+            }
+        }
 
-	/**
-	 * @param array  $rowData
-	 * @param Mapper $mapper
-	 * @param int    $maxLevels
-	 * @param int    $currentLevel
-	 *
-	 * @throws EntityException
-	 */
-	final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel) {
+        /**
+         * @var string $originColumnName database origin column name
+         * @var mixed $columnValue value of this columns
+         */
+        foreach ($rowData as $originColumnName => $columnValue) {
 
-		foreach($mapper->getConstraints() as $entityName => $constraint) {
-			/**
-			 * Check we have data for this constraint
-			 * Проверяем, что у нас есть данные для данного constraint
-			 */
-			if(!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
-				continue;
+            // process only if Entity class has such field declaration
+            if (isset($fieldMapping[$originColumnName])) {
+                /** @var string $property name of field declaration in Entity class */
+                $property = $fieldMapping[$originColumnName];
 
-			if($constraint->localColumn instanceof Column) {
-				$constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
-			}
-			else {
-				/** @var ConstraintRaw $constraint */
-				$constraintValue = isset($rowData[$constraint->localColumn]) ? $rowData[$constraint->localColumn] : null;
-			}
+                if (!property_exists($this, $property) or isset(EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$property]))
+                    continue;
 
-			$testForJsonString = null;
+                /** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
+                $setterMethod = "set{$property}";
 
-			if(isset($constraintValue) and is_string($constraintValue))
-				$testForJsonString = json_decode($constraintValue);
+                /** @var Column $fieldDefinition */
+                if (!property_exists($mapper, $property))
+                    return;
 
-			// Мы данные в первом прогоне могли уже сформировать в полноценный массив
-			// Но в дочерние классы мы должны передавать  JSON строкой, а массивом,
-			// Поэтому вертаем все назад как было
-			if(isset($constraintValue) and is_array($constraintValue)) {
-				$testForJsonString = $constraintValue;
-				$constraintValue = json_encode($constraintValue, JSON_NUMERIC_CHECK);
-			}
+                $fieldDefinition = $mapper->$property;
+                if (is_array($fieldDefinition))
+                    $fieldDefinition = new Column($fieldDefinition);
 
-			// Если у нас действительно json строка
-			if($testForJsonString !== null) {
-				// Если это массив объектов
-				if(is_array($testForJsonString)) {
-					if($constraint->join instanceof ManyToMany or $constraint->join instanceof OneToMany) {
-						// Разбиваем на нормальный массив, чтобы затолкать в переменную
-						$jsonDecodedField = json_decode($constraintValue, true);
-						$classVariableValue = [];
+                /** We can define setter method for field definition in Entity class, so let's check it first */
+                if (method_exists($this, $setterMethod)) {
+                    $this->$setterMethod($columnValue);
+                } else {
+                    /** If initially column type is json, then let's parse it as JSON */
+                    if (stripos($fieldDefinition->originType, "json") !== false) {
+                        $this->$property = json_decode($columnValue, true);
+                    } else {
+                        /**
+                         * Entity public variables should not have default values.
+                         * But some times we need to have default value for column in case of $rowData has null value
+                         * In this case we should not override default value if $columnValue is null
+                         */
+                        if (!isset($this->$property) and isset($columnValue))
+                            $this->$property = $columnValue;
+                    }
+                }
+            }
+        }
+    }
 
-						foreach($jsonDecodedField as $object)
-							$classVariableValue[] = new $constraint->class($object, $maxLevels, $currentLevel);
+    /**
+     * @param array $rowData
+     * @param Mapper $mapper
+     * @param int $maxLevels
+     * @param int $currentLevel
+     *
+     * @throws EntityException
+     */
+    final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
+    {
 
-						$this->$entityName = $classVariableValue;
-					}
-					else {
-						throw new EntityException("Variable '$entityName' of class {$this}");
-					}
-				}
-				else {
-					$jsonDecodedField = json_decode($constraintValue, true);
-					$this->$entityName = new $constraint->class($jsonDecodedField, $maxLevels, $currentLevel);
-				}
-			}
-			else {
+        foreach ($mapper->getConstraints() as $entityName => $constraint) {
+            /**
+             * Check we have data for this constraint
+             * Проверяем, что у нас есть данные для данного constraint
+             */
+            if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
+                continue;
 
-				/**
-				 * Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
-				 * то просто их прогоняем через класс и на выходе получим готовый объект
-				 */
-				if(isset($constraintValue)) {
-					$newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-				}
-				else {
-					//throw new EntityException("Понять какие это случаи и описать их тут");
-					// Мы можем создать view, в которой не вытаскиваем данные по определенному constraint, потому что они нам не нужны
-					$newConstraintValue = null;
-					/*					if($keyFromMap === null && !isset($arrayMap[$entityName])) {
+            if ($constraint->localColumn instanceof Column) {
+                $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
+            } else {
+                /** @var ConstraintRaw $constraint */
+                $constraintValue = isset($rowData[$constraint->localColumn]) ? $rowData[$constraint->localColumn] : null;
+            }
 
-											$newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-										}
-										else {
-											$newConstraintValue = null;
-										}*/
-				}
+            $testForJsonString = null;
 
-				$setterMethod = "set" . ucfirst($entityName);
+            if (isset($constraintValue) and is_string($constraintValue))
+                $testForJsonString = json_decode($constraintValue);
 
-				if(method_exists($this, $setterMethod)) {
-					$this->$setterMethod($newConstraintValue);
-				}
-				else
-					// Если у нас переменная класа уже инициализирована, и нету значения из базы
-					// то скорее всего этот объект является массивом данных
-					if(!isset($this->$entityName) or isset($newConstraintValue)) {
-						if(isset($newConstraintValue))
-							$this->$entityName = $newConstraintValue;
-						else if($currentLevel <= $maxLevels)
-							$this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
-					}
-			}
-		}
-	}
+            // Мы данные в первом прогоне могли уже сформировать в полноценный массив
+            // Но в дочерние классы мы должны передавать  JSON строкой, а массивом,
+            // Поэтому вертаем все назад как было
+            if (isset($constraintValue) and is_array($constraintValue)) {
+                $testForJsonString = $constraintValue;
+                $constraintValue = json_encode($constraintValue, JSON_NUMERIC_CHECK);
+            }
 
-	/**
-	 * @param array|null $data
-	 * @param Mapper     $map
-	 *
-	 * @throws Exception
-	 */
-	final private function setEmbedded(?array $data, Mapper $map) {
-		foreach($map->getEmbedded() as $embeddedName => $embeddedValue) {
+            // Если у нас действительно json строка
+            if ($testForJsonString !== null) {
+                // Если это массив объектов
+                if (is_array($testForJsonString)) {
+                    if ($constraint->join instanceof ManyToMany or $constraint->join instanceof OneToMany) {
+                        // Разбиваем на нормальный массив, чтобы затолкать в переменную
+                        $jsonDecodedField = json_decode($constraintValue, true);
+                        $classVariableValue = [];
 
-			if(!property_exists($this, $embeddedName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$embeddedName]))
-				continue;
+                        foreach ($jsonDecodedField as $object)
+                            $classVariableValue[] = new $constraint->class($object, $maxLevels, $currentLevel);
 
-			// TODO: do not override default class name if data is null
+                        $this->$entityName = $classVariableValue;
+                    } else {
+                        throw new EntityException("Variable '$entityName' of class {$this}");
+                    }
+                } else {
+                    $jsonDecodedField = json_decode($constraintValue, true);
+                    $this->$entityName = new $constraint->class($jsonDecodedField, $maxLevels, $currentLevel);
+                }
+            } else {
 
-			if(isset($data[$embeddedValue->name])) {
-				if(isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
-					if(is_string($data[$embeddedValue->name])) {
-						$data[$embeddedValue->name] = json_decode($data[$embeddedValue->name], true);
-					}
-				}
-				if(isset($embeddedValue->entityClass)) {
-					if($embeddedValue->isIterable) {
-						$iterables = [];
-						foreach($data[$embeddedValue->name] as $value)
-							$iterables[] = new $embeddedValue->entityClass($value);
+                /**
+                 * Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
+                 * то просто их прогоняем через класс и на выходе получим готовый объект
+                 */
+                if (isset($constraintValue)) {
+                    $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
+                } else {
+                    //throw new EntityException("Понять какие это случаи и описать их тут");
+                    // Мы можем создать view, в которой не вытаскиваем данные по определенному constraint, потому что они нам не нужны
+                    $newConstraintValue = null;
+                    /*					if($keyFromMap === null && !isset($arrayMap[$entityName])) {
 
-						$this->$embeddedName = $iterables;
-					}
-					else {
-						$this->$embeddedName = new $embeddedValue->entityClass($data[$embeddedValue->name]);
-					}
-				}
-				else {
-					$this->$embeddedName = $data[$embeddedValue->name];
-				}
-			}
-		}
-	}
+                                            $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
+                                        }
+                                        else {
+                                            $newConstraintValue = null;
+                                        }*/
+                }
 
-	/**
-	 * @param array|null $data
-	 * @param Mapper     $map
-	 * @param int        $maxLevels
-	 * @param int        $currentLevel
-	 *
-	 * @throws EntityException
-	 * @throws Exception
-	 */
-	final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void {
-		$currentLevel++;
+                $setterMethod = "set" . ucfirst($entityName);
 
-		// We always should provide data
-		if(!isset($data))
-			return;
+                if (method_exists($this, $setterMethod)) {
+                    $this->$setterMethod($newConstraintValue);
+                } else
+                    // Если у нас переменная класа уже инициализирована, и нету значения из базы
+                    // то скорее всего этот объект является массивом данных
+                    if (!isset($this->$entityName) or isset($newConstraintValue)) {
+                        if (isset($newConstraintValue))
+                            $this->$entityName = $newConstraintValue;
+                        else if ($currentLevel <= $maxLevels)
+                            $this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
+                    }
+            }
+        }
+    }
 
-		$this->setBaseColumns($data, $map);
+    /**
+     * @param array|null $data
+     * @param Mapper $map
+     *
+     * @throws Exception
+     */
+    final private function setEmbedded(?array $data, Mapper $map)
+    {
+        foreach ($map->getEmbedded() as $embeddedName => $embeddedValue) {
 
-		$this->setConstraints($data, $map, $maxLevels, $currentLevel);
+            if (!property_exists($this, $embeddedName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$embeddedName]))
+                continue;
 
-		$this->setEmbedded($data, $map);
+            // TODO: do not override default class name if data is null
 
-		$this->setComplex($data, $map, $maxLevels, $currentLevel);
+            if (isset($data[$embeddedValue->name])) {
+                if (isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
+                    if (is_string($data[$embeddedValue->name])) {
+                        $data[$embeddedValue->name] = json_decode($data[$embeddedValue->name], true);
+                    }
+                }
+                if (isset($embeddedValue->entityClass)) {
+                    if ($embeddedValue->isIterable) {
+                        $iterables = [];
+                        foreach ($data[$embeddedValue->name] as $value)
+                            $iterables[] = new $embeddedValue->entityClass($value);
 
-		$this->postProcessing();
-	}
+                        $this->$embeddedName = $iterables;
+                    } else {
+                        $this->$embeddedName = new $embeddedValue->entityClass($data[$embeddedValue->name]);
+                    }
+                } else {
+                    $this->$embeddedName = $data[$embeddedValue->name];
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array|null $data
+     * @param Mapper $map
+     * @param int $maxLevels
+     * @param int $currentLevel
+     *
+     * @throws Exception
+     */
+    private function setComplex(?array $data, Mapper $map, int $maxLevels, int $currentLevel)
+    {
+        foreach ($map->getComplex() as $complexName => $complexValue) {
+
+            if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
+                continue;
+
+            $this->$complexName = new $complexValue->typeClass($data, $maxLevels, $currentLevel);
+        }
+    }
+
+    /**
+     *
+     */
+    protected function postProcessing(): void
+    {
+
+    }
+
+    /**
+     * get Entity table name
+     *
+     * @return string
+     */
+    public static function table()
+    {
+        $calledClass = get_called_class();
+
+        return $calledClass::SCHEME . "." . $calledClass::TABLE;
+    }
 }

@@ -1,4 +1,27 @@
 <?php
+/*************************************************************************************
+ *   MIT License                                                                     *
+ *                                                                                   *
+ *   Copyright (C) 2020 by Nurlan Mukhanov <nurike@gmail.com>                        *
+ *                                                                                   *
+ *   Permission is hereby granted, free of charge, to any person obtaining a copy    *
+ *   of this software and associated documentation files (the "Software"), to deal   *
+ *   in the Software without restriction, including without limitation the rights    *
+ *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell       *
+ *   copies of the Software, and to permit persons to whom the Software is           *
+ *   furnished to do so, subject to the following conditions:                        *
+ *                                                                                   *
+ *   The above copyright notice and this permission notice shall be included in all  *
+ *   copies or substantial portions of the Software.                                 *
+ *                                                                                   *
+ *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR      *
+ *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,        *
+ *   FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE    *
+ *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER          *
+ *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,   *
+ *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE   *
+ *   SOFTWARE.                                                                       *
+ ************************************************************************************/
 
 namespace DBD\Entity;
 
@@ -17,334 +40,349 @@ use InvalidArgumentException;
  */
 abstract class Mapper extends Singleton
 {
-	const ANNOTATION = "abstract";
-	const POSTFIX    = "Map";
+    const ANNOTATION = "abstract";
+    const POSTFIX = "Map";
 
-	/**
-	 * Special getter to access protected and private properties
-	 * Unfortunately abstract class doesn't have access to child class,
-	 * that is why we use Reflection.
-	 * TODO: set all to public with some markers to identify fields, constraints and complex
-	 *
-	 * @param $name
-	 *
-	 * @return mixed
-	 */
-	public function __get($name) {
+    /**
+     * Used for quick access to the mapper without instantiating it and have only one instance
+     *
+     * @throws Exception
+     */
+    public static function me()
+    {
 
-		if(!property_exists($this, $name)) {
-			throw new InvalidArgumentException(sprintf("Getting the field '%s' is not valid for '%s'", $name, get_class($this)));
-		}
+        /** @var static $self */
+        $self = parent::me();
 
-		return $this->$name;
-	}
+        $class = get_class($self);
 
-	/**
-	 * @param string $originName
-	 *
-	 * @return Column
-	 * @throws Exception
-	 */
-	public function findColumnByOriginName(string $originName) {
-		foreach($this->getColumns() as $column) {
-			if($column->name == $originName) {
-				return $column;
-			}
-		}
-		throw new Exception(sprintf("Can't find origin column '%s' in %s. If it is reference column, map it as protected", $originName, get_class($this)));
-	}
+        if (!isset(MapperCache::me()->fullyInstantiated[$class])) {
 
-	/**
-	 * Read all public, private and protected variable names and their values.
-	 * Used when we need convert Mapper to Table instance
-	 *
-	 * @return MapperVariables
-	 * @throws EntityException
-	 * @throws Exception
-	 */
-	public function getAllVariables() {
+            // Check we set ANNOTATION properly in Mapper instance
+            Enforcer::__add(__CLASS__, $class);
 
-		$thisName = $this->name();
+            $self->getAllVariables();
 
-		if(!isset(MapperCache::me()->allVariables[$thisName])) {
+            MapperCache::me()->fullyInstantiated[$class] = true;
 
-			/**
-			 * All available variables
-			 * Columns and Complex are always PUBLIC
-			 * Constraints and Embedded are always PROTECTED
-			 */
-			$allVars = get_object_vars($this);
-			$publicVars = Utils::getObjectVars($this);
-			$protectedVars = Utils::arrayDiff($allVars, $publicVars);
+            return $self;
+        }
 
-			$constraints = [];
-			$otherColumns = [];
-			$embedded = [];
-			$complex = [];
-			$columns = [];
+        return $self;
+    }
 
-			foreach($publicVars as $varName => $varValue) {
-				// Column::PRIMITIVE_TYPE is mandatory for Columns
-				if(isset($varValue[Column::PRIMITIVE_TYPE]))
-					$columns[$varName] = $varValue;
-				else
-					$otherColumns[$varName] = $varValue;
-			}
+    /**
+     * Read all public, private and protected variable names and their values.
+     * Used when we need convert Mapper to Table instance
+     *
+     * @return MapperVariables
+     * @throws EntityException
+     * @throws Exception
+     */
+    public function getAllVariables()
+    {
 
-			foreach($protectedVars as $varName => $varValue) {
-				if(is_array($varValue)) {
-					if(isset($varValue[Constraint::LOCAL_COLUMN])) {
-						$constraints[$varName] = $varValue;
-					}
-					else {
-						if(isset($varValue[Embedded::DB_TYPE]))
-							$embedded[$varName] = $varValue;
-						else if(isset($varValue[Complex::TYPE]))
-							$complex[$varName] = $varValue;
-						else
-							$otherColumns[$varName] = $varValue;
-					}
-				}
-				else {
-					throw new EntityException(sprintf("variable '%s' of '%s' is type of %s", $varName, get_class($this), gettype($varValue)));
-				}
-			}
+        $thisName = $this->name();
 
-			/** ----------------------COMPLEX------------------------ */
-			foreach($complex as $complexName => $complexValue) {
-				$this->$complexName = new Complex($complexValue);
-				MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
-			}
-			// У нас может не быть комплексов
-			if(!isset(MapperCache::me()->complex[$thisName]))
-				MapperCache::me()->complex[$thisName] = [];
+        if (!isset(MapperCache::me()->allVariables[$thisName])) {
 
-			/** ----------------------EMBEDDED------------------------ */
-			foreach($embedded as $embeddedName => $embeddedValue) {
-				$this->$embeddedName = new Embedded($embeddedValue);
-				MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
-			}
-			// У нас может не быть эмбедов
-			if(!isset(MapperCache::me()->embedded[$thisName]))
-				MapperCache::me()->embedded[$thisName] = [];
+            /**
+             * All available variables
+             * Columns and Complex are always PUBLIC
+             * Constraints and Embedded are always PROTECTED
+             */
+            $allVars = get_object_vars($this);
+            $publicVars = Utils::getObjectVars($this);
+            $protectedVars = Utils::arrayDiff($allVars, $publicVars);
 
-			/** ----------------------COLUMNS------------------------ */
-			if(!isset(MapperCache::me()->columns[$thisName])) {
-				foreach($columns as $columnName => $columnValue) {
-					$this->$columnName = new Column($columnValue);
-					MapperCache::me()->baseColumns[$thisName][$columnName] = $this->$columnName;
-					MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
-				}
-				foreach($otherColumns as $columnName => $columnValue) {
-					$this->$columnName = new Column($columnValue);
-					MapperCache::me()->otherColumns[$thisName][$columnName] = $this->$columnName;
-					MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
-				}
-			}
-			// У нас может не быть колонок
-			if(!isset(MapperCache::me()->columns[$thisName]))
-				MapperCache::me()->columns[$thisName] = [];
+            $constraints = [];
+            $otherColumns = [];
+            $embedded = [];
+            $complex = [];
+            $columns = [];
 
-			if(!isset(MapperCache::me()->otherColumns[$thisName]))
-				MapperCache::me()->otherColumns[$thisName] = [];
+            foreach ($publicVars as $varName => $varValue) {
+                // Column::PRIMITIVE_TYPE is mandatory for Columns
+                if (isset($varValue[Column::PRIMITIVE_TYPE]))
+                    $columns[$varName] = $varValue;
+                else
+                    $otherColumns[$varName] = $varValue;
+            }
 
-			if(!isset(MapperCache::me()->baseColumns[$thisName]))
-				MapperCache::me()->baseColumns[$thisName] = [];
+            foreach ($protectedVars as $varName => $varValue) {
+                if (is_array($varValue)) {
+                    if (isset($varValue[Constraint::LOCAL_COLUMN])) {
+                        $constraints[$varName] = $varValue;
+                    } else {
+                        if (isset($varValue[Embedded::DB_TYPE]))
+                            $embedded[$varName] = $varValue;
+                        else if (isset($varValue[Complex::TYPE]))
+                            $complex[$varName] = $varValue;
+                        else
+                            $otherColumns[$varName] = $varValue;
+                    }
+                } else {
+                    throw new EntityException(sprintf("variable '%s' of '%s' is type of %s", $varName, get_class($this), gettype($varValue)));
+                }
+            }
 
-			/** ----------------------CONSTRAINTS------------------------ */
-			if(!isset(MapperCache::me()->constraints[$thisName])) {
-				$entityClass = get_parent_class($this->getEntityClass());
+            /** ----------------------COMPLEX------------------------ */
+            foreach ($complex as $complexName => $complexValue) {
+                $this->$complexName = new Complex($complexValue);
+                MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
+            }
+            // У нас может не быть комплексов
+            if (!isset(MapperCache::me()->complex[$thisName]))
+                MapperCache::me()->complex[$thisName] = [];
 
-				foreach($constraints as $constraintName => $constraintValue) {
-					$temporaryConstraint = new ConstraintRaw($constraintValue);
-					$temporaryConstraint->localTable = $this->getTable();
+            /** ----------------------EMBEDDED------------------------ */
+            foreach ($embedded as $embeddedName => $embeddedValue) {
+                $this->$embeddedName = new Embedded($embeddedValue);
+                MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
+            }
+            // У нас может не быть эмбедов
+            if (!isset(MapperCache::me()->embedded[$thisName]))
+                MapperCache::me()->embedded[$thisName] = [];
 
-					// If we use View - we do not always need to define constraint fields
-					if($entityClass !== View::class)
-						$temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
+            /** ----------------------COLUMNS------------------------ */
+            if (!isset(MapperCache::me()->columns[$thisName])) {
+                foreach ($columns as $columnName => $columnValue) {
+                    $this->$columnName = new Column($columnValue);
+                    MapperCache::me()->baseColumns[$thisName][$columnName] = $this->$columnName;
+                    MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
+                }
+                foreach ($otherColumns as $columnName => $columnValue) {
+                    $this->$columnName = new Column($columnValue);
+                    MapperCache::me()->otherColumns[$thisName][$columnName] = $this->$columnName;
+                    MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
+                }
+            }
+            // У нас может не быть колонок
+            if (!isset(MapperCache::me()->columns[$thisName]))
+                MapperCache::me()->columns[$thisName] = [];
 
-					$this->$constraintName = $temporaryConstraint;
+            if (!isset(MapperCache::me()->otherColumns[$thisName]))
+                MapperCache::me()->otherColumns[$thisName] = [];
 
-					MapperCache::me()->constraints[$thisName][$constraintName] = $this->$constraintName;
-				}
-			}
-			// У нас может не быть констрейнтов
-			if(!isset(MapperCache::me()->constraints[$thisName]))
-				MapperCache::me()->constraints[$thisName] = [];
+            if (!isset(MapperCache::me()->baseColumns[$thisName]))
+                MapperCache::me()->baseColumns[$thisName] = [];
 
-			MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $otherColumns, $embedded, $complex);
-		}
+            /** ----------------------CONSTRAINTS------------------------ */
+            if (!isset(MapperCache::me()->constraints[$thisName])) {
+                $entityClass = get_parent_class($this->getEntityClass());
 
-		return MapperCache::me()->allVariables[$thisName];
-	}
+                foreach ($constraints as $constraintName => $constraintValue) {
+                    $temporaryConstraint = new ConstraintRaw($constraintValue);
+                    $temporaryConstraint->localTable = $this->getTable();
 
-	/**
-	 * Returns table comment
-	 *
-	 * @return string
-	 */
-	public function getAnnotation() {
-		return $this::ANNOTATION;
-	}
+                    // If we use View - we do not always need to define constraint fields
+                    if ($entityClass !== View::class)
+                        $temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
 
-	/**
-	 * @return mixed
-	 * @throws Exception
-	 */
-	public function getBaseColumns() {
-		return MapperCache::me()->baseColumns[$this->name()];
-	}
+                    $this->$constraintName = $temporaryConstraint;
 
-	/**
-	 * @return Column[]
-	 * @throws Exception
-	 */
-	public function getColumns() {
-		return MapperCache::me()->columns[$this->name()];
-	}
+                    MapperCache::me()->constraints[$thisName][$constraintName] = $this->$constraintName;
+                }
+            }
+            // У нас может не быть констрейнтов
+            if (!isset(MapperCache::me()->constraints[$thisName]))
+                MapperCache::me()->constraints[$thisName] = [];
 
-	/**
-	 * @return Complex[]
-	 * @throws Exception
-	 */
-	public function getComplex() {
-		return MapperCache::me()->complex[$this->name()];
-	}
+            MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $otherColumns, $embedded, $complex);
+        }
 
-	/**
-	 * @return Constraint[]
-	 * @throws Exception
-	 */
-	public function getConstraints() {
-		return MapperCache::me()->constraints[$this->name()];
-	}
+        return MapperCache::me()->allVariables[$thisName];
+    }
 
-	/**
-	 * @return Embedded[]
-	 * @throws Exception
-	 */
-	public function getEmbedded() {
-		return MapperCache::me()->embedded[$this->name()];
-	}
+    /**
+     * Returns Entity class name which uses this Mapper
+     *
+     * @return string
+     */
+    public function getEntityClass()
+    {
+        return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
+    }
 
-	/**
-	 * Returns Entity class name which uses this Mapper
-	 *
-	 * @return string
-	 */
-	public function getEntityClass() {
-		return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
-	}
+    /**
+     * @return mixed
+     * @throws Exception
+     */
+    public function getTable()
+    {
 
-	/**
-	 * @return array
-	 * @throws Exception
-	 */
-	public function getOriginFieldNames() {
+        $thisName = $this->name();
 
-		$thisName = $this->name();
-		if(!isset(MapperCache::me()->originFieldNames[$thisName])) {
-			foreach($this->getColumns() as $columnName => $column)
-				MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
-		}
+        if (!isset(MapperCache::me()->table[$thisName])) {
+            $parentClass = $this->getEntityClass();
+            $table = new Table();
+            /** @var Entity $parentClass */
+            $table->name = $parentClass::TABLE;
+            $table->scheme = $parentClass::SCHEME;
+            $table->columns = $this->getBaseColumns();
+            $table->otherColumns = $this->getOtherColumns();
+            // FIXME:
+            //$table->constraints = $this->getConstraints();
+            //$table->keys = $this->getKeys();
+            $table->annotation = $this->getAnnotation();
 
-		return MapperCache::me()->originFieldNames[$thisName];
-	}
+            MapperCache::me()->table[$thisName] = $table;
+        }
 
-	/**
-	 * @return Column[]
-	 * @throws Exception
-	 */
-	public function getOtherColumns() {
-		return MapperCache::me()->otherColumns[$this->name()];
-	}
+        return MapperCache::me()->table[$thisName];
+    }
 
-	/**
-	 * @return Column[]
-	 * @throws Exception
-	 */
-	public function getPrimaryKey() {
-		$keys = [];
-		foreach(MapperCache::me()->columns[$this->name()] as $columnName => $column) {
-			if(isset($column->key) and $column->key == true)
-				$keys[$columnName] = $column;
-		}
+    /**
+     * @return mixed
+     * @throws Exception
+     */
+    public function getBaseColumns()
+    {
+        return MapperCache::me()->baseColumns[$this->name()];
+    }
 
-		return $keys;
-	}
+    private function name()
+    {
+        $name = get_class($this);
 
-	/**
-	 * @return mixed
-	 * @throws Exception
-	 */
-	public function getTable() {
+        return (substr($name, strrpos($name, '\\') + 1));
+    }
 
-		$thisName = $this->name();
+    /**
+     * @return Column[]
+     * @throws Exception
+     */
+    public function getOtherColumns()
+    {
+        return MapperCache::me()->otherColumns[$this->name()];
+    }
 
-		if(!isset(MapperCache::me()->table[$thisName])) {
-			$parentClass = $this->getEntityClass();
-			$table = new Table();
-			/** @var Entity $parentClass */
-			$table->name = $parentClass::TABLE;
-			$table->scheme = $parentClass::SCHEME;
-			$table->columns = $this->getBaseColumns();
-			$table->otherColumns = $this->getOtherColumns();
-			// FIXME:
-			//$table->constraints = $this->getConstraints();
-			//$table->keys = $this->getKeys();
-			$table->annotation = $this->getAnnotation();
+    /**
+     * Returns table comment
+     *
+     * @return string
+     */
+    public function getAnnotation()
+    {
+        return $this::ANNOTATION;
+    }
 
-			MapperCache::me()->table[$thisName] = $table;
-		}
+    /**
+     * @param string $originName
+     *
+     * @return Column
+     * @throws Exception
+     */
+    public function findColumnByOriginName(string $originName)
+    {
+        foreach ($this->getColumns() as $column) {
+            if ($column->name == $originName) {
+                return $column;
+            }
+        }
+        throw new Exception(sprintf("Can't find origin column '%s' in %s. If it is reference column, map it as protected", $originName, get_class($this)));
+    }
 
-		return MapperCache::me()->table[$thisName];
-	}
+    /**
+     * Special getter to access protected and private properties
+     * Unfortunately abstract class doesn't have access to child class,
+     * that is why we use Reflection.
+     * TODO: set all to public with some markers to identify fields, constraints and complex
+     *
+     * @param $name
+     *
+     * @return mixed
+     */
+    public function __get($name)
+    {
 
-	/**
-	 * @param Column $column
-	 *
-	 * @return mixed
-	 * @throws Exception
-	 */
-	public function getVarNameByColumn(Column $column) {
-		foreach($this->getOriginFieldNames() as $varName => $originFieldName) {
-			if($originFieldName == $column->name)
-				return $varName;
-		}
+        if (!property_exists($this, $name)) {
+            throw new InvalidArgumentException(sprintf("Getting the field '%s' is not valid for '%s'", $name, get_class($this)));
+        }
 
-		return null;
-	}
+        return $this->$name;
+    }
 
-	/**
-	 * Used for quick access to the mapper without instantiating it and have only one instance
-	 *
-	 * @throws Exception
-	 */
-	public static function me() {
+    /**
+     * @return Complex[]
+     * @throws Exception
+     */
+    public function getComplex()
+    {
+        return MapperCache::me()->complex[$this->name()];
+    }
 
-		/** @var static $self */
-		$self = parent::me();
+    /**
+     * @return Constraint[]
+     * @throws Exception
+     */
+    public function getConstraints()
+    {
+        return MapperCache::me()->constraints[$this->name()];
+    }
 
-		$class = get_class($self);
+    /**
+     * @return Embedded[]
+     * @throws Exception
+     */
+    public function getEmbedded()
+    {
+        return MapperCache::me()->embedded[$this->name()];
+    }
 
-		if(!isset(MapperCache::me()->fullyInstantiated[$class])) {
+    /**
+     * @return Column[]
+     * @throws Exception
+     */
+    public function getPrimaryKey()
+    {
+        $keys = [];
+        foreach (MapperCache::me()->columns[$this->name()] as $columnName => $column) {
+            if (isset($column->key) and $column->key == true)
+                $keys[$columnName] = $column;
+        }
 
-			// Check we set ANNOTATION properly in Mapper instance
-			Enforcer::__add(__CLASS__, $class);
+        return $keys;
+    }
 
-			$self->getAllVariables();
+    /**
+     * @param Column $column
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function getVarNameByColumn(Column $column)
+    {
+        foreach ($this->getOriginFieldNames() as $varName => $originFieldName) {
+            if ($originFieldName == $column->name)
+                return $varName;
+        }
 
-			MapperCache::me()->fullyInstantiated[$class] = true;
+        return null;
+    }
 
-			return $self;
-		}
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function getOriginFieldNames()
+    {
 
-		return $self;
-	}
+        $thisName = $this->name();
+        if (!isset(MapperCache::me()->originFieldNames[$thisName])) {
+            foreach ($this->getColumns() as $columnName => $column)
+                MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
+        }
 
-	private function name() {
-		$name = get_class($this);
+        return MapperCache::me()->originFieldNames[$thisName];
+    }
 
-		return (substr($name, strrpos($name, '\\') + 1));
-	}
+    /**
+     * @return Column[]
+     * @throws Exception
+     */
+    public function getColumns()
+    {
+        return MapperCache::me()->columns[$this->name()];
+    }
 }
