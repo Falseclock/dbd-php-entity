@@ -20,6 +20,7 @@
 
 namespace DBD\Entity\Tests\Fixtures;
 
+use DBD\Entity\Tests\Entities\DeclarationChain\AMap;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\PersonMap;
 
@@ -46,6 +47,15 @@ class Data
                                                       "person_name":              "name",
                                                       "person_registration_date": "registrationDate"
                                                     }',
+        ];
+    }
+
+    public static function getDeclarationChainData()
+    {
+        return [
+            AMap::meWithoutEnforcer()->a1->name => true,
+            AMap::meWithoutEnforcer()->a2->name => true,
+            AMap::meWithoutEnforcer()->a3->name => true,
         ];
     }
 }

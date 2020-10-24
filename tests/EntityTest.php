@@ -30,6 +30,9 @@ use DBD\Entity\EntityCache;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use DBD\Entity\Mapper;
+use DBD\Entity\Tests\Entities\DeclarationChain\B;
+use DBD\Entity\Tests\Entities\DeclarationChain\C;
+use DBD\Entity\Tests\Entities\DeclarationChain\D;
 use DBD\Entity\Tests\Entities\JsonTypeColumn;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\Person;
@@ -44,15 +47,75 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
-use function PHPUnit\Framework\assertInstanceOf;
 
 class EntityTest extends TestCase
 {
+    public function testDeclarationChain3()
+    {
+        $d = new D(Data::getDeclarationChainData());
+
+        $reflection = new ReflectionClass($d);
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            $name = $property->name;
+            self::assertTrue($d->$name);
+
+            // Actually property exist
+            self::assertTrue(property_exists($d, $name));
+            // And has such attribute
+            self::assertObjectHasAttribute($name, $d);
+
+            // but calling this property should trigger exception
+            self::assertTrue(isset($d->$name));
+            $d->$name;
+        }
+    }
+
+    public function testDeclarationChain2()
+    {
+        $c = new C(Data::getDeclarationChainData());
+        $missingProperty = 'a3';
+
+        self::assertTrue($c->a1);
+        self::assertTrue($c->a2);
+
+        // Actually property exist
+        self::assertTrue(property_exists($c, $missingProperty));
+        // And has such attribute
+        self::assertObjectHasAttribute($missingProperty, $c);
+
+        // but calling this property should trigger exception
+        self::assertFalse(isset($c->$missingProperty), "C class still has property '{$missingProperty}'");
+
+        // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
+        $this->expectNotice();
+        $c->$missingProperty;
+    }
+
+    public function testDeclarationChain1()
+    {
+        $b = new B(Data::getDeclarationChainData());
+        $missingProperty = 'a3';
+
+        self::assertTrue($b->a1);
+        self::assertTrue($b->a2);
+
+        // Actually property exist
+        self::assertTrue(property_exists($b, $missingProperty));
+        // And has such attribute
+        self::assertObjectHasAttribute($missingProperty, $b);
+
+        // but calling this property should trigger exception
+        self::assertFalse(isset($b->$missingProperty));
+
+        // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
+        $this->expectNotice();
+        $b->$missingProperty;
+    }
 
     public function testJsonType()
     {
         $entity = new JsonTypeColumn();
-        assertInstanceOf(Entity::class, $entity);
+        self::assertInstanceOf(Entity::class, $entity);
 
         $entity = new JsonTypeColumn(Data::getJsonTypeColumnData());
 
