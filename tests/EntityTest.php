@@ -29,6 +29,7 @@ namespace DBD\Entity\Tests;
 
 use DateTime;
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Common\MapperException;
 use DBD\Entity\Entity;
 use DBD\Entity\EntityCache;
 use DBD\Entity\Interfaces\FullEntity;
@@ -37,12 +38,32 @@ use DBD\Entity\Tests\Entities\PersonMap;
 use DBD\Entity\Tests\Entities\PersonOnlyDeclared;
 use DBD\Entity\Tests\Entities\PersonSetters;
 use DBD\Entity\Tests\Entities\PersonWithoutMapping;
+use DBD\Entity\Tests\Entities\PersonWithUnmappedProperty;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionProperty;
 
 class EntityTest extends TestCase
 {
-    public function testEntityInstance()
+    /**
+     * All Entity variables must be mapped in case of FullEntity or StrictlyFilledEntity
+     */
+    public function testUnmappedProperty()
+    {
+        $this->expectException(EntityException::class);
+        new PersonWithUnmappedProperty();
+    }
+
+    /**
+     * Just test instantiation
+     *
+     * @throws EntityException
+     * @throws MapperException
+     * @throws ReflectionException
+     */
+    public function testInstance()
     {
         $person = new Person();
 
@@ -61,7 +82,14 @@ class EntityTest extends TestCase
         self::assertEquals($person->registrationDate, $personData[PersonMap::me()->registrationDate->name]);
     }
 
-    public function testEntitySetters()
+    /**
+     * Test setters functions
+     *
+     * @throws EntityException
+     * @throws MapperException
+     * @throws ReflectionException
+     */
+    public function testSetters()
     {
         $personData = Data::getPersonFullEntityData();
         $person = new PersonSetters($personData);
@@ -140,24 +168,41 @@ class EntityTest extends TestCase
         self::assertNull($person->isActive);
     }
 
+    /**
+     * Case when we selecting a lot of fields and forget to select some of them for FullEntity or StrictlyFilledEntity
+     */
     public function testMissingColumns()
     {
         $personData = Data::getPersonFullEntityData();
+        $expectCount = count($personData) - 1;
 
         unset($personData[PersonMap::me()->name->name]);
-        self::assertCount(4, $personData);
+        self::assertCount($expectCount, $personData);
         self::assertArrayNotHasKey(PersonMap::me()->name->name, $personData);
 
         $this->expectException(EntityException::class);
         new Person($personData);
     }
 
+    /**
+     * When Entity class does not have Mapper class
+     *
+     * @throws EntityException
+     * @throws MapperException
+     * @throws ReflectionException
+     */
     public function testMissingMapper()
     {
         $this->expectException(EntityException::class);
         PersonWithoutMapping::map();
     }
 
+    /**
+     *
+     * @throws EntityException
+     * @throws MapperException
+     * @throws ReflectionException
+     */
     public function testOnlyDeclared()
     {
         $personData = Data::getPersonFullEntityData();
@@ -165,8 +210,17 @@ class EntityTest extends TestCase
 
         $entityCache = EntityCache::$mapCache;
 
+        $reflection = new ReflectionClass(PersonOnlyDeclared::class);
+        $properties = $reflection->getProperties(ReflectionProperty::IS_PUBLIC);
+
+        $properties = array_filter($properties, function ($property) {
+            return $property->class == PersonOnlyDeclared::class;
+        }, ARRAY_FILTER_USE_BOTH);
+
+
         self::assertInstanceOf(Person::class, $person);
-        self::assertCount(3, get_object_vars($person));
+        self::assertCount(count($properties), get_object_vars($person));
+
         foreach ($entityCache[PersonOnlyDeclared::class][EntityCache::DECLARED_PROPERTIES] as $propertyName => $boolean)
             self::assertTrue(property_exists($person, $propertyName));
 

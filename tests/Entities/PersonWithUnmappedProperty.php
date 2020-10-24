@@ -23,13 +23,13 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity\Interfaces;
+namespace DBD\Entity\Tests\Entities;
 
-/**
- * Implementing this interface Entity base class will carefully check all data provided, even if some columns are null
- *
- * @package DBD\Entity\Interfaces
- */
-interface StrictlyFilledEntity
+class PersonWithUnmappedProperty extends Person
+{
+    public $unmappedProperty;
+}
+
+class PersonWithUnmappedPropertyMap extends PersonMap
 {
 }

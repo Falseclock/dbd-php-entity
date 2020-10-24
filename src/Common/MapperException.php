@@ -23,13 +23,8 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity\Interfaces;
+namespace DBD\Entity\Common;
 
-/**
- * Implementing this interface Entity base class will carefully check all data provided, even if some columns are null
- *
- * @package DBD\Entity\Interfaces
- */
-interface StrictlyFilledEntity
+class MapperException extends EntityException
 {
 }

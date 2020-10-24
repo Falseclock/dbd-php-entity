@@ -31,17 +31,17 @@ class PersonOnlyDeclared extends Person implements OnlyDeclaredPropertiesEntity
 {
     /**
      * @var int $id
-     * @see PersonWithDefaultValuesMap::$id
+     * @see PersonOnlyDeclaredMap::$id
      */
     public $id;
     /**
      * @var bool $isActive
-     * @see PersonWithDefaultValuesMap::$isActive
+     * @see PersonOnlyDeclaredMap::$isActive
      */
     public $isActive = false;
     /**
      * @var string $name
-     * @see PersonWithDefaultValuesMap::$name
+     * @see PersonOnlyDeclaredMap::$name
      */
     public $name;
 }

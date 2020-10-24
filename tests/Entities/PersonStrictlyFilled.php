@@ -23,13 +23,29 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity\Interfaces;
+namespace DBD\Entity\Tests\Entities;
 
-/**
- * Implementing this interface Entity base class will carefully check all data provided, even if some columns are null
- *
- * @package DBD\Entity\Interfaces
- */
-interface StrictlyFilledEntity
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
+
+class PersonStrictlyFilled extends Person implements StrictlyFilledEntity
+{
+    /**
+     * @var int $id
+     * @see PersonStrictlyFilledMap::$id
+     */
+    public $id;
+    /**
+     * @var bool $isActive
+     * @see PersonStrictlyFilledMap::$isActive
+     */
+    public $isActive = false;
+    /**
+     * @var string $name
+     * @see PersonStrictlyFilledMap::$name
+     */
+    public $name;
+}
+
+class PersonStrictlyFilledMap extends PersonMap
 {
 }
