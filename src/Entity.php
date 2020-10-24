@@ -31,6 +31,7 @@ use DBD\Entity\Common\EntityException;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
+use DBD\Entity\Interfaces\SyntheticEntity;
 use DBD\Entity\Join\ManyToMany;
 use DBD\Entity\Join\OneToMany;
 use Exception;
@@ -87,8 +88,8 @@ abstract class Entity
                 }
             }
         }
-
-        Enforcer::__add(__CLASS__, $calledClass);
+        if (!$this instanceof SyntheticEntity)
+            Enforcer::__add(__CLASS__, $calledClass);
 
         if (!isset($data))
             return;
@@ -119,7 +120,10 @@ abstract class Entity
         if (!class_exists($mapClass, false))
             throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
 
-        return $mapClass::me();
+        if ($calledClass instanceof SyntheticEntity)
+            return $mapClass::me();
+        else
+            return $mapClass::meWithoutEnforcer();
     }
 
     /**

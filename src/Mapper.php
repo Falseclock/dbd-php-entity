@@ -53,6 +53,18 @@ abstract class Mapper extends Singleton
      */
     public static function me()
     {
+        return self::instantiate();
+    }
+
+    /**
+     * @param bool $callEnforcer
+     * @return Mapper|static
+     * @throws Common\EntityException
+     * @throws MapperException
+     * @throws ReflectionException
+     */
+    private static function instantiate(bool $callEnforcer = true): Mapper
+    {
         /** @var static $self */
         $self = parent::me();
 
@@ -61,15 +73,13 @@ abstract class Mapper extends Singleton
         if (!isset(MapperCache::me()->fullyInstantiated[$class])) {
 
             // Check we set ANNOTATION properly in Mapper instance
-            Enforcer::__add(__CLASS__, $class);
+            if ($callEnforcer)
+                Enforcer::__add(__CLASS__, $class);
 
             $self->getAllVariables();
 
             MapperCache::me()->fullyInstantiated[$class] = true;
-
-            return $self;
         }
-
         return $self;
     }
 
@@ -299,6 +309,17 @@ abstract class Mapper extends Singleton
     public function getColumns()
     {
         return MapperCache::me()->columns[$this->name()];
+    }
+
+    /**
+     * @return Mapper|static
+     * @throws Common\EntityException
+     * @throws MapperException
+     * @throws ReflectionException
+     */
+    public static function meWithoutEnforcer()
+    {
+        return self::instantiate(false);
     }
 
     /**

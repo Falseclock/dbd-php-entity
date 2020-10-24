@@ -39,6 +39,7 @@ use DBD\Entity\Tests\Entities\PersonOnlyDeclared;
 use DBD\Entity\Tests\Entities\PersonSetters;
 use DBD\Entity\Tests\Entities\PersonWithoutMapping;
 use DBD\Entity\Tests\Entities\PersonWithUnmappedProperty;
+use DBD\Entity\Tests\Entities\Synthetic;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -47,6 +48,19 @@ use ReflectionProperty;
 
 class EntityTest extends TestCase
 {
+    public function testSynthetic()
+    {
+        $entity = new Synthetic();
+
+        self::assertNotNull($entity);
+
+        // Check entity creation
+        $personData = Data::getPersonFullEntityData();
+        $person = new Synthetic($personData);
+
+        self::assertNotNull($person->id);
+    }
+
     /**
      * All Entity variables must be mapped in case of FullEntity or StrictlyFilledEntity
      */
