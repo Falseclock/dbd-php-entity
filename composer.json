@@ -14,7 +14,7 @@
     "constraint",
     "mapping"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "authors": [
     {
       "name": "Nurlan Mukhanov",
