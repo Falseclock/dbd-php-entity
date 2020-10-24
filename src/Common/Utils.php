@@ -65,24 +65,4 @@ class Utils
                 return filter_var($variable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         }
     }
-
-    /**
-     * @param string $class
-     *
-     * @return array
-     */
-    public static function getClassVars(string $class)
-    {
-        return get_class_vars($class);
-    }
-
-    /**
-     * @param $object
-     *
-     * @return array
-     */
-    public static function getObjectVars($object)
-    {
-        return get_object_vars($object);
-    }
 }

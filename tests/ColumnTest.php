@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /*************************************************************************************
  *   MIT License                                                                     *
  *                                                                                   *
@@ -23,14 +25,55 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Tests;
 
-use Exception;
+use DBD\Entity\Column;
+use DBD\Entity\Common\EntityException;
+use DBD\Entity\Primitive;
+use PHPUnit\Framework\TestCase;
+use stdClass;
 
-class MapperException extends Exception
+class ColumnTest extends TestCase
 {
-    public function __construct($message, $code = 0, Exception $previous = null)
+    public function testArrayInstanceUsage()
     {
-        parent::__construct($message, $code, $previous);
+        $column = new Column([
+            Column::NAME => "person_id",
+            Column::PRIMITIVE_TYPE => Primitive::Int32,
+            Column::IS_AUTO => true,
+            Column::NULLABLE => false,
+            Column::ANNOTATION => "Unique ID",
+            Column::KEY => true,
+            Column::ORIGIN_TYPE => "int4",
+        ]);
+
+        self::assertNotNull($column);
+    }
+
+    public function testStringInstanceUsage()
+    {
+        $columnName = "table_column_name";
+        $column = new Column($columnName);
+
+        self::assertInstanceOf(Column::class, $column);
+        self::assertEquals($columnName, $column->name);
+    }
+
+    public function testNullInstanceUsage()
+    {
+        $this->expectException(EntityException::class);
+        new Column(null);
+    }
+
+    public function testBoolInstanceUsage()
+    {
+        $this->expectException(EntityException::class);
+        new Column(true);
+    }
+
+    public function testObjectInstanceUsage()
+    {
+        $this->expectException(EntityException::class);
+        new Column(new stdClass());
     }
 }

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 /*************************************************************************************
  *   MIT License                                                                     *
  *                                                                                   *
@@ -23,14 +25,24 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Tests;
 
-use Exception;
+use DBD\Entity\Common\EntityException;
+use DBD\Entity\Tests\Entities\WithoutConstants;
+use DBD\Entity\Tests\Entities\WithoutConstantsMap;
+use PHPUnit\Framework\TestCase;
 
-class MapperException extends Exception
+class EnforcerTest extends TestCase
 {
-    public function __construct($message, $code = 0, Exception $previous = null)
+    public function testExceptionOnEntity()
     {
-        parent::__construct($message, $code, $previous);
+        self::expectException(EntityException::class);
+        new WithoutConstants();
+    }
+
+    public function testExceptionOnMapper()
+    {
+        self::expectException(EntityException::class);
+        WithoutConstantsMap::me();
     }
 }

@@ -28,6 +28,7 @@ namespace DBD\Entity;
 use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Common\MapperException;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
@@ -57,6 +58,9 @@ abstract class Entity
     public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
     {
         $calledClass = get_class($this);
+
+        if (!$this instanceof SyntheticEntity)
+            Enforcer::__add(__CLASS__, $calledClass);
 
         $map = self::map();
 
@@ -88,8 +92,6 @@ abstract class Entity
                 }
             }
         }
-        if (!$this instanceof SyntheticEntity)
-            Enforcer::__add(__CLASS__, $calledClass);
 
         if (!isset($data))
             return;
@@ -118,7 +120,7 @@ abstract class Entity
         $mapClass = $calledClass . Mapper::POSTFIX;
 
         if (!class_exists($mapClass, false))
-            throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+            throw new MapperException(sprintf("Class %s does not have Map definition", $calledClass));
 
         if ($calledClass instanceof SyntheticEntity)
             return $mapClass::me();

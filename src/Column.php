@@ -25,6 +25,8 @@
 
 namespace DBD\Entity;
 
+use DBD\Entity\Common\EntityException;
+
 class Column
 {
     const ANNOTATION = "annotation";
@@ -42,7 +44,7 @@ class Column
      */
     const PRIMITIVE_TYPE = "type";
     const SCALE = "scale";
-    /** @var string $annotation TODO: Annotation|Annotation[] */
+    /** @var string $annotation */
     public $annotation;
     /** @var mixed $defaultValue */
     public $defaultValue;
@@ -69,15 +71,14 @@ class Column
      * Column constructor.
      *
      * @param null $columnNameOrArray
+     * @throws EntityException
      */
     public function __construct($columnNameOrArray = null)
     {
         if (isset($columnNameOrArray)) {
             if (is_string($columnNameOrArray)) {
                 $this->name = $columnNameOrArray;
-            }
-
-            if (is_array($columnNameOrArray)) {
+            } else if (is_array($columnNameOrArray)) {
                 foreach ($columnNameOrArray as $key => $value) {
                     if ($key == self::PRIMITIVE_TYPE) {
                         $this->type = new Primitive($value);
@@ -85,7 +86,12 @@ class Column
                         $this->$key = $value;
                     }
                 }
+            } else {
+                throw new EntityException("Column constructor accepts only string or array");
             }
         }
+
+        if (is_null($this->name))
+            throw new EntityException("Column name does not set");
     }
 }

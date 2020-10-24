@@ -41,14 +41,4 @@ class EntityException extends Exception
     {
         parent::__construct($message, $code, $previous);
     }
-
-    /**
-     * Переопределим строковое представление объекта.
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
-    }
 }

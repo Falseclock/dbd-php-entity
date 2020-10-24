@@ -27,8 +27,8 @@
     "falseclock/dbd-php-common": "dev-master"
   },
   "require-dev": {
-    "phpunit/phpunit": "^9.4.0",
-    "satooshi/php-coveralls": "^1.0"
+    "phpunit/phpunit": "^9.4.2",
+    "php-coveralls/php-coveralls": "^2.4.2"
   },
   "autoload": {
     "psr-4": {
@@ -37,7 +37,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "DBD\\Entity\\Tests\\": "tests/DBDEntity/"
+      "DBD\\Entity\\Tests\\": "tests/"
     }
   }
 }

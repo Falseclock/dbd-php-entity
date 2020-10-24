@@ -23,14 +23,26 @@
  *   SOFTWARE.                                                                       *
  ************************************************************************************/
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Tests\Entities;
 
-use Exception;
+use DBD\Entity\Column;
+use DBD\Entity\Entity;
+use DBD\Entity\Mapper;
 
-class MapperException extends Exception
+class WithoutConstants extends Entity
 {
-    public function __construct($message, $code = 0, Exception $previous = null)
-    {
-        parent::__construct($message, $code, $previous);
-    }
+    /**
+     * @see WithoutConstantsMap::$id
+     */
+    public $id;
+}
+
+class WithoutConstantsMap extends Mapper
+{
+    /**
+     * @see WithoutConstants::$id
+     */
+    public $id = [
+        Column::NAME => 'just_column_name',
+    ];
 }

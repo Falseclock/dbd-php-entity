@@ -33,6 +33,7 @@ use DBD\Entity\Common\MapperException;
 use DBD\Entity\Entity;
 use DBD\Entity\EntityCache;
 use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\SyntheticEntity;
 use DBD\Entity\Tests\Entities\Person;
 use DBD\Entity\Tests\Entities\PersonMap;
 use DBD\Entity\Tests\Entities\PersonOnlyDeclared;
@@ -48,11 +49,17 @@ use ReflectionProperty;
 
 class EntityTest extends TestCase
 {
+    /**
+     * Test Synthetic entity can be without ANNOTATION, TABLE and SCHEMA constants
+     * @throws EntityException
+     * @throws ReflectionException
+     */
     public function testSynthetic()
     {
         $entity = new Synthetic();
 
         self::assertNotNull($entity);
+        self::assertInstanceOf(SyntheticEntity::class, $entity);
 
         // Check entity creation
         $personData = Data::getPersonFullEntityData();
@@ -207,7 +214,7 @@ class EntityTest extends TestCase
      */
     public function testMissingMapper()
     {
-        $this->expectException(EntityException::class);
+        $this->expectException(MapperException::class);
         PersonWithoutMapping::map();
     }
 

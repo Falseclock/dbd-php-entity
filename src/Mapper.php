@@ -88,6 +88,7 @@ abstract class Mapper extends Singleton
      * Used when we need convert Mapper to Table instance
      *
      * @return MapperVariables
+     * @throws Common\EntityException
      * @throws MapperException
      */
     public function getAllVariables()
@@ -102,7 +103,7 @@ abstract class Mapper extends Singleton
              * Constraints and Embedded are always PROTECTED
              */
             $allVars = get_object_vars($this);
-            $publicVars = Utils::getObjectVars($this);
+            $publicVars = get_object_vars($this);
             $protectedVars = Utils::arrayDiff($allVars, $publicVars);
 
             $constraints = [];
