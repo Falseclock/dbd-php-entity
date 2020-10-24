@@ -232,7 +232,6 @@ abstract class Mapper extends Singleton
      */
     public function getTable()
     {
-
         $thisName = $this->name();
 
         if (!isset(MapperCache::me()->table[$thisName])) {
@@ -330,7 +329,6 @@ abstract class Mapper extends Singleton
      */
     public function __get($name)
     {
-
         if (!property_exists($this, $name)) {
             throw new InvalidArgumentException(sprintf("Getting the field '%s' is not valid for '%s'", $name, get_class($this)));
         }
@@ -388,7 +386,7 @@ abstract class Mapper extends Singleton
      */
     public function getVarNameByColumn(Column $column)
     {
-        foreach ($this->getColumnsDefinition() as $varName => $originFieldName) {
+        foreach ($this->getOriginFieldNames() as $varName => $originFieldName) {
             if ($originFieldName == $column->name)
                 return $varName;
         }
@@ -400,7 +398,7 @@ abstract class Mapper extends Singleton
      * @return array
      * @throws MapperException
      */
-    public function getColumnsDefinition()
+    public function getOriginFieldNames()
     {
         $thisName = $this->name();
         if (!isset(MapperCache::me()->originFieldNames[$thisName])) {

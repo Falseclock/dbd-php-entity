@@ -48,6 +48,7 @@ abstract class Entity
      * @param int $currentLevel
      *
      * @throws EntityException
+     * @throws MapperException
      * @throws ReflectionException
      */
     public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
@@ -61,7 +62,7 @@ abstract class Entity
 
         if (!isset(EntityCache::$mapCache[$calledClass])) {
 
-            $columnsDefinition = $map->getColumnsDefinition();
+            $columnsDefinition = $map->getOriginFieldNames();
 
             EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $columnsDefinition;
             EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip($columnsDefinition);
@@ -117,10 +118,13 @@ abstract class Entity
         if (!class_exists($mapClass, false))
             throw new MapperException(sprintf("Class %s does not have Map definition", $calledClass));
 
-        if ($calledClass instanceof SyntheticEntity)
-            return $mapClass::me();
-        else
+        $reflection = new ReflectionClass($calledClass);
+        $interfaces = $reflection->getInterfaces();
+
+        if (isset($interfaces[SyntheticEntity::class]))
             return $mapClass::meWithoutEnforcer();
+        else
+            return $mapClass::me();
     }
 
     /**
@@ -167,10 +171,6 @@ abstract class Entity
     final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void
     {
         $currentLevel++;
-
-        // We always should provide data
-        if (!isset($data))
-            return;
 
         $this->setBaseColumns($data, $map);
 
@@ -240,14 +240,11 @@ abstract class Entity
             /** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
             $setterMethod = "set{$property}";
 
-            /** @var Column $fieldDefinition */
             if (!property_exists($mapper, $property))
                 return;
 
+            /** @var Column $fieldDefinition */
             $fieldDefinition = $mapper->$property;
-
-            if (is_array($fieldDefinition))
-                $fieldDefinition = new Column($fieldDefinition);
 
             if (is_null($columnValue) and $fieldDefinition->nullable == false)
                 throw new EntityException(sprintf("Column %s of %s shouldn't accept null values according Mapper definition", $originColumnName, $calledClass));
@@ -269,7 +266,6 @@ abstract class Entity
                         $this->$property = $columnValue;
                 }
             }
-
         }
     }
 
@@ -280,10 +276,10 @@ abstract class Entity
      * @param int $currentLevel
      *
      * @throws EntityException
+     * @throws MapperException
      */
     final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
     {
-
         foreach ($mapper->getConstraints() as $entityName => $constraint) {
             /**
              * Check we have data for this constraint
@@ -419,7 +415,6 @@ abstract class Entity
     private function setComplex(?array $data, Mapper $map, int $maxLevels, int $currentLevel)
     {
         foreach ($map->getComplex() as $complexName => $complexValue) {
-
             if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
                 continue;
 
@@ -428,11 +423,15 @@ abstract class Entity
     }
 
     /**
+     * If entity data should be modified after setModelData, create same function in Entity.
+     * For example it is heavy cost to aggregate some data in SQL side, any more cost efficient will do that with PHP
      *
+     * @see setModelData()
      */
     protected function postProcessing(): void
     {
-
+        /** @noinspection PhpUnnecessaryReturnInspection */
+        return;
     }
 
     /**

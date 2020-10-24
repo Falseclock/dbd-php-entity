@@ -29,6 +29,9 @@ use DBD\Entity\Entity;
 use DBD\Entity\EntityCache;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Mapper;
+use DBD\Entity\Tests\Entities\JsonTypeColumn;
+use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\Person;
 use DBD\Entity\Tests\Entities\PersonMap;
 use DBD\Entity\Tests\Entities\PersonOnlyDeclared;
@@ -41,12 +44,38 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
+use function PHPUnit\Framework\assertInstanceOf;
 
 class EntityTest extends TestCase
 {
+
+    public function testJsonType()
+    {
+        $entity = new JsonTypeColumn();
+        assertInstanceOf(Entity::class, $entity);
+
+        $entity = new JsonTypeColumn(Data::getJsonTypeColumnData());
+
+        self::assertIsArray($entity->json);
+        self::assertEquals(json_decode(Data::getJsonTypeColumnData()[JsonTypeColumnMap::me()->json->name], true), $entity->json);
+    }
+
+    /**
+     *
+     */
+    public function testGetTable()
+    {
+        $table = Person::table();
+
+        self::assertNotNull($table);
+        self::assertEquals(Person::SCHEME . "." . Person::TABLE, $table);
+    }
+
     /**
      * Test Synthetic entity can be without ANNOTATION, TABLE and SCHEMA constants
+     *
      * @throws EntityException
+     * @throws MapperException
      * @throws ReflectionException
      */
     public function testSynthetic()
@@ -55,6 +84,10 @@ class EntityTest extends TestCase
 
         self::assertNotNull($entity);
         self::assertInstanceOf(SyntheticEntity::class, $entity);
+
+        $map = $entity::map();
+
+        self::assertInstanceOf(Mapper::class, $map);
 
         // Check entity creation
         $personData = Data::getPersonFullEntityData();

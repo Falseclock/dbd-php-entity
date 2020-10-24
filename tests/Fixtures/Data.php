@@ -20,6 +20,7 @@
 
 namespace DBD\Entity\Tests\Fixtures;
 
+use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\PersonMap;
 
 class Data
@@ -32,6 +33,19 @@ class Data
             PersonMap::me()->email->name => 'alfa@at.com',
             PersonMap::me()->registrationDate->name => '2020-09-21 20:48:28.918366+06',
             PersonMap::me()->isActive->name => 't',
+        ];
+    }
+
+    public static function getJsonTypeColumnData()
+    {
+        return [
+            JsonTypeColumnMap::me()->json->name => '{
+                                                      "person_email":             "email",
+                                                      "person_id":                "id",
+                                                      "person_is_active":         "isActive",
+                                                      "person_name":              "name",
+                                                      "person_registration_date": "registrationDate"
+                                                    }',
         ];
     }
 }
