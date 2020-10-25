@@ -25,6 +25,6 @@ class PersonBaseWithUnmappedProperty extends PersonBase
     public $unmappedProperty;
 }
 
-class PersonWithUnmappedPropertyBaseMap extends PersonBaseMap
+class PersonBaseWithUnmappedPropertyMap extends PersonBaseMap
 {
 }

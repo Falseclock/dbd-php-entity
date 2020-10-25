@@ -128,7 +128,7 @@ abstract class Mapper extends Singleton
                     if (isset($varValue[Constraint::LOCAL_COLUMN])) {
                         $constraints[$varName] = $varValue;
                     } else {
-                        if (isset($varValue[Embedded::DB_TYPE]))
+                        if (isset($varValue[Embedded::NAME]))
                             $embedded[$varName] = $varValue;
                         else if (isset($varValue[Complex::TYPE]))
                             $complex[$varName] = $varValue;

@@ -20,9 +20,8 @@
 
 namespace DBD\Entity\Join;
 
-use DBD\Common\DBDException;
+use DBD\Entity\Common\MapperException;
 use DBD\Entity\Join;
-use ReflectionException;
 
 final class OneToMany extends Join
 {
@@ -31,8 +30,7 @@ final class OneToMany extends Join
      *
      * @param string $type
      *
-     * @throws DBDException
-     * @throws ReflectionException
+     * @throws MapperException
      */
     public function __construct($type = Join::ONE_TO_MANY)
     {

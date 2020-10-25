@@ -18,36 +18,60 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Embedded;
 
 use DBD\Entity\Column;
 use DBD\Entity\Entity;
-use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\FullMapper;
 use DBD\Entity\Mapper;
 use DBD\Entity\Primitive;
 
-class Synthetic extends Entity implements SyntheticEntity
+class Street extends Entity implements FullEntity
 {
+    const TABLE = "";
+    const SCHEME = "";
+
     /**
      * @var int $id
-     * @see SyntheticMap::$id
+     * @see StreetMap::$id
      */
     public $id;
+
+    /**
+     * @var string $name
+     * @see StreetMap::$name
+     */
+    public $name;
 }
 
-class SyntheticMap extends Mapper
+class StreetMap extends Mapper implements FullMapper
 {
+    public const ANNOTATION = "";
+
     /**
-     * @var Column
-     * @see Synthetic::$id
+     * @var Column $id
+     * @see Street::$id
      */
     public $id = [
-        Column::NAME => "person_id",
+        Column::NAME => "street_id",
         Column::PRIMITIVE_TYPE => Primitive::Int32,
-        Column::IS_AUTO => true,
         Column::NULLABLE => false,
-        Column::ANNOTATION => "Unique ID",
+        Column::ANNOTATION => "",
         Column::KEY => true,
-        Column::ORIGIN_TYPE => "int4",
+        Column::ORIGIN_TYPE => "int4"
+    ];
+
+    /**
+     * @var Column $name
+     * @see Street::$name
+     */
+    public $name = [
+        Column::NAME => "street_name",
+        Column::PRIMITIVE_TYPE => Primitive::String,
+        Column::NULLABLE => false,
+        Column::MAXLENGTH => 255,
+        Column::ANNOTATION => "",
+        Column::ORIGIN_TYPE => "varchar"
     ];
 }

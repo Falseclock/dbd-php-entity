@@ -20,7 +20,6 @@
 
 namespace DBD\Entity;
 
-use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\MapperException;
 
 class Column

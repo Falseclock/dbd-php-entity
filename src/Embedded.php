@@ -20,8 +20,11 @@
 
 namespace DBD\Entity;
 
+use DBD\Entity\Common\MapperException;
+
 /**
- * Class Embedded used when you generate value with view or with calculations
+ * Class Embedded used when you generate value with view or with calculations or need
+ * to decode JSON value or get iterable property
  * Should be always public when mapped in Mapper
  *
  * @package Falseclock\DBD\Entity
@@ -29,10 +32,10 @@ namespace DBD\Entity;
 class Embedded
 {
     /** @var string MANDATORY option */
-    public const DB_TYPE = "dbType";
-    public const ENTITY_CLASS = "entityClass";
-    public const IS_ITERABLE = "isIterable";
-    public const NAME = "name";
+    public const DB_TYPE = "embeddedDbType";
+    public const ENTITY_CLASS = "embeddedEntityClass";
+    public const IS_ITERABLE = "embeddedIsIterable";
+    public const NAME = "embeddedName";
     /** @var string $name name of the columns in view or selected with AS */
     public $name;
     /** @var bool $isIterable */
@@ -45,15 +48,29 @@ class Embedded
     /**
      * Embedded constructor.
      *
-     * @param null $arrayOfValues
+     * @param array|null $arrayOfValues
+     * @throws MapperException
      */
-    public function __construct($arrayOfValues = null)
+    public function __construct(array $arrayOfValues)
     {
-        if (isset($arrayOfValues)) {
-            foreach ($arrayOfValues as $key => $value) {
-                if (property_exists($this, $key))
-                    $this->$key = $value;
+        foreach ($arrayOfValues as $key => $value) {
+            switch ($key) {
+                case self::DB_TYPE:
+                    $this->dbType = $value;
+                    break;
+                case self::ENTITY_CLASS:
+                    $this->entityClass = $value;
+                    break;
+                case self::IS_ITERABLE:
+                    $this->isIterable = $value;
+                    break;
+                case self::NAME:
+                    $this->name = $value;
+                    break;
             }
         }
+
+        if (is_null($this->name))
+            throw new MapperException("Embedded name not set");
     }
 }

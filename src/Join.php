@@ -20,9 +20,8 @@
 
 namespace DBD\Entity;
 
-use DBD\Common\DBDException;
+use DBD\Entity\Common\MapperException;
 use ReflectionClass;
-use ReflectionException;
 
 class Join
 {
@@ -38,8 +37,7 @@ class Join
      *
      * @param $type
      *
-     * @throws DBDException
-     * @throws ReflectionException
+     * @throws MapperException
      */
     public function __construct($type)
     {
@@ -50,12 +48,11 @@ class Join
                 return;
             }
         }
-        throw new DBDException("Unknown join type {$type}");
+        throw new MapperException("Unknown join type {$type}");
     }
 
     /**
      * @return array
-     * @throws ReflectionException
      */
     private function getConstants(): iterable
     {
@@ -66,8 +63,7 @@ class Join
 
     /**
      * @return string
-     * @throws DBDException
-     * @throws ReflectionException
+     * @throws MapperException
      */
     public function getConstantName(): string
     {
@@ -76,7 +72,7 @@ class Join
                 return $name;
             }
         }
-        throw new DBDException("Something strange happen");
+        throw new MapperException("Something strange happen");
     }
 
     /**

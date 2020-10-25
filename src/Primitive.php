@@ -62,10 +62,10 @@ class Primitive extends Enum
     /** @var string IEEE 754 binary64 floating-point number (15-17 decimal digits) */
     public const Double = "Double";
     /** @var string Signed duration in days, hours, minutes, and (sub)seconds */
-    public const  Duration = "Duration";
+    public const Duration = "Duration";
     private const FLOAT = "float";
     /** @var string 16-byte (128-bit) unique identifier */
-    public const  Guid = "Guid";
+    public const Guid = "Guid";
     private const INTEGER = "int";
     /** @var string Signed 16-bit integer */
     public const Int16 = "Int16";
@@ -74,7 +74,7 @@ class Primitive extends Enum
     /** @var string Signed 64-bit integer */
     public const Int64 = "Int64";
     /** @var string Signed 8-bit integer */
-    public const  SByte = "SByte";
+    public const SByte = "SByte";
     private const STRING = "string";
     /** @var string IEEE 754 binary32 floating-point number (6-9 decimal digits) */
     public const Single = "Single";

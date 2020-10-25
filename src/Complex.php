@@ -57,6 +57,6 @@ class Complex
         }
 
         if (is_null($this->complexClass))
-            throw new MapperException("Complex className does not set");
+            throw new MapperException("Complex className not set");
     }
 }

@@ -18,36 +18,60 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Constraint;
 
 use DBD\Entity\Column;
 use DBD\Entity\Entity;
-use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\FullMapper;
 use DBD\Entity\Mapper;
 use DBD\Entity\Primitive;
 
-class Synthetic extends Entity implements SyntheticEntity
+class Country extends Entity implements FullEntity
 {
+    const TABLE = "";
+    const SCHEME = "";
+
     /**
      * @var int $id
-     * @see SyntheticMap::$id
+     * @see CountryMap::$id
      */
     public $id;
+
+    /**
+     * @var string $name
+     * @see CountryMap::$name
+     */
+    public $name;
 }
 
-class SyntheticMap extends Mapper
+class CountryMap extends Mapper implements FullMapper
 {
+    const ANNOTATION = "";
+
     /**
-     * @var Column
-     * @see Synthetic::$id
+     * @var Column $id
+     * @see Country::$id
      */
     public $id = [
-        Column::NAME => "person_id",
+        Column::NAME => "country_id",
         Column::PRIMITIVE_TYPE => Primitive::Int32,
-        Column::IS_AUTO => true,
         Column::NULLABLE => false,
-        Column::ANNOTATION => "Unique ID",
+        Column::ANNOTATION => "",
         Column::KEY => true,
-        Column::ORIGIN_TYPE => "int4",
+        Column::ORIGIN_TYPE => "int4"
+    ];
+
+    /**
+     * @var Column $name
+     * @see Country::$name
+     */
+    public $name = [
+        Column::NAME => "country_name",
+        Column::PRIMITIVE_TYPE => Primitive::String,
+        Column::NULLABLE => false,
+        Column::MAXLENGTH => 255,
+        Column::ANNOTATION => "",
+        Column::ORIGIN_TYPE => "varchar"
     ];
 }

@@ -56,7 +56,7 @@ class Table
      * @throws EntityException
      * @throws ReflectionException
      */
-    private static function convertToConstraint(Table $table, $constraintValue): Constraint
+    private static function convertToConstraint(Table $table, Constraint $constraintValue): Constraint
     {
         $constraint = new Constraint();
 
@@ -152,7 +152,7 @@ class Table
      * @throws ReflectionException
      * @throws Exception
      */
-    private static function convertVariables(Table &$table, Mapper $mapper): void
+    private static function convertVariables(Table $table, Mapper $mapper): void
     {
 
         $variables = $mapper->getAllVariables();
@@ -208,8 +208,6 @@ class Table
 
             $table->constraints[] = self::convertToConstraint($table, $constraintValue);
         }
-
-        return;
     }
 
     /**

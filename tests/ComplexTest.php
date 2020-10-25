@@ -32,6 +32,8 @@ use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+// TODO: chain check
+
 class ComplexTest extends TestCase
 {
     public function testComplexDefinition()

@@ -60,6 +60,15 @@ class EntityTest extends TestCase
         self::assertInstanceOf(Entity::class, $entity);
     }
 
+    public function testNullValueToNonNull()
+    {
+        $personData = Data::getPersonFullEntityData();
+        $personData[PersonBaseMap::me()->id->name] = null;
+
+        $this->expectException(EntityException::class);
+        new PersonBase($personData);
+    }
+
     public function testDeclarationChain3()
     {
         $d = new D(Data::getDeclarationChainData());
@@ -141,6 +150,17 @@ class EntityTest extends TestCase
     /**
      *
      */
+    public function testGetConst()
+    {
+        $entity = new Synthetic();
+
+        self::assertNotNull($entity::SCHEME);
+        self::assertNotNull($entity::TABLE);
+    }
+
+    /**
+     *
+     */
     public function testGetTable()
     {
         $table = PersonBase::table();
@@ -179,8 +199,9 @@ class EntityTest extends TestCase
      */
     public function testUnmappedProperty()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new PersonBaseWithUnmappedProperty();
+        self::assertIsArray(EntityCache::$mapCache);
     }
 
     /**

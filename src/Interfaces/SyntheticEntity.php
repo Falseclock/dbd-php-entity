@@ -20,6 +20,12 @@
 
 namespace DBD\Entity\Interfaces;
 
+/**
+ * Interface SyntheticEntity uses when you do not need to declare table or scheme or entity is a combination of
+ * other entities
+ *
+ * @package DBD\Entity\Interfaces
+ */
 interface SyntheticEntity
 {
 }

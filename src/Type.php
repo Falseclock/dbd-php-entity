@@ -23,7 +23,7 @@ namespace DBD\Entity;
 use MyCLabs\Enum\Enum;
 
 /**
- * Class Type describes DB types
+ * Class Type describes DB types for Embedded properties
  *
  * @package Falseclock\DBD\Entity
  * @method static Type Json()

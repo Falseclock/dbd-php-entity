@@ -21,7 +21,8 @@
 namespace DBD\Entity;
 
 /**
- * Абстрактный класс для моделирования объектов данных. Все поля должны быть замаплены через переменную map
+ * Class EntityCache used to store cache of parsed maps.
+ * @package DBD\Entity
  */
 abstract class EntityCache
 {

@@ -18,36 +18,40 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Embedded;
 
-use DBD\Entity\Column;
-use DBD\Entity\Entity;
+use DBD\Entity\Embedded;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
-use DBD\Entity\Mapper;
-use DBD\Entity\Primitive;
+use DBD\Entity\Tests\Entities\Constraint\Country;
+use DBD\Entity\Tests\Entities\Constraint\CountryMap;
+use DBD\Entity\Tests\Entities\Constraint\Region;
+use DBD\Entity\Type;
 
-class Synthetic extends Entity implements SyntheticEntity
+class CountryWithRegions extends Country implements StrictlyFilledEntity, SyntheticEntity
 {
     /**
-     * @var int $id
-     * @see SyntheticMap::$id
+     * @var Region[] $Regions
+     * @see CountryWithRegionsMap::$Regions
      */
-    public $id;
+    public $Regions;
 }
 
-class SyntheticMap extends Mapper
+/**
+ * Class CountryWithRegionsMap
+ * @package DBD\Entity\Tests\Entities\Embedded\
+ * @property Embedded $Regions
+ */
+class CountryWithRegionsMap extends CountryMap
 {
     /**
-     * @var Column
-     * @see Synthetic::$id
+     * @var Embedded
+     * @see CountryWithRegions::$Regions
      */
-    public $id = [
-        Column::NAME => "person_id",
-        Column::PRIMITIVE_TYPE => Primitive::Int32,
-        Column::IS_AUTO => true,
-        Column::NULLABLE => false,
-        Column::ANNOTATION => "Unique ID",
-        Column::KEY => true,
-        Column::ORIGIN_TYPE => "int4",
+    protected $Regions = [
+        Embedded::NAME => "country_regions",
+        Embedded::DB_TYPE => Type::Json,
+        Embedded::IS_ITERABLE => true,
+        Embedded::ENTITY_CLASS => Region::class,
     ];
 }

@@ -8,6 +8,11 @@
         </include>
         <exclude>
             <directory>src/Interfaces/</directory>
+            <file>src/EntityCache.php</file>
+            <file>src/Order.php</file>
+            <file>src/View.php</file>
+            <file>src/Type.php</file>
+            <file>src/Primitive.php</file>
         </exclude>
     </coverage>
     <testsuites>

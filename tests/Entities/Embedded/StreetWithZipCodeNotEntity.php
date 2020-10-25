@@ -18,36 +18,33 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Embedded;
 
-use DBD\Entity\Column;
-use DBD\Entity\Entity;
-use DBD\Entity\Interfaces\SyntheticEntity;
-use DBD\Entity\Mapper;
-use DBD\Entity\Primitive;
+use DBD\Entity\Embedded;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
 
-class Synthetic extends Entity implements SyntheticEntity
+class StreetWithZipCodeNotEntity extends StreetWithZipCode implements StrictlyFilledEntity
 {
     /**
-     * @var int $id
-     * @see SyntheticMap::$id
+     * @var ZipCode $ZipCode
+     * @see StreetWithZipCodeNotEntityMap::$ZipCode
      */
-    public $id;
+    public $ZipCode;
 }
 
-class SyntheticMap extends Mapper
+/**
+ * Class StreetWithZipCodeNotEntityMap
+ * @package DBD\Entity\Tests\Entities\Embedded
+ * @property Embedded $ZipCode
+ */
+class StreetWithZipCodeNotEntityMap extends StreetWithZipCodeMap
 {
     /**
-     * @var Column
-     * @see Synthetic::$id
+     * @var Embedded
+     * @see StreetWithZipCodeNotEntity::$ZipCode
      */
-    public $id = [
-        Column::NAME => "person_id",
-        Column::PRIMITIVE_TYPE => Primitive::Int32,
-        Column::IS_AUTO => true,
-        Column::NULLABLE => false,
-        Column::ANNOTATION => "Unique ID",
-        Column::KEY => true,
-        Column::ORIGIN_TYPE => "int4",
+    protected $ZipCode = [
+        Embedded::NAME => "street_zip_code",
+        Embedded::IS_ITERABLE => false,
     ];
 }

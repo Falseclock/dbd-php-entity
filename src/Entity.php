@@ -336,10 +336,8 @@ abstract class Entity
     {
         foreach ($map->getEmbedded() as $embeddedName => $embeddedValue) {
 
-            if (!property_exists($this, $embeddedName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$embeddedName]))
-                continue;
-
-            // TODO: do not override default class name if data is null
+            //if (!property_exists($this, $embeddedName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$embeddedName]))
+            //    continue;
 
             if (isset($data[$embeddedValue->name])) {
                 if (isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
@@ -375,8 +373,8 @@ abstract class Entity
     private function setComplex(?array $data, Mapper $map, int $maxLevels, int $currentLevel)
     {
         foreach ($map->getComplex() as $complexName => $complexValue) {
-            if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
-                continue;
+            //if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
+            //    continue;
 
             $this->$complexName = new $complexValue->complexClass($data, $maxLevels, $currentLevel);
         }

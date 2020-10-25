@@ -18,13 +18,34 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Interfaces;
+namespace DBD\Entity\Tests\Entities\Embedded;
+
+use DBD\Entity\Embedded;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
+
+class StreetWithZipCodeNotJson extends StreetWithZipCode implements StrictlyFilledEntity
+{
+    /**
+     * @var ZipCode $ZipCode
+     * @see StreetWithZipCodeNotJsonMap::$ZipCode
+     */
+    public $ZipCode;
+}
 
 /**
- * Interface Row TODO: describe how to use it
- *
- * @package DBD\Entity\Interfaces\
+ * Class StreetWithZipCodeNotJsonMap
+ * @package DBD\Entity\Tests\Entities\Embedded
+ * @property Embedded $ZipCode
  */
-interface Row
+class StreetWithZipCodeNotJsonMap extends StreetWithZipCodeMap
 {
+    /**
+     * @var Embedded
+     * @see StreetWithZipCodeNotJson::$ZipCode
+     */
+    protected $ZipCode = [
+        Embedded::NAME => "street_zip_code",
+        Embedded::IS_ITERABLE => false,
+        Embedded::ENTITY_CLASS => ZipCode::class,
+    ];
 }

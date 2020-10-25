@@ -22,11 +22,17 @@ namespace DBD\Entity\Tests\Fixtures;
 
 use DBD\Entity\Tests\Entities\AddressMap;
 use DBD\Entity\Tests\Entities\Constraint\CompanyMap;
+use DBD\Entity\Tests\Entities\Constraint\CountryMap;
 use DBD\Entity\Tests\Entities\Constraint\LevelOneMap;
 use DBD\Entity\Tests\Entities\Constraint\LevelTwoMap;
 use DBD\Entity\Tests\Entities\Constraint\PersonMap;
+use DBD\Entity\Tests\Entities\Constraint\RegionMap;
 use DBD\Entity\Tests\Entities\Constraint\UserMap;
 use DBD\Entity\Tests\Entities\DeclarationChain\AMap;
+use DBD\Entity\Tests\Entities\Embedded\CountryWithRegionsMap;
+use DBD\Entity\Tests\Entities\Embedded\StreetMap;
+use DBD\Entity\Tests\Entities\Embedded\StreetWithZipCodeMap;
+use DBD\Entity\Tests\Entities\Embedded\ZipCodeMap;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\PersonBaseMap;
 use DBD\Entity\Tests\Entities\UnUsedPropertyInMapperMap;
@@ -140,6 +146,77 @@ class Data
             LevelTwoMap::me()->id->name => 222,
             LevelTwoMap::me()->levelOneId->name => 111,
             LevelTwoMap::me()->levelThreeId->name => 333,
+        ];
+    }
+
+    public static function getCountryWithRegionsData()
+    {
+        return array_merge(self::getCountryData(), [CountryWithRegionsMap::me()->Regions->name => self::getRegionsJsonData()]);
+    }
+
+    public static function getCountryData()
+    {
+        return [
+            CountryMap::me()->id->name => 9,
+            CountryMap::me()->name->name => "Kazakhstan",
+        ];
+    }
+
+    public static function getRegionsJsonData()
+    {
+        return json_encode(self::getRegionsData(), JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+    }
+
+    public static function getRegionsData()
+    {
+        return [
+            [
+                RegionMap::me()->id->name => 1,
+                RegionMap::me()->name->name => "North Region",
+            ],
+            [
+                RegionMap::me()->id->name => 2,
+                RegionMap::me()->name->name => "South Region",
+            ],
+            [
+                RegionMap::me()->id->name => 3,
+                RegionMap::me()->name->name => "East Region",
+            ],
+            [
+                RegionMap::me()->id->name => 4,
+                RegionMap::me()->name->name => "West Region",
+            ],
+        ];
+    }
+
+    public static function getStreetWithZipCodeJsonData()
+    {
+        return array_merge(self::getStreetData(), [StreetWithZipCodeMap::me()->ZipCode->name => self::getZipCodeJsonData()]);
+    }
+
+    public static function getStreetWithZipCodeNotJsonData()
+    {
+        return array_merge(self::getStreetData(), [StreetWithZipCodeMap::me()->ZipCode->name => self::getZipCodeData()]);
+    }
+
+    public static function getStreetData()
+    {
+        return [
+            StreetMap::me()->id->name => 123,
+            StreetMap::me()->name->name => "Nazarbayev",
+        ];
+    }
+
+    public static function getZipCodeJsonData()
+    {
+        return json_encode(self::getZipCodeData(), JSON_UNESCAPED_UNICODE);
+    }
+
+    public static function getZipCodeData()
+    {
+        return [
+            ZipCodeMap::me()->id->name => 480000,
+            ZipCodeMap::me()->value->name => "050000",
         ];
     }
 }
