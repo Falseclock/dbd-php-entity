@@ -20,23 +20,14 @@
 
 namespace DBD\Entity\Tests\Fixtures;
 
+use DBD\Entity\Tests\Entities\AddressMap;
 use DBD\Entity\Tests\Entities\DeclarationChain\AMap;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\PersonMap;
+use DBD\Entity\Tests\Entities\UnUsedPropertyInMapperMap;
 
 class Data
 {
-    public static function getPersonFullEntityData()
-    {
-        return [
-            PersonMap::me()->name->name => 'Alfa',
-            PersonMap::me()->id->name => '1',
-            PersonMap::me()->email->name => 'alfa@at.com',
-            PersonMap::me()->registrationDate->name => '2020-09-21 20:48:28.918366+06',
-            PersonMap::me()->isActive->name => 't',
-        ];
-    }
-
     public static function getJsonTypeColumnData()
     {
         return [
@@ -56,6 +47,37 @@ class Data
             AMap::meWithoutEnforcer()->a1->name => true,
             AMap::meWithoutEnforcer()->a2->name => true,
             AMap::meWithoutEnforcer()->a3->name => true,
+        ];
+    }
+
+    public static function getUnUsedPropertyInMapperData()
+    {
+        return [
+            UnUsedPropertyInMapperMap::meWithoutEnforcer()->id->name => 1,
+        ];
+    }
+
+    public static function getJustComplexData()
+    {
+        return array_merge(self::getPersonFullEntityData(), self::getAddressData());
+    }
+
+    public static function getPersonFullEntityData()
+    {
+        return [
+            PersonMap::me()->name->name => 'Alfa',
+            PersonMap::me()->id->name => '1',
+            PersonMap::me()->email->name => 'alfa@at.com',
+            PersonMap::me()->registrationDate->name => '2020-09-21 20:48:28.918366+06',
+            PersonMap::me()->isActive->name => 't',
+        ];
+    }
+
+    public static function getAddressData()
+    {
+        return [
+            AddressMap::me()->id->name => 111,
+            AddressMap::me()->street->name => "12 Downing street",
         ];
     }
 }

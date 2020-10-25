@@ -98,11 +98,11 @@ abstract class Mapper extends Singleton
              * Constraints and Embedded are always PROTECTED
              */
             $allVars = get_object_vars($this);
-            $publicVars = get_object_vars($this);
+            $publicVars = Utils::getObjectVars($this);
             $protectedVars = Utils::arrayDiff($allVars, $publicVars);
 
             $constraints = [];
-            $otherColumns = [];
+            //$otherColumns = [];
             $embedded = [];
             $complex = [];
             $columns = [];
@@ -118,10 +118,10 @@ abstract class Mapper extends Singleton
                     throw new MapperException(sprintf("property '\$%s' of %s does not have definitions", $varName, get_class($this)));
 
                 // Column::PRIMITIVE_TYPE is mandatory for Columns
-                if (isset($varValue[Column::PRIMITIVE_TYPE]))
-                    $columns[$varName] = $varValue;
-                else
-                    $otherColumns[$varName] = $varValue;
+                //if (isset($varValue[Column::PRIMITIVE_TYPE]))
+                $columns[$varName] = $varValue;
+                //else
+                //   $otherColumns[$varName] = $varValue;
             }
 
             foreach ($protectedVars as $varName => $varValue) {
@@ -133,8 +133,8 @@ abstract class Mapper extends Singleton
                             $embedded[$varName] = $varValue;
                         else if (isset($varValue[Complex::TYPE]))
                             $complex[$varName] = $varValue;
-                        else
-                            $otherColumns[$varName] = $varValue;
+                        //else
+                        //    $otherColumns[$varName] = $varValue;
                     }
                 } else {
                     throw new MapperException(sprintf("variable '%s' of '%s' is type of %s", $varName, get_class($this), gettype($varValue)));
@@ -166,11 +166,11 @@ abstract class Mapper extends Singleton
                     MapperCache::me()->baseColumns[$thisName][$columnName] = $this->$columnName;
                     MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
                 }
-                foreach ($otherColumns as $columnName => $columnValue) {
-                    $this->$columnName = new Column($columnValue);
-                    MapperCache::me()->otherColumns[$thisName][$columnName] = $this->$columnName;
-                    MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
-                }
+                //foreach ($otherColumns as $columnName => $columnValue) {
+                //    $this->$columnName = new Column($columnValue);
+                //    MapperCache::me()->otherColumns[$thisName][$columnName] = $this->$columnName;
+                //    MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
+                //}
             }
             // У нас может не быть колонок
             if (!isset(MapperCache::me()->columns[$thisName]))
@@ -203,7 +203,8 @@ abstract class Mapper extends Singleton
             if (!isset(MapperCache::me()->constraints[$thisName]))
                 MapperCache::me()->constraints[$thisName] = [];
 
-            MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $otherColumns, $embedded, $complex);
+            MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $embedded, $complex);
+            /**$otherColumns,*/
         }
 
         return MapperCache::me()->allVariables[$thisName];
@@ -402,8 +403,12 @@ abstract class Mapper extends Singleton
     {
         $thisName = $this->name();
         if (!isset(MapperCache::me()->originFieldNames[$thisName])) {
-            foreach ($this->getColumns() as $columnName => $column)
-                MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
+            if (count($this->getColumns()))
+                foreach ($this->getColumns() as $columnName => $column)
+                    MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
+            else
+                MapperCache::me()->originFieldNames[$thisName] = [];
+
         }
 
         return MapperCache::me()->originFieldNames[$thisName];

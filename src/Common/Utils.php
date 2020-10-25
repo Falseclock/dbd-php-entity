@@ -23,6 +23,16 @@ namespace DBD\Entity\Common;
 class Utils
 {
     /**
+     * @param object $object
+     *
+     * @return array
+     */
+    public static function getObjectVars(object $object)
+    {
+        return get_object_vars($object);
+    }
+
+    /**
      * @param array $bigArray
      * @param array $smallArray
      *

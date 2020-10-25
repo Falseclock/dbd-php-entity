@@ -67,12 +67,12 @@ abstract class Entity
             EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $columnsDefinition;
             EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip($columnsDefinition);
 
-            if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
+/*            if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
                 foreach (get_object_vars($this) as $propertyName => $propertyDefaultValue) {
                     if (!array_key_exists($propertyName, $columnsDefinition))
-                        throw new EntityException(sprintf("Entity %s has unmapped property '%s'", $calledClass, $propertyName));
+                        throw new EntityException(sprintf("FullEntity or StrictlyFilledEntity %s has unmapped property '%s'", $calledClass, $propertyName));
                 }
-            }
+            }*/
 
             // У нас может быть цепочка классов, где какой-то конечный уже не имеет интерфейса OnlyDeclaredPropertiesEntity
             // соответственно нам надо собрать все переменные всех дочерних классов, даже если они расширяют друг друга
@@ -86,6 +86,14 @@ abstract class Entity
                     unset($this->$varName);
                     EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$varName] = true;
                 }
+            }
+        }
+
+        if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
+            $checkAgainst = array_merge($map->getColumns(), $map->getComplex(), $map->getEmbedded());
+            foreach (get_object_vars($this) as $propertyName => $propertyDefaultValue) {
+                if (!array_key_exists($propertyName, $checkAgainst))
+                    throw new EntityException(sprintf("Strict Entity %s has unmapped property '%s'", $calledClass, $propertyName));
             }
         }
 
@@ -196,7 +204,7 @@ abstract class Entity
         $calledClass = get_called_class();
 
         /**
-         * @var array $fieldMapping array
+         * @var array $fieldMapping are public properties of Mapper
          * where KEY is database origin column name and VALUE is Entity class field declaration
          * Structure look like this:
          * {
@@ -235,13 +243,10 @@ abstract class Entity
             $property = $fieldMapping[$originColumnName];
 
             if (!property_exists($this, $property))
-                throw new EntityException(sprintf("Property % of %s doesn't exist", $property, $calledClass));
+                continue;
 
             /** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
             $setterMethod = "set{$property}";
-
-            if (!property_exists($mapper, $property))
-                return;
 
             /** @var Column $fieldDefinition */
             $fieldDefinition = $mapper->$property;
@@ -353,7 +358,7 @@ abstract class Entity
 
                 if (method_exists($this, $setterMethod)) {
                     $this->$setterMethod($newConstraintValue);
-                } else
+                } else {
                     // Если у нас переменная класа уже инициализирована, и нету значения из базы
                     // то скорее всего этот объект является массивом данных
                     if (!isset($this->$entityName) or isset($newConstraintValue)) {
@@ -362,6 +367,7 @@ abstract class Entity
                         else if ($currentLevel <= $maxLevels)
                             $this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
                     }
+                }
             }
         }
     }
@@ -418,7 +424,7 @@ abstract class Entity
             if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
                 continue;
 
-            $this->$complexName = new $complexValue->typeClass($data, $maxLevels, $currentLevel);
+            $this->$complexName = new $complexValue->complexClass($data, $maxLevels, $currentLevel);
         }
     }
 

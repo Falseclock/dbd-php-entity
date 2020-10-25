@@ -21,6 +21,7 @@
 namespace DBD\Entity;
 
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Common\MapperException;
 
 class Column
 {
@@ -66,7 +67,7 @@ class Column
      * Column constructor.
      *
      * @param null $columnNameOrArray
-     * @throws EntityException
+     * @throws MapperException
      */
     public function __construct($columnNameOrArray = null)
     {
@@ -82,11 +83,11 @@ class Column
                     }
                 }
             } else {
-                throw new EntityException("Column constructor accepts only string or array");
+                throw new MapperException("Column constructor accepts only string or array");
             }
         }
 
         if (is_null($this->name))
-            throw new EntityException("Column name does not set");
+            throw new MapperException("Column name does not set");
     }
 }

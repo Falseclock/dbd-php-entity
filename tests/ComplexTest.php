@@ -18,47 +18,51 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity;
+declare(strict_types=1);
 
-use ReflectionProperty;
+namespace DBD\Entity\Tests;
 
-final class MapperVariables
+use DBD\Entity\Common\MapperException;
+use DBD\Entity\Complex;
+use DBD\Entity\Tests\Entities\Person;
+use PHPUnit\Framework\TestCase;
+use stdClass;
+
+class ComplexTest extends TestCase
 {
-    public $columns;
-    public $complex;
-    public $constraints;
-    public $embedded;
-    //public $otherColumns;
-
-    /**
-     * MapperVariables constructor.
-     *
-     * @param $columns
-     * @param $constraints
-     * @param $embedded
-     * @param $complex
-     */
-    public function __construct($columns, $constraints,  $embedded, $complex) // $otherColumns,
+    public function testArrayInstanceUsage()
     {
-        $this->columns = $this->filter($columns);
-        $this->constraints = $this->filter($constraints);
-        $this->embedded = $this->filter($embedded);
-        $this->complex = $this->filter($complex);
-        //$this->otherColumns = $this->filter($otherColumns);
+        $complex = new Complex([
+            Complex::TYPE => Person::class
+        ]);
+
+        self::assertNotNull($complex);
     }
 
-    /**
-     * @param ReflectionProperty[] $vars
-     *
-     * @return array
-     */
-    private function filter(array $vars)
+    public function testStringInstanceUsage()
     {
-        $list = [];
-        foreach ($vars as $varName => $varValue) {
-            $list[] = $varName;
-        }
+        $complexName = Person::class;
+        $complex = new Complex($complexName);
 
-        return $list;
+        self::assertInstanceOf(Complex::class, $complex);
+        self::assertEquals($complexName, $complex->complexClass);
+    }
+
+    public function testNullInstanceUsage()
+    {
+        $this->expectException(MapperException::class);
+        new Complex(null);
+    }
+
+    public function testBoolInstanceUsage()
+    {
+        $this->expectException(MapperException::class);
+        new Complex(true);
+    }
+
+    public function testObjectInstanceUsage()
+    {
+        $this->expectException(MapperException::class);
+        new Complex(new stdClass());
     }
 }

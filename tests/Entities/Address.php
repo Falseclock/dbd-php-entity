@@ -18,47 +18,58 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity;
+namespace DBD\Entity\Tests\Entities;
 
-use ReflectionProperty;
+use DBD\Entity\Column;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\FullMapper;
+use DBD\Entity\Mapper;
+use DBD\Entity\Primitive;
 
-final class MapperVariables
+class Address extends Entity implements FullEntity
 {
-    public $columns;
-    public $complex;
-    public $constraints;
-    public $embedded;
-    //public $otherColumns;
+    const SCHEME = "Table scheme";
+    const TABLE = "Table name";
+    /**
+     * @var $int $id
+     * @see AddressMap::$id
+     */
+    public $id;
+    /**
+     * @var string $street
+     * @see AddressMap::$street
+     */
+    public $street;
+}
+
+class AddressMap extends Mapper implements FullMapper
+{
+    const ANNOTATION = "Table description";
 
     /**
-     * MapperVariables constructor.
-     *
-     * @param $columns
-     * @param $constraints
-     * @param $embedded
-     * @param $complex
+     * @var Column $id
+     * @see Address::$id
      */
-    public function __construct($columns, $constraints,  $embedded, $complex) // $otherColumns,
-    {
-        $this->columns = $this->filter($columns);
-        $this->constraints = $this->filter($constraints);
-        $this->embedded = $this->filter($embedded);
-        $this->complex = $this->filter($complex);
-        //$this->otherColumns = $this->filter($otherColumns);
-    }
+    public $id = [
+        Column::NAME => "address_id",
+        Column::PRIMITIVE_TYPE => Primitive::Int32,
+        Column::IS_AUTO => true,
+        Column::NULLABLE => false,
+        Column::ANNOTATION => "Unique ID",
+        Column::KEY => true,
+        Column::ORIGIN_TYPE => "int4",
+    ];
 
     /**
-     * @param ReflectionProperty[] $vars
-     *
-     * @return array
+     * @var Column $street
+     * @see Address::$street
      */
-    private function filter(array $vars)
-    {
-        $list = [];
-        foreach ($vars as $varName => $varValue) {
-            $list[] = $varName;
-        }
-
-        return $list;
-    }
+    public $street = [
+        Column::NAME => "address_street",
+        Column::PRIMITIVE_TYPE => Primitive::String,
+        Column::NULLABLE => true,
+        Column::ANNOTATION => "Just text",
+        Column::ORIGIN_TYPE => "text",
+    ];
 }

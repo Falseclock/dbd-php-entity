@@ -18,47 +18,43 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity;
+namespace DBD\Entity\Tests\Entities;
 
-use ReflectionProperty;
+use DBD\Entity\Complex;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
+use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Mapper;
 
-final class MapperVariables
+class OnlyComplex extends Entity implements SyntheticEntity, StrictlyFilledEntity
 {
-    public $columns;
-    public $complex;
-    public $constraints;
-    public $embedded;
-    //public $otherColumns;
+    /**
+     * @var Address $Address
+     * @see OnlyComplexMap::$Address
+     */
+    public $Address;
+    /**
+     * @var Person $Person
+     * @see OnlyComplexMap::$Person
+     */
+    public $Person;
+}
+
+class OnlyComplexMap extends Mapper
+{
+    /**
+     * @see OnlyComplex::$Address
+     * @var Complex
+     */
+    protected $Address = [
+        Complex::TYPE => Address::class,
+    ];
 
     /**
-     * MapperVariables constructor.
-     *
-     * @param $columns
-     * @param $constraints
-     * @param $embedded
-     * @param $complex
+     * @see OnlyComplex::$Person
+     * @var Complex
      */
-    public function __construct($columns, $constraints,  $embedded, $complex) // $otherColumns,
-    {
-        $this->columns = $this->filter($columns);
-        $this->constraints = $this->filter($constraints);
-        $this->embedded = $this->filter($embedded);
-        $this->complex = $this->filter($complex);
-        //$this->otherColumns = $this->filter($otherColumns);
-    }
-
-    /**
-     * @param ReflectionProperty[] $vars
-     *
-     * @return array
-     */
-    private function filter(array $vars)
-    {
-        $list = [];
-        foreach ($vars as $varName => $varValue) {
-            $list[] = $varName;
-        }
-
-        return $list;
-    }
+    protected $Person = [
+        Complex::TYPE => Person::class,
+    ];
 }

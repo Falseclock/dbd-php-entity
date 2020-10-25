@@ -28,6 +28,7 @@ use DBD\Entity\Common\MapperException;
 use DBD\Entity\Entity;
 use DBD\Entity\EntityCache;
 use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use DBD\Entity\Mapper;
 use DBD\Entity\Tests\Entities\DeclarationChain\B;
@@ -35,6 +36,7 @@ use DBD\Entity\Tests\Entities\DeclarationChain\C;
 use DBD\Entity\Tests\Entities\DeclarationChain\D;
 use DBD\Entity\Tests\Entities\JsonTypeColumn;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
+use DBD\Entity\Tests\Entities\OnlyComplex;
 use DBD\Entity\Tests\Entities\Person;
 use DBD\Entity\Tests\Entities\PersonMap;
 use DBD\Entity\Tests\Entities\PersonOnlyDeclared;
@@ -42,6 +44,7 @@ use DBD\Entity\Tests\Entities\PersonSetters;
 use DBD\Entity\Tests\Entities\PersonWithoutMapping;
 use DBD\Entity\Tests\Entities\PersonWithUnmappedProperty;
 use DBD\Entity\Tests\Entities\Synthetic;
+use DBD\Entity\Tests\Entities\UnUsedPropertyInMapper;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -50,9 +53,38 @@ use ReflectionProperty;
 
 class EntityTest extends TestCase
 {
+    public function testComplexDefinition()
+    {
+        $entity = new OnlyComplex();
+        self::assertInstanceOf(Entity::class, $entity);
+        self::assertInstanceOf(StrictlyFilledEntity::class, $entity);
+
+        $entity = new OnlyComplex(Data::getJustComplexData());
+
+        self::assertNotNull($entity->Address);
+        self::assertNotNull($entity->Address->street);
+        self::assertNotNull($entity->Address->id);
+        self::assertNotNull($entity->Person);
+        self::assertNotNull($entity->Person->name);
+        self::assertNotNull($entity->Person->id);
+        self::assertNotNull($entity->Person->isActive);
+        self::assertNotNull($entity->Person->registrationDate);
+        self::assertNotNull($entity->Person->email);
+    }
+
+    public function testMapperHasPropertyNotUsedInEntity()
+    {
+        $entity = new UnUsedPropertyInMapper();
+        self::assertInstanceOf(Entity::class, $entity);
+
+        $entity = new UnUsedPropertyInMapper(Data::getUnUsedPropertyInMapperData());
+        self::assertInstanceOf(Entity::class, $entity);
+    }
+
     public function testDeclarationChain3()
     {
         $d = new D(Data::getDeclarationChainData());
+        self::assertInstanceOf(Entity::class, $d);
 
         $reflection = new ReflectionClass($d);
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
@@ -73,6 +105,9 @@ class EntityTest extends TestCase
     public function testDeclarationChain2()
     {
         $c = new C(Data::getDeclarationChainData());
+        self::assertInstanceOf(Entity::class, $c);
+        self::assertTrue($c->a1);
+
         $missingProperty = 'a3';
 
         self::assertTrue($c->a1);
@@ -94,6 +129,7 @@ class EntityTest extends TestCase
     public function testDeclarationChain1()
     {
         $b = new B(Data::getDeclarationChainData());
+        self::assertInstanceOf(Entity::class, $b);
         $missingProperty = 'a3';
 
         self::assertTrue($b->a1);

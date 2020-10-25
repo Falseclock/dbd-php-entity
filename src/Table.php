@@ -51,11 +51,12 @@ class Table
      * @param Constraint $constraintValue
      *
      * @return Constraint
+     * @throws Common\MapperException
      * @throws DBDException
      * @throws EntityException
      * @throws ReflectionException
      */
-    private static function convertToConstraint(Table &$table, $constraintValue): Constraint
+    private static function convertToConstraint(Table $table, $constraintValue): Constraint
     {
         $constraint = new Constraint();
 
@@ -179,7 +180,7 @@ class Table
 
             throw new EntityException("Unknown type of Mapper variable {$columnName} in {$mapper}");
         }
-
+/**
         foreach ($variables->otherColumns as $otherColumnName) {
 
             $otherColumnValue = $mapper->$otherColumnName;
@@ -197,7 +198,7 @@ class Table
                 throw new EntityException("Unknown type of Mapper variable {$otherColumnName} in {$mapper}");
             }
         }
-
+*/
         // now parse all constraints
         // All constraints should be processed after columns
         foreach ($variables->constraints as $constraintName) {

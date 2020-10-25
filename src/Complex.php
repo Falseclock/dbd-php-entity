@@ -20,39 +20,43 @@
 
 namespace DBD\Entity;
 
+use DBD\Entity\Common\MapperException;
+
 /**
- * Class Complex is like JOIN table
- * Используется, когда к основному Entity джоинится таблица, не описанная в Entity
+ * Use Complex when you need JOIN several tables and select all in once
+ * Corresponding property with Entity type must be defined in base entity class
+ *
+ *
  *
  * @package Falseclock\DBD\Entity
  */
 class Complex
 {
-    const ITERABLE = "isIterable";
-    const TYPE = "typeClass";
-    const NULLABLE = "nullable";
-    /** @var string $type full class name with namespace */
-    public $typeClass;
-    /** @var bool $isIterable */
-    public $isIterable = false;
-    /** @var bool $nullable If no value is specified for a single-valued property, the Nullable attribute defaults to true. */
-    public $nullable = true;
+    const TYPE = "complexClass";
+    /** @var string $complexClass full class name with namespace */
+    public $complexClass;
 
     /**
      * Complex constructor.
      *
-     * @param null $embeddedNameOrArray
+     * @param null $complexNameOrArray
+     * @throws MapperException
      */
-    public function __construct($embeddedNameOrArray = null)
+    public function __construct($complexNameOrArray = null)
     {
-        if (isset($embeddedNameOrArray)) {
-            if (is_string($embeddedNameOrArray)) {
-                $this->typeClass = $embeddedNameOrArray;
-            } else {
-                foreach ($embeddedNameOrArray as $key => $value) {
+        if (isset($complexNameOrArray)) {
+            if (is_string($complexNameOrArray)) {
+                $this->complexClass = $complexNameOrArray;
+            } else if (is_array($complexNameOrArray)) {
+                foreach ($complexNameOrArray as $key => $value) {
                     $this->$key = $value;
                 }
+            } else {
+                throw new MapperException("Complex constructor accepts only string or array");
             }
         }
+
+        if (is_null($this->complexClass))
+            throw new MapperException("Complex className does not set");
     }
 }
