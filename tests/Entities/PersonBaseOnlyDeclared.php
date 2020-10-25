@@ -20,6 +20,27 @@
 
 namespace DBD\Entity\Tests\Entities;
 
-class PersonWithoutMapping extends Person
+use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
+
+class PersonBaseOnlyDeclared extends PersonBase implements OnlyDeclaredPropertiesEntity
+{
+    /**
+     * @var int $id
+     * @see PersonOnlyDeclaredBaseMap::$id
+     */
+    public $id;
+    /**
+     * @var bool $isActive
+     * @see PersonOnlyDeclaredBaseMap::$isActive
+     */
+    public $isActive = false;
+    /**
+     * @var string $name
+     * @see PersonOnlyDeclaredBaseMap::$name
+     */
+    public $name;
+}
+
+class PersonBaseOnlyDeclaredMap extends PersonBaseMap
 {
 }

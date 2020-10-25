@@ -18,33 +18,60 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Constraint;
 
-use DateTime;
-use DBD\Entity\Common\Utils;
+use DBD\Entity\Column;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\FullMapper;
+use DBD\Entity\Mapper;
+use DBD\Entity\Primitive;
 
-class PersonSetters extends Person
+class Person extends Entity implements FullEntity
 {
-    /**
-     * @var DateTime $registrationDate
-     * @see PersonSettersMap::$registrationDate
-     */
-    public $registrationDate;
+    const TABLE = "";
+    const SCHEME = "";
 
     /**
-     * @param $isActive
+     * @var string $firstName
+     * @see PersonMap::$firstName
      */
-    public function setIsActive($isActive)
-    {
-        $this->isActive = Utils::convertBoolVar($isActive);
-    }
+    public $firstName;
 
-    public function setRegistrationDate(string $registrationDate)
-    {
-        $this->registrationDate = new DateTime($registrationDate);
-    }
+    /**
+     * @var int $id
+     * @see PersonBaseMap::$id
+     */
+    public $id;
 }
 
-class PersonSettersMap extends PersonMap
+class PersonMap extends Mapper implements FullMapper
 {
+    const ANNOTATION = "";
+
+    /**
+     * @var Column $firstName
+     * @see Person::$firstName
+     */
+    public $firstName = [
+        Column::NAME => "person_first_name",
+        Column::PRIMITIVE_TYPE => Primitive::String,
+        Column::NULLABLE => false,
+        Column::MAXLENGTH => 256,
+        Column::ANNOTATION => "",
+        Column::ORIGIN_TYPE => "varchar"
+    ];
+
+    /**
+     * @var Column $id
+     * @see PersonBase::$id
+     */
+    public $id = [
+        Column::NAME => "person_id",
+        Column::PRIMITIVE_TYPE => Primitive::Int32,
+        Column::NULLABLE => false,
+        Column::ANNOTATION => "",
+        Column::KEY => true,
+        Column::ORIGIN_TYPE => "int4"
+    ];
 }

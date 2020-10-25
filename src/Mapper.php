@@ -83,7 +83,6 @@ abstract class Mapper extends Singleton
      * Used when we need convert Mapper to Table instance
      *
      * @return MapperVariables
-     * @throws Common\EntityException
      * @throws MapperException
      */
     public function getAllVariables()
@@ -187,7 +186,7 @@ abstract class Mapper extends Singleton
                 $entityClass = get_parent_class($this->getEntityClass());
 
                 foreach ($constraints as $constraintName => $constraintValue) {
-                    $temporaryConstraint = new ConstraintRaw($constraintValue);
+                    $temporaryConstraint = new Constraint($constraintValue);
                     $temporaryConstraint->localTable = $this->getTable();
 
                     // If we use View - we do not always need to define constraint fields

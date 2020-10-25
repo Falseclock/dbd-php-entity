@@ -18,37 +18,91 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Constraint;
 
 use DBD\Entity\Column;
+use DBD\Entity\Constraint;
 use DBD\Entity\Entity;
-use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\FullMapper;
 use DBD\Entity\Mapper;
 use DBD\Entity\Primitive;
 
-class Synthetic extends Entity implements SyntheticEntity
+class TenderLot extends Entity implements FullEntity
 {
+    const TABLE = "";
+    const SCHEME = "";
+
+    /**
+     * @var int $tenderId
+     * @see TenderLotMap::$tenderId
+     */
+    public $tenderId;
+
     /**
      * @var int $id
-     * @see SyntheticMap::$id
+     * @see TenderLotMap::$id
      */
     public $id;
+
+    /**
+     * @var string $name
+     * @see TenderLotMap::$name
+     */
+    public $name;
 }
 
-class SyntheticMap extends Mapper
+class TenderLotMap extends Mapper implements FullMapper
 {
+    const ANNOTATION = "";
+
     /**
-     * @var Column
-     * @see Synthetic::$id
+     * @var Column $tenderId
+     * @see TenderLot::$tenderId
+     */
+    public $tenderId = [
+        Column::NAME => "tender_id",
+        Column::PRIMITIVE_TYPE => Primitive::Int32,
+        Column::NULLABLE => false,
+        Column::ANNOTATION => "Reference to Tender",
+        Column::ORIGIN_TYPE => "int4"
+    ];
+
+    /**
+     * @var Column $id
+     * @see TenderLot::$id
      */
     public $id = [
-        Column::NAME => "person_id",
+        Column::NAME => "tender_lot_id",
         Column::PRIMITIVE_TYPE => Primitive::Int32,
-        Column::IS_AUTO => true,
         Column::NULLABLE => false,
-        Column::ANNOTATION => "Unique ID",
+        Column::ANNOTATION => "",
         Column::KEY => true,
-        Column::ORIGIN_TYPE => "int4",
+        Column::ORIGIN_TYPE => "int4"
+    ];
+
+    /**
+     * @var Column $name
+     * @see TenderLot::$name
+     */
+    public $name = [
+        Column::NAME => "tender_lot_name",
+        Column::PRIMITIVE_TYPE => Primitive::String,
+        Column::NULLABLE => false,
+        Column::MAXLENGTH => 512,
+        Column::ANNOTATION => "",
+        Column::ORIGIN_TYPE => "varchar"
+    ];
+
+    /**
+     * @var Constraint $Tender
+     */
+    protected $Tender = [
+        Constraint::LOCAL_COLUMN => "tender_id",
+        Constraint::FOREIGN_SCHEME => Tender::SCHEME,
+        Constraint::FOREIGN_TABLE => Tender::TABLE,
+        Constraint::FOREIGN_COLUMN => "tender_id",
+        Constraint::JOIN_TYPE => null,
+        Constraint::BASE_CLASS => Tender::class,
     ];
 }
-

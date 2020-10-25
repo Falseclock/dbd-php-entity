@@ -20,27 +20,31 @@
 
 namespace DBD\Entity\Tests\Entities;
 
-use DBD\Entity\Interfaces\StrictlyFilledEntity;
+use DateTime;
+use DBD\Entity\Common\Utils;
 
-class PersonStrictlyFilled extends Person implements StrictlyFilledEntity
+class PersonBaseSetters extends PersonBase
 {
     /**
-     * @var int $id
-     * @see PersonStrictlyFilledMap::$id
+     * @var DateTime $registrationDate
+     * @see PersonSettersBaseMap::$registrationDate
      */
-    public $id;
+    public $registrationDate;
+
     /**
-     * @var bool $isActive
-     * @see PersonStrictlyFilledMap::$isActive
+     * @param $isActive
      */
-    public $isActive = false;
-    /**
-     * @var string $name
-     * @see PersonStrictlyFilledMap::$name
-     */
-    public $name;
+    public function setIsActive($isActive)
+    {
+        $this->isActive = Utils::convertBoolVar($isActive);
+    }
+
+    public function setRegistrationDate(string $registrationDate)
+    {
+        $this->registrationDate = new DateTime($registrationDate);
+    }
 }
 
-class PersonStrictlyFilledMap extends PersonMap
+class PersonBaseSettersMap extends PersonBaseMap
 {
 }

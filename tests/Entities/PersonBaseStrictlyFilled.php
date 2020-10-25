@@ -18,43 +18,29 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity;
+namespace DBD\Entity\Tests\Entities;
 
-class Constraint
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
+
+class PersonBaseStrictlyFilled extends PersonBase implements StrictlyFilledEntity
 {
-    const BASE_CLASS = "class";
-    const FOREIGN_COLUMN = "foreignColumn";
-    const FOREIGN_SCHEME = "foreignScheme";
-    const FOREIGN_TABLE = "foreignTable";
-    const JOIN_TYPE = "join";
-    const LOCAL_COLUMN = "localColumn";
-    const LOCAL_TABLE = "localTable";
-    /** @var Column|string $localColumn */
-    public $localColumn;
-    /** @var Table $localTable */
-    public $localTable;
-    /** @var Table $foreignTable */
-    public $foreignTable;
-    /** @var Column $foreignColumn */
-    public $foreignColumn;
-    /** @var Join $joinType */
-    public $join;
-    /** @var string $class */
-    public $class;
-    /** @var string $foreignScheme */
-    public $foreignScheme;
-
     /**
-     * Constraint constructor.
-     *
-     * @param array|null $constraintParams
+     * @var int $id
+     * @see PersonStrictlyFilledBaseMap::$id
      */
-    public function __construct(?array $constraintParams = null)
-    {
-        if (isset($constraintParams) and is_array($constraintParams)) {
-            foreach ($constraintParams as $key => $value) {
-                $this->$key = $value;
-            }
-        }
-    }
+    public $id;
+    /**
+     * @var bool $isActive
+     * @see PersonStrictlyFilledBaseMap::$isActive
+     */
+    public $isActive = false;
+    /**
+     * @var string $name
+     * @see PersonStrictlyFilledBaseMap::$name
+     */
+    public $name;
+}
+
+class PersonStrictlyFilledBaseMap extends PersonBaseMap
+{
 }

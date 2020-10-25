@@ -21,9 +21,12 @@
 namespace DBD\Entity\Tests\Fixtures;
 
 use DBD\Entity\Tests\Entities\AddressMap;
+use DBD\Entity\Tests\Entities\Constraint\CompanyMap;
+use DBD\Entity\Tests\Entities\Constraint\PersonMap;
+use DBD\Entity\Tests\Entities\Constraint\UserMap;
 use DBD\Entity\Tests\Entities\DeclarationChain\AMap;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
-use DBD\Entity\Tests\Entities\PersonMap;
+use DBD\Entity\Tests\Entities\PersonBaseMap;
 use DBD\Entity\Tests\Entities\UnUsedPropertyInMapperMap;
 
 class Data
@@ -65,11 +68,11 @@ class Data
     public static function getPersonFullEntityData()
     {
         return [
-            PersonMap::me()->name->name => 'Alfa',
-            PersonMap::me()->id->name => '1',
-            PersonMap::me()->email->name => 'alfa@at.com',
-            PersonMap::me()->registrationDate->name => '2020-09-21 20:48:28.918366+06',
-            PersonMap::me()->isActive->name => 't',
+            PersonBaseMap::me()->name->name => 'Alfa',
+            PersonBaseMap::me()->id->name => '1',
+            PersonBaseMap::me()->email->name => 'alfa@at.com',
+            PersonBaseMap::me()->registrationDate->name => '2020-09-21 20:48:28.918366+06',
+            PersonBaseMap::me()->isActive->name => 't',
         ];
     }
 
@@ -79,5 +82,40 @@ class Data
             AddressMap::me()->id->name => 111,
             AddressMap::me()->street->name => "12 Downing street",
         ];
+    }
+
+    public static function getUserFullData()
+    {
+        return array_merge(self::getUserData(), self::getPersonData(), self::getCompanyData());
+    }
+
+    public static function getUserData()
+    {
+        return [
+            UserMap::me()->id->name => 1,
+            UserMap::me()->personId->name => 2,
+            UserMap::me()->companyId->name => 3,
+        ];
+    }
+
+    public static function getPersonData()
+    {
+        return [
+            PersonMap::me()->id->name => 2,
+            PersonMap::me()->firstName->name => "FirstName",
+        ];
+    }
+
+    public static function getCompanyData()
+    {
+        return [
+            CompanyMap::me()->id->name => 3,
+            CompanyMap::me()->name->name => "Company Name",
+        ];
+    }
+
+    public static function getUserNonFullData()
+    {
+        return self::getUserData();
     }
 }

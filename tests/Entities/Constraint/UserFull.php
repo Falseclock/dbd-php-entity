@@ -18,13 +18,23 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Constraint;
 
-class PersonWithUnmappedProperty extends Person
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
+
+class UserFull extends User implements StrictlyFilledEntity
 {
-    public $unmappedProperty;
+    /**
+     * @var Company $Company
+     */
+    public $Company;
+    /**
+     * @var Person $Person
+     */
+    public $Person;
 }
 
-class PersonWithUnmappedPropertyMap extends PersonMap
+class UserFullMap extends UserMap
 {
+
 }

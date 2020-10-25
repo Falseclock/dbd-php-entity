@@ -28,7 +28,6 @@ use DBD\Entity\Common\MapperException;
 use DBD\Entity\Entity;
 use DBD\Entity\EntityCache;
 use DBD\Entity\Interfaces\FullEntity;
-use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use DBD\Entity\Mapper;
 use DBD\Entity\Tests\Entities\DeclarationChain\B;
@@ -36,13 +35,12 @@ use DBD\Entity\Tests\Entities\DeclarationChain\C;
 use DBD\Entity\Tests\Entities\DeclarationChain\D;
 use DBD\Entity\Tests\Entities\JsonTypeColumn;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
-use DBD\Entity\Tests\Entities\OnlyComplex;
-use DBD\Entity\Tests\Entities\Person;
-use DBD\Entity\Tests\Entities\PersonMap;
-use DBD\Entity\Tests\Entities\PersonOnlyDeclared;
-use DBD\Entity\Tests\Entities\PersonSetters;
-use DBD\Entity\Tests\Entities\PersonWithoutMapping;
-use DBD\Entity\Tests\Entities\PersonWithUnmappedProperty;
+use DBD\Entity\Tests\Entities\PersonBase;
+use DBD\Entity\Tests\Entities\PersonBaseMap;
+use DBD\Entity\Tests\Entities\PersonBaseOnlyDeclared;
+use DBD\Entity\Tests\Entities\PersonBaseSetters;
+use DBD\Entity\Tests\Entities\PersonBaseWithoutMapping;
+use DBD\Entity\Tests\Entities\PersonBaseWithUnmappedProperty;
 use DBD\Entity\Tests\Entities\Synthetic;
 use DBD\Entity\Tests\Entities\UnUsedPropertyInMapper;
 use DBD\Entity\Tests\Fixtures\Data;
@@ -53,25 +51,6 @@ use ReflectionProperty;
 
 class EntityTest extends TestCase
 {
-    public function testComplexDefinition()
-    {
-        $entity = new OnlyComplex();
-        self::assertInstanceOf(Entity::class, $entity);
-        self::assertInstanceOf(StrictlyFilledEntity::class, $entity);
-
-        $entity = new OnlyComplex(Data::getJustComplexData());
-
-        self::assertNotNull($entity->Address);
-        self::assertNotNull($entity->Address->street);
-        self::assertNotNull($entity->Address->id);
-        self::assertNotNull($entity->Person);
-        self::assertNotNull($entity->Person->name);
-        self::assertNotNull($entity->Person->id);
-        self::assertNotNull($entity->Person->isActive);
-        self::assertNotNull($entity->Person->registrationDate);
-        self::assertNotNull($entity->Person->email);
-    }
-
     public function testMapperHasPropertyNotUsedInEntity()
     {
         $entity = new UnUsedPropertyInMapper();
@@ -164,10 +143,10 @@ class EntityTest extends TestCase
      */
     public function testGetTable()
     {
-        $table = Person::table();
+        $table = PersonBase::table();
 
         self::assertNotNull($table);
-        self::assertEquals(Person::SCHEME . "." . Person::TABLE, $table);
+        self::assertEquals(PersonBase::SCHEME . "." . PersonBase::TABLE, $table);
     }
 
     /**
@@ -200,8 +179,8 @@ class EntityTest extends TestCase
      */
     public function testUnmappedProperty()
     {
-        $this->expectException(EntityException::class);
-        new PersonWithUnmappedProperty();
+        $this->expectException(MapperException::class);
+        new PersonBaseWithUnmappedProperty();
     }
 
     /**
@@ -213,21 +192,21 @@ class EntityTest extends TestCase
      */
     public function testInstance()
     {
-        $person = new Person();
+        $person = new PersonBase();
 
         self::assertInstanceOf(Entity::class, $person);
         self::assertInstanceOf(FullEntity::class, $person);
 
         // Check entity creation
         $personData = Data::getPersonFullEntityData();
-        $person = new Person($personData);
+        $person = new PersonBase($personData);
 
         // Check all variables of person equals to initial array
-        self::assertEquals($person->id, $personData[PersonMap::me()->id->name]);
-        self::assertEquals($person->name, $personData[PersonMap::me()->name->name]);
-        self::assertEquals($person->email, $personData[PersonMap::me()->email->name]);
-        self::assertEquals($person->isActive, $personData[PersonMap::me()->isActive->name]);
-        self::assertEquals($person->registrationDate, $personData[PersonMap::me()->registrationDate->name]);
+        self::assertEquals($person->id, $personData[PersonBaseMap::me()->id->name]);
+        self::assertEquals($person->name, $personData[PersonBaseMap::me()->name->name]);
+        self::assertEquals($person->email, $personData[PersonBaseMap::me()->email->name]);
+        self::assertEquals($person->isActive, $personData[PersonBaseMap::me()->isActive->name]);
+        self::assertEquals($person->registrationDate, $personData[PersonBaseMap::me()->registrationDate->name]);
     }
 
     /**
@@ -240,79 +219,79 @@ class EntityTest extends TestCase
     public function testSetters()
     {
         $personData = Data::getPersonFullEntityData();
-        $person = new PersonSetters($personData);
+        $person = new PersonBaseSetters($personData);
 
-        self::assertInstanceOf(Person::class, $person);
+        self::assertInstanceOf(PersonBase::class, $person);
         self::assertInstanceOf(DateTime::class, $person->registrationDate);
         self::assertIsBool($person->isActive);
         self::assertTrue($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = '	on ';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = '	on ';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertTrue($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = '	off ';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = '	off ';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertFalse($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = '	t ';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = '	t ';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertTrue($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = '	f ';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = '	f ';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertFalse($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = '	1';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = '	1';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertTrue($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = '0	';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = '0	';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertFalse($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = '	yes';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = '	yes';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertTrue($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = ' no ';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = ' no ';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertFalse($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = ' tRuE ';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = ' tRuE ';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertTrue($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = ' fAlSe ';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = ' fAlSe ';
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertFalse($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = true;
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = true;
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertTrue($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = false;
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = false;
+        $person = new PersonBaseSetters($personData);
         self::assertIsBool($person->isActive);
         self::assertFalse($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = 'some other value';
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = 'some other value';
+        $person = new PersonBaseSetters($personData);
         self::assertNull($person->isActive);
 
-        $personData[PersonMap::me()->isActive->name] = 2;
-        $person = new PersonSetters($personData);
+        $personData[PersonBaseMap::me()->isActive->name] = 2;
+        $person = new PersonBaseSetters($personData);
         self::assertNull($person->isActive);
     }
 
@@ -324,12 +303,12 @@ class EntityTest extends TestCase
         $personData = Data::getPersonFullEntityData();
         $expectCount = count($personData) - 1;
 
-        unset($personData[PersonMap::me()->name->name]);
+        unset($personData[PersonBaseMap::me()->name->name]);
         self::assertCount($expectCount, $personData);
-        self::assertArrayNotHasKey(PersonMap::me()->name->name, $personData);
+        self::assertArrayNotHasKey(PersonBaseMap::me()->name->name, $personData);
 
         $this->expectException(EntityException::class);
-        new Person($personData);
+        new PersonBase($personData);
     }
 
     /**
@@ -342,7 +321,7 @@ class EntityTest extends TestCase
     public function testMissingMapper()
     {
         $this->expectException(MapperException::class);
-        PersonWithoutMapping::map();
+        PersonBaseWithoutMapping::map();
     }
 
     /**
@@ -354,32 +333,32 @@ class EntityTest extends TestCase
     public function testOnlyDeclared()
     {
         $personData = Data::getPersonFullEntityData();
-        $person = new PersonOnlyDeclared($personData);
+        $person = new PersonBaseOnlyDeclared($personData);
 
         $entityCache = EntityCache::$mapCache;
 
-        $reflection = new ReflectionClass(PersonOnlyDeclared::class);
+        $reflection = new ReflectionClass(PersonBaseOnlyDeclared::class);
         $properties = $reflection->getProperties(ReflectionProperty::IS_PUBLIC);
 
         $properties = array_filter($properties, function ($property) {
-            return $property->class == PersonOnlyDeclared::class;
+            return $property->class == PersonBaseOnlyDeclared::class;
         }, ARRAY_FILTER_USE_BOTH);
 
 
-        self::assertInstanceOf(Person::class, $person);
+        self::assertInstanceOf(PersonBase::class, $person);
         self::assertCount(count($properties), get_object_vars($person));
 
-        foreach ($entityCache[PersonOnlyDeclared::class][EntityCache::DECLARED_PROPERTIES] as $propertyName => $boolean)
+        foreach ($entityCache[PersonBaseOnlyDeclared::class][EntityCache::DECLARED_PROPERTIES] as $propertyName => $boolean)
             self::assertTrue(property_exists($person, $propertyName));
 
         // Unset some unnecessary columns and check we do not have any exception, cause PersonOnlyDeclared extends Person which is FullEntity instance
-        unset($personData[PersonMap::me()->registrationDate->name]);
-        new PersonOnlyDeclared($personData);
+        unset($personData[PersonBaseMap::me()->registrationDate->name]);
+        new PersonBaseOnlyDeclared($personData);
 
         // Unset some required columns
-        unset($personData[PersonMap::me()->name->name]);
-        unset($personData[PersonMap::me()->isActive->name]);
+        unset($personData[PersonBaseMap::me()->name->name]);
+        unset($personData[PersonBaseMap::me()->isActive->name]);
         $this->expectException(EntityException::class);
-        new PersonOnlyDeclared($personData);
+        new PersonBaseOnlyDeclared($personData);
     }
 }

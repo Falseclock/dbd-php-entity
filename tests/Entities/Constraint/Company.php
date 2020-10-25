@@ -18,29 +18,59 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities;
+namespace DBD\Entity\Tests\Entities\Constraint;
 
-use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
+use DBD\Entity\Column;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\FullMapper;
+use DBD\Entity\Mapper;
+use DBD\Entity\Primitive;
 
-class PersonOnlyDeclared extends Person implements OnlyDeclaredPropertiesEntity
+class Company extends Entity implements FullEntity
 {
+    const TABLE = "";
+    const SCHEME = "";
+
     /**
      * @var int $id
-     * @see PersonOnlyDeclaredMap::$id
+     * @see CompanyMap::$id
      */
     public $id;
-    /**
-     * @var bool $isActive
-     * @see PersonOnlyDeclaredMap::$isActive
-     */
-    public $isActive = false;
+
     /**
      * @var string $name
-     * @see PersonOnlyDeclaredMap::$name
+     * @see CompanyMap::$name
      */
     public $name;
 }
 
-class PersonOnlyDeclaredMap extends PersonMap
+class CompanyMap extends Mapper implements FullMapper
 {
+    const ANNOTATION = "";
+
+    /**
+     * @var Column $id
+     * @see Company::$id
+     */
+    public $id = [
+        Column::NAME => "company_id",
+        Column::PRIMITIVE_TYPE => Primitive::Int32,
+        Column::NULLABLE => false,
+        Column::KEY => true,
+        Column::ORIGIN_TYPE => "int4"
+    ];
+
+    /**
+     * @var Column $name
+     * @see Company::$name
+     */
+    public $name = [
+        Column::NAME => "company_name",
+        Column::PRIMITIVE_TYPE => Primitive::String,
+        Column::NULLABLE => false,
+        Column::MAXLENGTH => 255,
+        Column::ANNOTATION => "",
+        Column::ORIGIN_TYPE => "varchar"
+    ];
 }

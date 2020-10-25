@@ -24,16 +24,39 @@ namespace DBD\Entity\Tests;
 
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Complex;
-use DBD\Entity\Tests\Entities\Person;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
+use DBD\Entity\Tests\Entities\OnlyComplex;
+use DBD\Entity\Tests\Entities\PersonBase;
+use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
 class ComplexTest extends TestCase
 {
+    public function testComplexDefinition()
+    {
+        $entity = new OnlyComplex();
+        self::assertInstanceOf(Entity::class, $entity);
+        self::assertInstanceOf(StrictlyFilledEntity::class, $entity);
+
+        $entity = new OnlyComplex(Data::getJustComplexData());
+
+        self::assertNotNull($entity->Address);
+        self::assertNotNull($entity->Address->street);
+        self::assertNotNull($entity->Address->id);
+        self::assertNotNull($entity->Person);
+        self::assertNotNull($entity->Person->name);
+        self::assertNotNull($entity->Person->id);
+        self::assertNotNull($entity->Person->isActive);
+        self::assertNotNull($entity->Person->registrationDate);
+        self::assertNotNull($entity->Person->email);
+    }
+
     public function testArrayInstanceUsage()
     {
         $complex = new Complex([
-            Complex::TYPE => Person::class
+            Complex::TYPE => PersonBase::class
         ]);
 
         self::assertNotNull($complex);
@@ -41,7 +64,7 @@ class ComplexTest extends TestCase
 
     public function testStringInstanceUsage()
     {
-        $complexName = Person::class;
+        $complexName = PersonBase::class;
         $complex = new Complex($complexName);
 
         self::assertInstanceOf(Complex::class, $complex);

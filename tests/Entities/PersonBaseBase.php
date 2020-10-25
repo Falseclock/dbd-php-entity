@@ -27,43 +27,43 @@ use DBD\Entity\Interfaces\FullMapper;
 use DBD\Entity\Mapper;
 use DBD\Entity\Primitive;
 
-class Person extends Entity implements FullEntity
+class PersonBase extends Entity implements FullEntity
 {
     const SCHEME = "public";
     const TABLE = "person";
     /**
      * @var string $email
-     * @see PersonMap::$email
+     * @see PersonBaseMap::$email
      */
     public $email;
     /**
      * @var int $id
-     * @see PersonMap::$id
+     * @see PersonBaseMap::$id
      */
     public $id;
     /**
      * @var bool $isActive
-     * @see PersonMap::$isActive
+     * @see PersonBaseMap::$isActive
      */
     public $isActive;
     /**
      * @var string $name
-     * @see PersonMap::$name
+     * @see PersonBaseMap::$name
      */
     public $name;
     /**
      * @var bool $registrationDate
-     * @see PersonMap::$registrationDate
+     * @see PersonBaseMap::$registrationDate
      */
     public $registrationDate;
 }
 
-class PersonMap extends Mapper implements FullMapper
+class PersonBaseMap extends Mapper implements FullMapper
 {
     const ANNOTATION = "Table description";
     /**
      * @var Column
-     * @see Person::$email
+     * @see PersonBase::$email
      */
     public $email = [
         Column::NAME => "person_email",
@@ -75,7 +75,7 @@ class PersonMap extends Mapper implements FullMapper
     ];
     /**
      * @var Column
-     * @see Person::$id
+     * @see PersonBase::$id
      */
     public $id = [
         Column::NAME => "person_id",
@@ -88,7 +88,7 @@ class PersonMap extends Mapper implements FullMapper
     ];
     /**
      * @var Column
-     * @see Person::$isActive
+     * @see PersonBase::$isActive
      */
     public $isActive = [
         Column::NAME => "person_is_active",
@@ -100,7 +100,7 @@ class PersonMap extends Mapper implements FullMapper
     ];
     /**
      * @var Column
-     * @see Person::$name
+     * @see PersonBase::$name
      */
     public $name = [
         Column::NAME => "person_name",
@@ -111,7 +111,7 @@ class PersonMap extends Mapper implements FullMapper
     ];
     /**
      * @var Column
-     * @see Person::$registrationDate
+     * @see PersonBase::$registrationDate
      */
     public $registrationDate = [
         Column::NAME => "person_registration_date",

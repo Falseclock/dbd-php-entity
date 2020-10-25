@@ -67,12 +67,12 @@ abstract class Entity
             EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $columnsDefinition;
             EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_REVERSE_MAP] = array_flip($columnsDefinition);
 
-/*            if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
-                foreach (get_object_vars($this) as $propertyName => $propertyDefaultValue) {
-                    if (!array_key_exists($propertyName, $columnsDefinition))
-                        throw new EntityException(sprintf("FullEntity or StrictlyFilledEntity %s has unmapped property '%s'", $calledClass, $propertyName));
-                }
-            }*/
+            /*            if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
+                            foreach (get_object_vars($this) as $propertyName => $propertyDefaultValue) {
+                                if (!array_key_exists($propertyName, $columnsDefinition))
+                                    throw new EntityException(sprintf("FullEntity or StrictlyFilledEntity %s has unmapped property '%s'", $calledClass, $propertyName));
+                            }
+                        }*/
 
             // У нас может быть цепочка классов, где какой-то конечный уже не имеет интерфейса OnlyDeclaredPropertiesEntity
             // соответственно нам надо собрать все переменные всех дочерних классов, даже если они расширяют друг друга
@@ -90,7 +90,7 @@ abstract class Entity
         }
 
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
-            $checkAgainst = array_merge($map->getColumns(), $map->getComplex(), $map->getEmbedded());
+            $checkAgainst = array_merge($map->getColumns(), $map->getComplex(), $map->getEmbedded(), $map->getConstraints());
             foreach (get_object_vars($this) as $propertyName => $propertyDefaultValue) {
                 if (!array_key_exists($propertyName, $checkAgainst))
                     throw new EntityException(sprintf("Strict Entity %s has unmapped property '%s'", $calledClass, $propertyName));
@@ -222,7 +222,8 @@ abstract class Entity
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
             $intersection = array_intersect_key($fieldMapping, $rowData);
             if ($intersection != $fieldMapping) {
-                throw new EntityException(sprintf("Missing columns for FullEntity or StrictlyFilledEntity: %s",
+                throw new EntityException(sprintf("Missing columns for FullEntity or StrictlyFilledEntity '%s': %s",
+                        get_class($this),
                         json_encode(array_keys(array_diff_key($fieldMapping, $intersection)))
                     )
                 );
@@ -296,7 +297,7 @@ abstract class Entity
             if ($constraint->localColumn instanceof Column) {
                 $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
             } else {
-                /** @var ConstraintRaw $constraint */
+                /** @var Constraint $constraint */
                 $constraintValue = isset($rowData[$constraint->localColumn]) ? $rowData[$constraint->localColumn] : null;
             }
 
@@ -306,7 +307,7 @@ abstract class Entity
                 $testForJsonString = json_decode($constraintValue);
 
             // Мы данные в первом прогоне могли уже сформировать в полноценный массив
-            // Но в дочерние классы мы должны передавать  JSON строкой, а массивом,
+            // Но в дочерние классы мы должны передавать не JSON строкой, а массивом,
             // Поэтому вертаем все назад как было
             if (isset($constraintValue) and is_array($constraintValue)) {
                 $testForJsonString = $constraintValue;

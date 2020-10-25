@@ -34,7 +34,7 @@ class OnlyComplex extends Entity implements SyntheticEntity, StrictlyFilledEntit
      */
     public $Address;
     /**
-     * @var Person $Person
+     * @var PersonBase $Person
      * @see OnlyComplexMap::$Person
      */
     public $Person;
@@ -55,6 +55,6 @@ class OnlyComplexMap extends Mapper
      * @var Complex
      */
     protected $Person = [
-        Complex::TYPE => Person::class,
+        Complex::TYPE => PersonBase::class,
     ];
 }
