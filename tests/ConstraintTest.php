@@ -30,11 +30,31 @@ use DBD\Entity\Tests\Entities\Constraint\Tender;
 use DBD\Entity\Tests\Entities\Constraint\User;
 use DBD\Entity\Tests\Entities\Constraint\UserFull;
 use DBD\Entity\Tests\Entities\Constraint\UserFullSynthetic;
+use DBD\Entity\Tests\Entities\Constraint\UserWithSetter;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 
 class ConstraintTest extends TestCase
 {
+    public function testSetter()
+    {
+        $entity = new UserWithSetter();
+
+        self::assertInstanceOf(StrictlyFilledEntity::class, $entity);
+        self::assertInstanceOf(User::class, $entity);
+
+        $entity = new UserWithSetter(Data::getUserFullData());
+
+        self::assertNotNull($entity->id);
+        self::assertNotNull($entity->companyId);
+        self::assertNotNull($entity->personId);
+
+        self::assertNotNull($entity->Company->id);
+        self::assertNull($entity->Company->name);
+
+        self::assertNull($entity->Person);
+    }
+
     public function testUser()
     {
         $entity = new UserFull();

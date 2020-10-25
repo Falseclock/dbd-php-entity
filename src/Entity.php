@@ -28,8 +28,6 @@ use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
-use DBD\Entity\Join\ManyToMany;
-use DBD\Entity\Join\OneToMany;
 use Exception;
 use ReflectionClass;
 use ReflectionException;
@@ -281,7 +279,6 @@ abstract class Entity
      * @param int $maxLevels
      * @param int $currentLevel
      *
-     * @throws EntityException
      * @throws MapperException
      */
     final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
@@ -294,80 +291,31 @@ abstract class Entity
             if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
                 continue;
 
-            if ($constraint->localColumn instanceof Column) {
-                $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
+            $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
+
+            /**
+             * Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
+             * то просто их прогоняем через класс и на выходе получим готовый объект
+             */
+            if (isset($constraintValue)) {
+                $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
             } else {
-                /** @var Constraint $constraint */
-                $constraintValue = isset($rowData[$constraint->localColumn]) ? $rowData[$constraint->localColumn] : null;
+                // Мы можем создать view, в которой не вытаскиваем данные по определенному constraint, потому что они нам не нужны
+                $newConstraintValue = null;
             }
 
-            $testForJsonString = null;
+            $setterMethod = "set" . ucfirst($entityName);
 
-            if (isset($constraintValue) and is_string($constraintValue))
-                $testForJsonString = json_decode($constraintValue);
-
-            // Мы данные в первом прогоне могли уже сформировать в полноценный массив
-            // Но в дочерние классы мы должны передавать не JSON строкой, а массивом,
-            // Поэтому вертаем все назад как было
-            if (isset($constraintValue) and is_array($constraintValue)) {
-                $testForJsonString = $constraintValue;
-                $constraintValue = json_encode($constraintValue, JSON_NUMERIC_CHECK);
-            }
-
-            // Если у нас действительно json строка
-            if ($testForJsonString !== null) {
-                // Если это массив объектов
-                if (is_array($testForJsonString)) {
-                    if ($constraint->join instanceof ManyToMany or $constraint->join instanceof OneToMany) {
-                        // Разбиваем на нормальный массив, чтобы затолкать в переменную
-                        $jsonDecodedField = json_decode($constraintValue, true);
-                        $classVariableValue = [];
-
-                        foreach ($jsonDecodedField as $object)
-                            $classVariableValue[] = new $constraint->class($object, $maxLevels, $currentLevel);
-
-                        $this->$entityName = $classVariableValue;
-                    } else {
-                        throw new EntityException("Variable '$entityName' of class {$this}");
-                    }
-                } else {
-                    $jsonDecodedField = json_decode($constraintValue, true);
-                    $this->$entityName = new $constraint->class($jsonDecodedField, $maxLevels, $currentLevel);
-                }
+            if (method_exists($this, $setterMethod)) {
+                $this->$setterMethod($newConstraintValue);
             } else {
-
-                /**
-                 * Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
-                 * то просто их прогоняем через класс и на выходе получим готовый объект
-                 */
-                if (isset($constraintValue)) {
-                    $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-                } else {
-                    //throw new EntityException("Понять какие это случаи и описать их тут");
-                    // Мы можем создать view, в которой не вытаскиваем данные по определенному constraint, потому что они нам не нужны
-                    $newConstraintValue = null;
-                    /*					if($keyFromMap === null && !isset($arrayMap[$entityName])) {
-
-                                            $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-                                        }
-                                        else {
-                                            $newConstraintValue = null;
-                                        }*/
-                }
-
-                $setterMethod = "set" . ucfirst($entityName);
-
-                if (method_exists($this, $setterMethod)) {
-                    $this->$setterMethod($newConstraintValue);
-                } else {
-                    // Если у нас переменная класа уже инициализирована, и нету значения из базы
-                    // то скорее всего этот объект является массивом данных
-                    if (!isset($this->$entityName) or isset($newConstraintValue)) {
-                        if (isset($newConstraintValue))
-                            $this->$entityName = $newConstraintValue;
-                        else if ($currentLevel <= $maxLevels)
-                            $this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
-                    }
+                // Если у нас переменная класа уже инициализирована, и нету значения из базы
+                // то скорее всего этот объект является массивом данных
+                if (!isset($this->$entityName) or isset($newConstraintValue)) {
+                    if (isset($newConstraintValue))
+                        $this->$entityName = $newConstraintValue;
+                    else if ($currentLevel <= $maxLevels)
+                        $this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
                 }
             }
         }
