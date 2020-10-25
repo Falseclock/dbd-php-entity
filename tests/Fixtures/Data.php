@@ -22,6 +22,8 @@ namespace DBD\Entity\Tests\Fixtures;
 
 use DBD\Entity\Tests\Entities\AddressMap;
 use DBD\Entity\Tests\Entities\Constraint\CompanyMap;
+use DBD\Entity\Tests\Entities\Constraint\LevelOneMap;
+use DBD\Entity\Tests\Entities\Constraint\LevelTwoMap;
 use DBD\Entity\Tests\Entities\Constraint\PersonMap;
 use DBD\Entity\Tests\Entities\Constraint\UserMap;
 use DBD\Entity\Tests\Entities\DeclarationChain\AMap;
@@ -117,5 +119,27 @@ class Data
     public static function getUserNonFullData()
     {
         return self::getUserData();
+    }
+
+    public static function getLongChainData()
+    {
+        return array_merge(self::getUserData(), self::getLevelOneData(), self::getLevelTwoData());
+    }
+
+    public static function getLevelOneData()
+    {
+        return [
+            LevelOneMap::me()->id->name => 111,
+            LevelOneMap::me()->levelTwoId->name => 222,
+        ];
+    }
+
+    public static function getLevelTwoData()
+    {
+        return [
+            LevelTwoMap::me()->id->name => 222,
+            LevelTwoMap::me()->levelOneId->name => 111,
+            LevelTwoMap::me()->levelThreeId->name => 333,
+        ];
     }
 }

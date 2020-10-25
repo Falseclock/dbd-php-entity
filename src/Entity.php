@@ -284,10 +284,8 @@ abstract class Entity
     final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
     {
         foreach ($mapper->getConstraints() as $entityName => $constraint) {
-            /**
-             * Check we have data for this constraint
-             * Проверяем, что у нас есть данные для данного constraint
-             */
+
+            /** Check we have data for this constraint */
             if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
                 continue;
 
@@ -297,11 +295,20 @@ abstract class Entity
              * Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
              * то просто их прогоняем через класс и на выходе получим готовый объект
              */
+            $newConstraintValue = null;
+
             if (isset($constraintValue)) {
-                $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-            } else {
-                // Мы можем создать view, в которой не вытаскиваем данные по определенному constraint, потому что они нам не нужны
-                $newConstraintValue = null;
+                if ($currentLevel <= $maxLevels) {
+                    $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
+                } else {
+                    /**
+                     * We skipping level. But we should also remove unsetted properties to issue notice of exception
+                     * that calling variable on undefined
+                     */
+                    foreach ($mapper->getConstraints() as $constraintToRemove => $constraintToRemoveValue) {
+                        unset($this->$constraintToRemove);
+                    }
+                }
             }
 
             $setterMethod = "set" . ucfirst($entityName);
@@ -314,8 +321,6 @@ abstract class Entity
                 if (!isset($this->$entityName) or isset($newConstraintValue)) {
                     if (isset($newConstraintValue))
                         $this->$entityName = $newConstraintValue;
-                    else if ($currentLevel <= $maxLevels)
-                        $this->$entityName = new $constraint->class($rowData, $maxLevels, $currentLevel);
                 }
             }
         }

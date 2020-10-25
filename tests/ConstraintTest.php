@@ -24,8 +24,10 @@ use DBD\Entity\Common\EntityException;
 use DBD\Entity\Constraint;
 use DBD\Entity\Entity;
 use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Tests\Entities\Constraint\LongChain;
 use DBD\Entity\Tests\Entities\Constraint\Tender;
 use DBD\Entity\Tests\Entities\Constraint\User;
 use DBD\Entity\Tests\Entities\Constraint\UserFull;
@@ -36,6 +38,36 @@ use PHPUnit\Framework\TestCase;
 
 class ConstraintTest extends TestCase
 {
+    public function testLongChain()
+    {
+        $LongChain = new LongChain();
+
+        self::assertInstanceOf(SyntheticEntity::class, $LongChain);
+        self::assertInstanceOf(User::class, $LongChain);
+        self::assertNotInstanceOf(StrictlyFilledEntity::class, $LongChain);
+        self::assertNotInstanceOf(OnlyDeclaredPropertiesEntity::class, $LongChain);
+
+        // Level 2 has only two properties and both of them are Constraints
+        $LongChain = new LongChain(Data::getLongChainData());// check all properties removed
+
+        self::assertCount(0, (array)$LongChain->LevelOne->LevelTwo);
+
+        $LongChain = new LongChain(Data::getLongChainData(), 3);
+
+        self::assertCount(2, (array)$LongChain->LevelOne->LevelTwo);
+
+        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelOne);
+        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelThree);
+
+        // Level 1 has 3 properties, but we removed one constraint because of levels limitation
+        self::assertCount(2, (array)$LongChain->LevelOne->LevelTwo->LevelOne);
+        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelOne->id);
+        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelOne->levelTwoId);
+
+        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelThree);
+        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelThree->id);
+    }
+
     public function testSetter()
     {
         $entity = new UserWithSetter();
