@@ -7,4 +7,4 @@
 [![Latest Stable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v)](//packagist.org/packages/falseclock/dbd-php-entity)
 [![Total Downloads](https://poser.pugx.org/falseclock/dbd-php-entity/downloads)](//packagist.org/packages/falseclock/dbd-php-entity)
 [![Latest Unstable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v/unstable)](//packagist.org/packages/falseclock/dbd-php-entity)
-[![Total Downloads](https://poser.pugx.org/falseclock/dbd-php-entity/downloads)](//packagist.org/packages/falseclock/dbd-php-entity)
+[![License](https://poser.pugx.org/falseclock/dbd-php-entity/license)](//packagist.org/packages/falseclock/dbd-php-entity)
