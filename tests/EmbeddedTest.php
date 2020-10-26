@@ -18,6 +18,8 @@
  *                                                                              *
  ********************************************************************************/
 
+declare(strict_types=1);
+
 namespace DBD\Entity\Tests;
 
 use DBD\Entity\Common\MapperException;
