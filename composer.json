@@ -6,9 +6,15 @@
     "dbd",
     "entity",
     "primitive",
-    "database"
+    "database",
+    "orm",
+    "annotation",
+    "view",
+    "table",
+    "constraint",
+    "mapping"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "authors": [
     {
       "name": "Nurlan Mukhanov",
@@ -21,8 +27,8 @@
     "falseclock/dbd-php-common": "dev-master"
   },
   "require-dev": {
-  },
-  "suggest": {
+    "phpunit/phpunit": "^9.4.2",
+    "php-coveralls/php-coveralls": "^2.4.2"
   },
   "autoload": {
     "psr-4": {
@@ -30,7 +36,8 @@
     }
   },
   "autoload-dev": {
-  },
-  "config": {
+    "psr-4": {
+      "DBD\\Entity\\Tests\\": "tests/"
+    }
   }
 }

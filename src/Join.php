@@ -1,67 +1,34 @@
 <?php
+/********************************************************************************
+ *   Apache License, Version 2.0                                                *
+ *                                                                              *
+ *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *                                                                              *
+ *   Licensed under the Apache License, Version 2.0 (the "License");            *
+ *   you may not use this file except in compliance with the License.           *
+ *   You may obtain a copy of the License at                                    *
+ *                                                                              *
+ *       http://www.apache.org/licenses/LICENSE-2.0                             *
+ *                                                                              *
+ *   Unless required by applicable law or agreed to in writing, software        *
+ *   distributed under the License is distributed on an "AS IS" BASIS,          *
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ *   See the License for the specific language governing permissions and        *
+ *   limitations under the License.                                             *
+ *                                                                              *
+ ********************************************************************************/
 
 namespace DBD\Entity;
 
-use DBD\Common\DBDException;
-use ReflectionClass;
-use ReflectionException;
-
-class Join
+/**
+ * Class Join
+ *
+ * @package DBD\Entity
+ */
+abstract class Join
 {
-	const MANY_TO_MANY = "manyToMany";
-	const MANY_TO_ONE  = "manyToOne";
-	const ONE_TO_MANY  = "oneToMany";
-	const ONE_TO_ONE   = "oneToOne";
-	/** @var string $type */
-	public $type;
-
-	/**
-	 * Join constructor.
-	 *
-	 * @param $type
-	 *
-	 * @throws DBDException
-	 * @throws ReflectionException
-	 */
-	public function __construct($type) {
-		foreach($this->getConstants() as $name => $value) {
-			if($value == $type) {
-				$this->type = $type;
-
-				return;
-			}
-		}
-		throw new DBDException("Unknown join type {$type}");
-	}
-
-	/**
-	 * @return string
-	 * @throws DBDException
-	 * @throws ReflectionException
-	 */
-	public function getConstantName(): string {
-		foreach($this->getConstants() as $name => $value) {
-			if($value == $this->type) {
-				return $name;
-			}
-		}
-		throw new DBDException("Something strange happen");
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getType(): string {
-		return $this->type;
-	}
-
-	/**
-	 * @return array
-	 * @throws ReflectionException
-	 */
-	private function getConstants(): iterable {
-		$r = new ReflectionClass(self::class);
-
-		return $r->getConstants();
-	}
+    const MANY_TO_MANY = "manyToMany";
+    const MANY_TO_ONE = "manyToOne";
+    const ONE_TO_MANY = "oneToMany";
+    const ONE_TO_ONE = "oneToOne";
 }
