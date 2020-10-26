@@ -26,7 +26,6 @@ namespace DBD\Entity\Interfaces;
  *
  * @package DBD\Entity\Interfaces
  */
-
 interface FullEntity
 {
 }

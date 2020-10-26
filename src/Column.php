@@ -22,6 +22,11 @@ namespace DBD\Entity;
 
 use DBD\Entity\Common\MapperException;
 
+/**
+ * Class Column
+ *
+ * @package DBD\Entity
+ */
 class Column
 {
     const ANNOTATION = "annotation";

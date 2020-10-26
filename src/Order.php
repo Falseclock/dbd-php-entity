@@ -20,6 +20,11 @@
 
 namespace DBD\Entity;
 
+/**
+ * Class Order
+ *
+ * @package DBD\Entity
+ */
 abstract class Order
 {
     const ASCENDING = "ASC";

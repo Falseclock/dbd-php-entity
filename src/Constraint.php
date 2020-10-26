@@ -20,6 +20,11 @@
 
 namespace DBD\Entity;
 
+/**
+ * Class Constraint
+ *
+ * @package DBD\Entity
+ */
 class Constraint
 {
     const BASE_CLASS = "class";

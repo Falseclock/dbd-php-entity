@@ -21,7 +21,6 @@
 namespace DBD\Entity\Tests\Entities\Constraint;
 
 use DBD\Entity\Column;
-use DBD\Entity\Constraint;
 use DBD\Entity\Entity;
 use DBD\Entity\Mapper;
 use DBD\Entity\Primitive;

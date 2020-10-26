@@ -33,6 +33,11 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
 
+/**
+ * Class Entity
+ *
+ * @package DBD\Entity
+ */
 abstract class Entity
 {
     const SCHEME = "abstract";

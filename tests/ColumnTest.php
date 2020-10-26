@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace DBD\Entity\Tests;
 
 use DBD\Entity\Column;
-use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Primitive;
 use PHPUnit\Framework\TestCase;

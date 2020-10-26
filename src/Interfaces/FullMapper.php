@@ -20,6 +20,11 @@
 
 namespace DBD\Entity\Interfaces;
 
+/**
+ * Interface FullMapper
+ *
+ * @package DBD\Entity\Interfaces
+ */
 interface FullMapper
 {
 }

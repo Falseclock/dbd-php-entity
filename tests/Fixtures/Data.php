@@ -194,11 +194,6 @@ class Data
         return array_merge(self::getStreetData(), [StreetWithZipCodeMap::me()->ZipCode->name => self::getZipCodeJsonData()]);
     }
 
-    public static function getStreetWithZipCodeNotJsonData()
-    {
-        return array_merge(self::getStreetData(), [StreetWithZipCodeMap::me()->ZipCode->name => self::getZipCodeData()]);
-    }
-
     public static function getStreetData()
     {
         return [
@@ -218,5 +213,10 @@ class Data
             ZipCodeMap::me()->id->name => 480000,
             ZipCodeMap::me()->value->name => "050000",
         ];
+    }
+
+    public static function getStreetWithZipCodeNotJsonData()
+    {
+        return array_merge(self::getStreetData(), [StreetWithZipCodeMap::me()->ZipCode->name => self::getZipCodeData()]);
     }
 }

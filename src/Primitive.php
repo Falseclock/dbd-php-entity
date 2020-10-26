@@ -25,7 +25,7 @@ use MyCLabs\Enum\Enum;
 /**
  * Class Primitive
  *
- * @see https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/csprd05/odata-csdl-xml-v4.01-csprd05.html#sec_PrimitiveTypes
+ * @see     https://docs.oasis-open.org/odata/odata-csdl-xml/v4.01/csprd05/odata-csdl-xml-v4.01-csprd05.html#sec_PrimitiveTypes
  * @method static Primitive Binary()
  * @method static Primitive Boolean()
  * @method static Primitive Byte()
@@ -43,6 +43,7 @@ use MyCLabs\Enum\Enum;
  * @method static Primitive Stream()
  * @method static Primitive String()
  * @method static Primitive TimeOfDay()
+ * @package DBD\Entity
  */
 class Primitive extends Enum
 {
@@ -62,10 +63,10 @@ class Primitive extends Enum
     /** @var string IEEE 754 binary64 floating-point number (15-17 decimal digits) */
     public const Double = "Double";
     /** @var string Signed duration in days, hours, minutes, and (sub)seconds */
-    public const Duration = "Duration";
+    public const  Duration = "Duration";
     private const FLOAT = "float";
     /** @var string 16-byte (128-bit) unique identifier */
-    public const Guid = "Guid";
+    public const  Guid = "Guid";
     private const INTEGER = "int";
     /** @var string Signed 16-bit integer */
     public const Int16 = "Int16";
@@ -74,7 +75,7 @@ class Primitive extends Enum
     /** @var string Signed 64-bit integer */
     public const Int64 = "Int64";
     /** @var string Signed 8-bit integer */
-    public const SByte = "SByte";
+    public const  SByte = "SByte";
     private const STRING = "string";
     /** @var string IEEE 754 binary32 floating-point number (6-9 decimal digits) */
     public const Single = "Single";

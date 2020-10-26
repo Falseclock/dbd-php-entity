@@ -22,6 +22,11 @@ namespace DBD\Entity\Common;
 
 use Exception;
 
+/**
+ * Class EntityException
+ *
+ * @package DBD\Entity\Common
+ */
 class EntityException extends Exception
 {
     /**

@@ -20,16 +20,22 @@
 
 namespace DBD\Entity;
 
+/**
+ * Class Key
+ *
+ * @package DBD\Entity
+ */
 class Key
 {
+    /** @var Column $column */
     public $column;
 
     /**
      * Key constructor.
      *
-     * @param $column
+     * @param Column $column
      */
-    public function __construct($column)
+    public function __construct(Column $column)
     {
         $this->column = $column;
     }

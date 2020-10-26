@@ -25,7 +25,7 @@ use MyCLabs\Enum\Enum;
 /**
  * Class Type describes DB types for Embedded properties
  *
- * @package Falseclock\DBD\Entity
+ * @package DBD\Entity
  * @method static Type Json()
  * @method static Type Varchar()
  * @method static Type Char()

@@ -23,6 +23,11 @@ namespace DBD\Entity\Join;
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Join;
 
+/**
+ * Class ManyToOne
+ *
+ * @package DBD\Entity\Join
+ */
 final class ManyToOne extends Join
 {
     /**

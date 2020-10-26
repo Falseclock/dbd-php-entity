@@ -28,10 +28,9 @@ use InvalidArgumentException;
 use ReflectionException;
 
 /**
- * Название переменной в дочернем классе, которая должна быть если мы вызываем BaseHandler
+ * Class Mapper
  *
- * @property Column $id
- * @property Column $constant
+ * @package DBD\Entity
  */
 abstract class Mapper extends Singleton
 {

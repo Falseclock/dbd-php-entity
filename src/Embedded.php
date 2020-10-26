@@ -27,7 +27,7 @@ use DBD\Entity\Common\MapperException;
  * to decode JSON value or get iterable property
  * Should be always public when mapped in Mapper
  *
- * @package Falseclock\DBD\Entity
+ * @package DBD\Entity
  */
 class Embedded
 {

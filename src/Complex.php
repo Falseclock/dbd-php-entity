@@ -26,9 +26,7 @@ use DBD\Entity\Common\MapperException;
  * Use Complex when you need JOIN several tables and select all in once
  * Corresponding property with Entity type must be defined in base entity class
  *
- *
- *
- * @package Falseclock\DBD\Entity
+ * @package DBD\Entity
  */
 class Complex
 {

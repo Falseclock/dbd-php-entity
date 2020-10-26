@@ -20,6 +20,11 @@
 
 namespace DBD\Entity\Common;
 
+/**
+ * Class Utils
+ *
+ * @package DBD\Entity\Common
+ */
 class Utils
 {
     /**

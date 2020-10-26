@@ -29,6 +29,11 @@ use DBD\Entity\Join\OneToOne;
 use Exception;
 use ReflectionException;
 
+/**
+ * Class Table
+ *
+ * @package DBD\Entity
+ */
 class Table
 {
     /** @var string $name */
@@ -180,25 +185,25 @@ class Table
 
             throw new EntityException("Unknown type of Mapper variable {$columnName} in {$mapper}");
         }
-/**
-        foreach ($variables->otherColumns as $otherColumnName) {
-
-            $otherColumnValue = $mapper->$otherColumnName;
-
-            // This is fix for old annotation when we used only column name as variable;
-            // TODO: remove after migration
-            if (is_string($otherColumnValue)) {
-                $table->otherColumns[$otherColumnName] = new Column($otherColumnValue);
-                continue;
-            }
-            // It should be array always? otherwise throw exception
-            if (is_array($otherColumnValue)) {
-                $table->otherColumns[$otherColumnName] = self::convertToColumn($otherColumnValue);
-            } else {
-                throw new EntityException("Unknown type of Mapper variable {$otherColumnName} in {$mapper}");
-            }
-        }
-*/
+        /**
+         * foreach ($variables->otherColumns as $otherColumnName) {
+         *
+         * $otherColumnValue = $mapper->$otherColumnName;
+         *
+         * // This is fix for old annotation when we used only column name as variable;
+         * // TODO: remove after migration
+         * if (is_string($otherColumnValue)) {
+         * $table->otherColumns[$otherColumnName] = new Column($otherColumnValue);
+         * continue;
+         * }
+         * // It should be array always? otherwise throw exception
+         * if (is_array($otherColumnValue)) {
+         * $table->otherColumns[$otherColumnName] = self::convertToColumn($otherColumnValue);
+         * } else {
+         * throw new EntityException("Unknown type of Mapper variable {$otherColumnName} in {$mapper}");
+         * }
+         * }
+         */
         // now parse all constraints
         // All constraints should be processed after columns
         foreach ($variables->constraints as $constraintName) {

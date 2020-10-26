@@ -22,6 +22,11 @@ namespace DBD\Entity;
 
 use ReflectionProperty;
 
+/**
+ * Class MapperVariables
+ *
+ * @package DBD\Entity
+ */
 final class MapperVariables
 {
     public $columns;
@@ -38,7 +43,7 @@ final class MapperVariables
      * @param $embedded
      * @param $complex
      */
-    public function __construct($columns, $constraints,  $embedded, $complex) // $otherColumns,
+    public function __construct($columns, $constraints, $embedded, $complex) // $otherColumns,
     {
         $this->columns = $this->filter($columns);
         $this->constraints = $this->filter($constraints);

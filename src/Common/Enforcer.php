@@ -23,6 +23,11 @@ namespace DBD\Entity\Common;
 use ReflectionClass;
 use ReflectionException;
 
+/**
+ * Class Enforcer
+ *
+ * @package DBD\Entity\Common
+ */
 class Enforcer
 {
     /**

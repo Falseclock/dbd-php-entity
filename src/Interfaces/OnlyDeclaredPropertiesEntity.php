@@ -20,6 +20,11 @@
 
 namespace DBD\Entity\Interfaces;
 
+/**
+ * Interface OnlyDeclaredPropertiesEntity
+ *
+ * @package DBD\Entity\Interfaces
+ */
 interface OnlyDeclaredPropertiesEntity
 {
 }

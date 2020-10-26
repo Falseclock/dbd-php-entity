@@ -22,6 +22,7 @@ namespace DBD\Entity;
 
 /**
  * Class EntityCache used to store cache of parsed maps.
+ *
  * @package DBD\Entity
  */
 abstract class EntityCache

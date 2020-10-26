@@ -25,7 +25,7 @@ use DBD\Common\Singleton;
 /**
  * Class MapperCache used to avoid interfering with local variables in child classes
  *
- * @package Falseclock\DBD\Entity
+ * @package DBD\Entity
  */
 class MapperCache extends Singleton
 {

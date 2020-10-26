@@ -23,6 +23,11 @@ namespace DBD\Entity;
 use DBD\Entity\Common\MapperException;
 use ReflectionClass;
 
+/**
+ * Class Join
+ *
+ * @package DBD\Entity
+ */
 class Join
 {
     const MANY_TO_MANY = "manyToMany";
