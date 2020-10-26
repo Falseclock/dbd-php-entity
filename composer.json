@@ -38,6 +38,14 @@
   "autoload-dev": {
     "psr-4": {
       "DBD\\Entity\\Tests\\": "tests/"
-    }
+    },
+    "files": [
+      "tests/Entities/PersonBase.php",
+      "tests/Entities/Address.php",
+      "tests/Entities/Embedded/Street.php",
+      "tests/Entities/Embedded/StreetWithZipCode.php",
+      "tests/Entities/Embedded/ZipCode.php",
+      "tests/Entities/Embedded/Region.php"
+    ]
   }
 }
