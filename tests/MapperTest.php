@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace DBD\Entity\Tests;
 
 use DBD\Entity\Column;
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Tests\Entities\Constraint\CountryMap;
 use DBD\Entity\Tests\Entities\PersonBaseMap;
@@ -31,6 +32,7 @@ use DBD\Entity\Tests\Fixtures\MapperEmptyProperty;
 use DBD\Entity\Tests\Fixtures\MapperNullProperty;
 use DBD\Entity\Tests\Fixtures\MapperWithTwoKeys;
 use PHPUnit\Framework\TestCase;
+use ReflectionException;
 
 class MapperTest extends TestCase
 {
@@ -58,6 +60,12 @@ class MapperTest extends TestCase
         PersonBaseMap::me()->iDoNotKnow;
     }
 
+    /**
+     * @throws MapperException
+     * @throws EntityException
+     * @throws ReflectionException
+     * @covers MapperCache::me
+     */
     public function testPrimaryKeys()
     {
         $keys = MapperWithTwoKeys::me()->getPrimaryKey();
