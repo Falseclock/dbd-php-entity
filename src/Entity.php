@@ -255,7 +255,7 @@ abstract class Entity
             /** @var Column $fieldDefinition */
             $fieldDefinition = $mapper->$property;
 
-            if (is_null($columnValue) and $fieldDefinition->nullable == false)
+            if (is_null($columnValue) and $fieldDefinition->nullable === false)
                 throw new EntityException(sprintf("Column %s of %s shouldn't accept null values according Mapper definition", $originColumnName, $calledClass));
 
             /** We can define setter method for field definition in Entity class, so let's check it first */
