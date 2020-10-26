@@ -30,15 +30,4 @@ use DBD\Entity\Join;
  */
 final class ManyToOne extends Join
 {
-    /**
-     * ManyToOne constructor.
-     *
-     * @param string $type
-     *
-     * @throws MapperException
-     */
-    public function __construct($type = Join::MANY_TO_ONE)
-    {
-        parent::__construct($type);
-    }
 }

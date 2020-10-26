@@ -30,15 +30,4 @@ use DBD\Entity\Join;
  */
 final class OneToOne extends Join
 {
-    /**
-     * OneToOne constructor.
-     *
-     * @param string $type
-     *
-     * @throws MapperException
-     */
-    public function __construct($type = Join::ONE_TO_ONE)
-    {
-        parent::__construct($type);
-    }
 }

@@ -8,11 +8,13 @@
         </include>
         <exclude>
             <directory>src/Interfaces/</directory>
-            <file>src/EntityCache.php</file>
+            <directory>src/Join/</directory>
+            <file>src/Join.php</file>
             <file>src/Order.php</file>
             <file>src/View.php</file>
             <file>src/Type.php</file>
             <file>src/Primitive.php</file>
+            <file>src/EntityCache.php</file>
         </exclude>
     </coverage>
     <testsuites>
