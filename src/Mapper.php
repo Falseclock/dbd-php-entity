@@ -24,7 +24,6 @@ use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Common\Utils;
-use InvalidArgumentException;
 use ReflectionException;
 
 /**
@@ -106,14 +105,7 @@ abstract class Mapper extends Singleton
             $columns = [];
 
             foreach ($publicVars as $varName => $varValue) {
-                if (is_null($varValue))
-                    throw new MapperException(sprintf("property '\$%s' of %s is null", $varName, get_class($this)));
-
-                if (!is_array($varValue))
-                    throw new MapperException(sprintf("property '\$%s' of %s is not array", $varName, get_class($this)));
-
-                if (count($varValue) == 0)
-                    throw new MapperException(sprintf("property '\$%s' of %s does not have definitions", $varName, get_class($this)));
+                $this->checkProperty($varValue, $varName);
 
                 // Column::PRIMITIVE_TYPE is mandatory for Columns
                 //if (isset($varValue[Column::PRIMITIVE_TYPE]))
@@ -123,19 +115,17 @@ abstract class Mapper extends Singleton
             }
 
             foreach ($protectedVars as $varName => $varValue) {
-                if (is_array($varValue)) {
-                    if (isset($varValue[Constraint::LOCAL_COLUMN])) {
-                        $constraints[$varName] = $varValue;
-                    } else {
-                        if (isset($varValue[Embedded::NAME]))
-                            $embedded[$varName] = $varValue;
-                        else if (isset($varValue[Complex::TYPE]))
-                            $complex[$varName] = $varValue;
-                        //else
-                        //    $otherColumns[$varName] = $varValue;
-                    }
+                $this->checkProperty($varValue, $varName);
+
+                if (isset($varValue[Constraint::LOCAL_COLUMN])) {
+                    $constraints[$varName] = $varValue;
                 } else {
-                    throw new MapperException(sprintf("variable '%s' of '%s' is type of %s", $varName, get_class($this), gettype($varValue)));
+                    if (isset($varValue[Embedded::NAME]))
+                        $embedded[$varName] = $varValue;
+                    else if (isset($varValue[Complex::TYPE]))
+                        $complex[$varName] = $varValue;
+                    //else
+                    //    $otherColumns[$varName] = $varValue;
                 }
             }
 
@@ -216,6 +206,23 @@ abstract class Mapper extends Singleton
     }
 
     /**
+     * @param $varValue
+     * @param string $varName
+     * @throws MapperException
+     */
+    private function checkProperty($varValue, string $varName): void
+    {
+        if (is_null($varValue))
+            throw new MapperException(sprintf("property '\$%s' of %s is null", $varName, get_class($this)));
+
+        if (!is_array($varValue))
+            throw new MapperException(sprintf("property '\$%s' of %s is not array", $varName, get_class($this)));
+
+        if (count($varValue) == 0)
+            throw new MapperException(sprintf("property '\$%s' of %s does not have definitions", $varName, get_class($this)));
+    }
+
+    /**
      * Returns Entity class name which uses this Mapper
      *
      * @return string
@@ -293,7 +300,7 @@ abstract class Mapper extends Singleton
                 return $column;
             }
         }
-        throw new MapperException(sprintf("Can't find origin column '%s' in %s. If it is reference column, map it as protected", $originName, get_class($this)));
+        throw new MapperException(sprintf("Can't find origin column '%s' in %s", $originName, get_class($this)));
     }
 
     /**
@@ -318,19 +325,15 @@ abstract class Mapper extends Singleton
 
     /**
      * Special getter to access protected and private properties
-     * Unfortunately abstract class doesn't have access to child class,
-     * that is why we use Reflection.
-     * TODO: set all to public with some markers to identify fields, constraints and complex
-     *
      * @param $name
      *
      * @return mixed
+     * @throws MapperException
      */
     public function __get($name)
     {
-        if (!property_exists($this, $name)) {
-            throw new InvalidArgumentException(sprintf("Getting the field '%s' is not valid for '%s'", $name, get_class($this)));
-        }
+        if (!property_exists($this, $name))
+            throw new MapperException(sprintf("Can't find property '\$%s' of '%s'", $name, get_class($this)));
 
         return $this->$name;
     }
@@ -363,14 +366,14 @@ abstract class Mapper extends Singleton
     }
 
     /**
-     * @return Column[]
+     * @return Column[] that is associative array where key is property name
      * @throws MapperException
      */
     public function getPrimaryKey()
     {
         $keys = [];
         foreach (MapperCache::me()->columns[$this->name()] as $columnName => $column) {
-            if (isset($column->key) and $column->key == true)
+            if (isset($column->key) and $column->key === true)
                 $keys[$columnName] = $column;
         }
 
@@ -390,7 +393,7 @@ abstract class Mapper extends Singleton
                 return $varName;
         }
 
-        return null;
+        throw new MapperException(sprintf("Seems column '%s' does not belong to this mapper", $column->name));
     }
 
     /**

@@ -58,6 +58,11 @@ class PersonBase extends Entity implements FullEntity
     public $registrationDate;
 }
 
+/**
+ * Class PersonBaseMap
+ * @package DBD\Entity\Tests\Entities
+ * @property $iDoNotKnow
+ */
 class PersonBaseMap extends Mapper implements FullMapper
 {
     const ANNOTATION = "Table description";

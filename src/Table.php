@@ -159,7 +159,6 @@ class Table
      */
     private static function convertVariables(Table $table, Mapper $mapper): void
     {
-
         $variables = $mapper->getAllVariables();
 
         // Read all variables and convert to Column and Constraint
