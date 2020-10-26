@@ -64,7 +64,6 @@ class MapperTest extends TestCase
      * @throws MapperException
      * @throws EntityException
      * @throws ReflectionException
-     * @covers MapperCache::me
      */
     public function testPrimaryKeys()
     {

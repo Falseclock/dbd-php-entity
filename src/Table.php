@@ -48,8 +48,6 @@ class Table
     public $annotation;
     /** @var Constraint[] $constraints */
     public $constraints = [];
-    /** @var Column[] $otherColumns */
-    public $otherColumns = [];
 
     /**
      * @param Table $table
@@ -112,7 +110,7 @@ class Table
      */
     private static function findColumnByOriginName(Table $table, string $columnOriginName): Column
     {
-        foreach (array_merge($table->columns, $table->otherColumns) as $column) {
+        foreach ($table->columns as $column) {
             if ($column->name == $columnOriginName) {
                 return $column;
             }
@@ -242,7 +240,7 @@ class Table
     private static function getKeys(Table $table)
     {
         $keys = [];
-        foreach (array_merge($table->columns, $table->otherColumns) as $column) {
+        foreach ($table->columns as $column) {
             if ($column->key === true) {
                 $keys[] = new Key($column);
             }

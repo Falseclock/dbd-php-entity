@@ -45,8 +45,6 @@ class MapperCache extends Singleton
     public $fullyInstantiated = [];
     /** @var array $originFieldNames */
     public $originFieldNames = [];
-    /** @var array $otherColumns */
-    public $otherColumns = [];
     /** @var array $table */
     public $table = [];
 }
