@@ -25,7 +25,7 @@ namespace DBD\Entity\Tests;
 use DBD\Entity\Column;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\MapperException;
-use DBD\Entity\Tests\Entities\Constraint\CountryMap;
+use DBD\Entity\Tests\Entities\Embedded\CountryMap;
 use DBD\Entity\Tests\Entities\PersonBaseMap;
 use DBD\Entity\Tests\Fixtures\MapperBoolProperty;
 use DBD\Entity\Tests\Fixtures\MapperEmptyProperty;

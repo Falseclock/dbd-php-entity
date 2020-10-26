@@ -22,14 +22,14 @@ namespace DBD\Entity\Tests\Fixtures;
 
 use DBD\Entity\Tests\Entities\AddressMap;
 use DBD\Entity\Tests\Entities\Constraint\CompanyMap;
-use DBD\Entity\Tests\Entities\Constraint\CountryMap;
 use DBD\Entity\Tests\Entities\Constraint\LevelOneMap;
 use DBD\Entity\Tests\Entities\Constraint\LevelTwoMap;
 use DBD\Entity\Tests\Entities\Constraint\PersonMap;
-use DBD\Entity\Tests\Entities\Constraint\RegionMap;
 use DBD\Entity\Tests\Entities\Constraint\UserMap;
 use DBD\Entity\Tests\Entities\DeclarationChain\AMap;
+use DBD\Entity\Tests\Entities\Embedded\CountryMap;
 use DBD\Entity\Tests\Entities\Embedded\CountryWithRegionsMap;
+use DBD\Entity\Tests\Entities\Embedded\RegionMap;
 use DBD\Entity\Tests\Entities\Embedded\StreetMap;
 use DBD\Entity\Tests\Entities\Embedded\StreetWithZipCodeMap;
 use DBD\Entity\Tests\Entities\Embedded\ZipCodeMap;

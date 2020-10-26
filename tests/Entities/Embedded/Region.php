@@ -18,7 +18,7 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Tests\Entities\Constraint;
+namespace DBD\Entity\Tests\Entities\Embedded;
 
 use DBD\Entity\Column;
 use DBD\Entity\Entity;

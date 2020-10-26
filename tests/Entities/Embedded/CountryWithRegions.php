@@ -23,9 +23,6 @@ namespace DBD\Entity\Tests\Entities\Embedded;
 use DBD\Entity\Embedded;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
-use DBD\Entity\Tests\Entities\Constraint\Country;
-use DBD\Entity\Tests\Entities\Constraint\CountryMap;
-use DBD\Entity\Tests\Entities\Constraint\Region;
 use DBD\Entity\Type;
 
 class CountryWithRegions extends Country implements StrictlyFilledEntity, SyntheticEntity

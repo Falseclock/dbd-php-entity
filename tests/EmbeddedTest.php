@@ -25,8 +25,8 @@ namespace DBD\Entity\Tests;
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Embedded;
 use DBD\Entity\Tests\Entities\Constraint\Person;
-use DBD\Entity\Tests\Entities\Constraint\Region;
 use DBD\Entity\Tests\Entities\Embedded\CountryWithRegions;
+use DBD\Entity\Tests\Entities\Embedded\Region;
 use DBD\Entity\Tests\Entities\Embedded\StreetWithZipCode;
 use DBD\Entity\Tests\Entities\Embedded\StreetWithZipCodeNotEntity;
 use DBD\Entity\Tests\Entities\Embedded\StreetWithZipCodeNotJson;
@@ -52,8 +52,6 @@ class EmbeddedTest extends TestCase
 
         self::assertNotNull($embedded->ZipCode[ZipCodeMap::me()->id->name]);
         self::assertNotNull($embedded->ZipCode[ZipCodeMap::me()->value->name]);
-
-        return;
     }
 
     public function testNonIterableNonJson()
