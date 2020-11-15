@@ -59,9 +59,9 @@ class Utils
      *
      * @param $variable
      *
-     * @return bool
+     * @return bool|null
      */
-    public static function convertBoolVar($variable): bool
+    public static function convertBoolVar($variable): ?bool
     {
         if (is_scalar($variable))
             $variable = strtolower(trim($variable));
