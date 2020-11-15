@@ -92,6 +92,6 @@ class Column
         }
 
         if (is_null($this->name))
-            throw new MapperException("Column name does not set");
+            throw new MapperException(sprintf("Column name does not set: %s", json_encode($columnNameOrArray)));
     }
 }
