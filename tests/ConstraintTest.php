@@ -25,10 +25,10 @@ namespace DBD\Entity\Tests;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Constraint;
 use DBD\Entity\Entity;
-use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Tests\Entities\Constraint\HaveConstraintProperty;
 use DBD\Entity\Tests\Entities\Constraint\LongChain;
 use DBD\Entity\Tests\Entities\Constraint\Tender;
 use DBD\Entity\Tests\Entities\Constraint\User;
@@ -40,6 +40,15 @@ use PHPUnit\Framework\TestCase;
 
 class ConstraintTest extends TestCase
 {
+    public function testDeclaringConstraint()
+    {
+        $data = ['company_id' => 1, 'user_id' => 2];
+
+        $this->expectException(EntityException::class);
+        /** @noinspection PhpExpressionResultUnusedInspection */
+        new HaveConstraintProperty($data);
+    }
+
     public function testLongChain()
     {
         $LongChain = new LongChain();
@@ -162,7 +171,6 @@ class ConstraintTest extends TestCase
     {
         $entity = new User();
 
-        self::assertInstanceOf(FullEntity::class, $entity);
         self::assertInstanceOf(Entity::class, $entity);
 
         self::assertNotNull(new User(Data::getUserData()));

@@ -20,7 +20,6 @@
 
 namespace DBD\Entity\Join;
 
-use DBD\Entity\Common\MapperException;
 use DBD\Entity\Join;
 
 /**

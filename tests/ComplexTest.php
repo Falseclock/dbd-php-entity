@@ -28,14 +28,51 @@ use DBD\Entity\Entity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Tests\Entities\OnlyComplex;
 use DBD\Entity\Tests\Entities\PersonBase;
+use DBD\Entity\Tests\Entities\SelfReference\FourComplex;
+use DBD\Entity\Tests\Entities\SelfReference\OneComplex;
+use DBD\Entity\Tests\Entities\SelfReference\ThreeComplex;
+use DBD\Entity\Tests\Entities\SelfReference\TwoComplex;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
-// TODO: chain check
+// TODO: test Complex has Embedded or Constraint
 
 class ComplexTest extends TestCase
 {
+    public function testSelfReferenceChain()
+    {
+        $data = [
+            'one_id' => 1,
+            'two_id' => 2,
+            'three_id' => 3,
+            'four_id' => 4,
+        ];
+
+        $entity = new OneComplex($data);
+
+        self::assertInstanceOf(Entity::class, $entity);
+        self::assertCount(3, get_object_vars($entity));
+        self::assertEquals(1, $entity->id);
+        self::assertInstanceOf(TwoComplex::class, $entity->TwoComplex);
+        self::assertInstanceOf(FourComplex::class, $entity->FourComplex);
+
+        self::assertCount(3, get_object_vars($entity->TwoComplex));
+        self::assertEquals(2, $entity->TwoComplex->id);
+        self::assertInstanceOf(ThreeComplex::class, $entity->TwoComplex->ThreeComplex);
+        self::assertInstanceOf(OneComplex::class, $entity->TwoComplex->OneComplex);
+
+        // Level 2
+        self::assertCount(1, get_object_vars($entity->TwoComplex->OneComplex));
+        self::assertCount(1, get_object_vars($entity->TwoComplex->ThreeComplex));
+
+        self::assertCount(4, get_object_vars($entity->FourComplex));
+
+        self::assertCount(1, get_object_vars($entity->FourComplex->OneComplex));
+        self::assertCount(1, get_object_vars($entity->FourComplex->TwoComplex));
+        self::assertCount(1, get_object_vars($entity->FourComplex->ThreeComplex));
+    }
+
     public function testComplexDefinition()
     {
         $entity = new OnlyComplex();

@@ -57,7 +57,7 @@ final class MapperVariables
      *
      * @return array
      */
-    private function filter(array $vars)
+    private function filter(array $vars): array
     {
         $list = [];
         foreach ($vars as $varName => $varValue) {

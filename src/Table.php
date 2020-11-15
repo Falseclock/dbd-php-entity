@@ -20,6 +20,8 @@
 
 namespace DBD\Entity;
 
+use Exception;
+
 /**
  * Class Table useless still
  *
@@ -44,9 +46,9 @@ class Table
      * @param Mapper $mapper
      *
      * @return Table
-     * @throws Common\MapperException
+     * @throws Exception
      */
-    public static function getFromMapper(Mapper $mapper)
+    public static function getFromMapper(Mapper $mapper): Table
     {
         $table = new Table();
 

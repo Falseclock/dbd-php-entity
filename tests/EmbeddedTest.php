@@ -22,8 +22,11 @@ declare(strict_types=1);
 
 namespace DBD\Entity\Tests;
 
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Embedded;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Tests\Entities\Constraint\Person;
 use DBD\Entity\Tests\Entities\Embedded\CountryWithRegions;
 use DBD\Entity\Tests\Entities\Embedded\Region;
@@ -32,6 +35,7 @@ use DBD\Entity\Tests\Entities\Embedded\StreetWithZipCodeNotEntity;
 use DBD\Entity\Tests\Entities\Embedded\StreetWithZipCodeNotJson;
 use DBD\Entity\Tests\Entities\Embedded\ZipCode;
 use DBD\Entity\Tests\Entities\Embedded\ZipCodeMap;
+use DBD\Entity\Tests\Entities\SelfReference\OneEmbedded;
 use DBD\Entity\Tests\Fixtures\Data;
 use DBD\Entity\Type;
 use PHPUnit\Framework\TestCase;
@@ -40,6 +44,38 @@ use PHPUnit\Framework\TestCase;
 
 class EmbeddedTest extends TestCase
 {
+    public function testSelfReferenceChain()
+    {
+        $one = ['one_id' => 1];
+        $four = ['four_id' => 4, 'one' => $one];
+        $three = ['three_id' => 3, 'four' => $four];
+        $two = ['two_id' => 2, 'three' => $three];
+
+        $data = $one + ['two' => $two + ['three' => $three]];
+
+        $entity = new OneEmbedded($data, 2);
+
+        self::assertInstanceOf(Entity::class, $entity);
+        self::assertInstanceOf(StrictlyFilledEntity::class, $entity);
+        self::assertCount(1, get_object_vars($entity->TwoEmbedded->ThreeEmbedded));
+
+        $entity = new OneEmbedded($data, 3);
+        self::assertCount(2, get_object_vars($entity->TwoEmbedded->ThreeEmbedded));
+
+        // $four contains only simple one, so should be exception
+        $this->expectException(EntityException::class);
+        /** @noinspection PhpExpressionResultUnusedInspection */
+        new OneEmbedded($data, 4);
+    }
+
+    public function testMissingColumns()
+    {
+        $data = ['one_id' => 1];
+        $this->expectException(EntityException::class);
+        /** @noinspection PhpExpressionResultUnusedInspection */
+        new OneEmbedded($data);
+    }
+
     public function testNoEntity()
     {
         $data = Data::getStreetWithZipCodeNotJsonData();

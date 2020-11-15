@@ -28,7 +28,7 @@ use DBD\Entity\Interfaces\FullMapper;
 use DBD\Entity\Mapper;
 use DBD\Entity\Primitive;
 
-class User extends Entity implements FullEntity
+class User extends Entity
 {
     const TABLE = "";
     const SCHEME = "";

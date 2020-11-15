@@ -187,7 +187,7 @@ abstract class Entity
 
         $this->setConstraints($data, $map, $maxLevels, $currentLevel);
 
-        $this->setEmbedded($data, $map);
+        $this->setEmbedded($data, $map, $maxLevels, $currentLevel);
 
         $this->setComplex($data, $map, $maxLevels, $currentLevel);
 
@@ -284,11 +284,16 @@ abstract class Entity
      * @param int $maxLevels
      * @param int $currentLevel
      *
-     * @throws MapperException
+     * @throws Exception
      */
     final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
     {
+
         foreach ($mapper->getConstraints() as $entityName => $constraint) {
+
+            if ($this instanceof FullEntity and property_exists($this, $entityName)) {
+                throw new EntityException(sprintf("FullEntity instance must not user constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
+            }
 
             /** Check we have data for this constraint */
             if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
@@ -296,20 +301,17 @@ abstract class Entity
 
             $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
 
-            /**
-             * Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
-             * то просто их прогоняем через класс и на выходе получим готовый объект
-             */
+            // Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
+            // то просто их прогоняем через класс и на выходе получим готовый объект
+
             $newConstraintValue = null;
 
             if (isset($constraintValue)) {
                 if ($currentLevel <= $maxLevels) {
                     $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
                 } else {
-                    /**
-                     * We skipping level. But we should also remove unsetted properties to issue notice of exception
-                     * that calling variable on undefined
-                     */
+                    // We skipping level. But we should also remove unsetted properties to issue notice of exception
+                    // that calling variable on undefined
                     foreach ($mapper->getConstraints() as $constraintToRemove => $constraintToRemoveValue) {
                         unset($this->$constraintToRemove);
                     }
@@ -332,37 +334,54 @@ abstract class Entity
     }
 
     /**
-     * @param array|null $data
+     * @param array|null $rowData
      * @param Mapper $map
-     *
+     * @param int $maxLevels
+     * @param int $currentLevel
      * @throws Exception
      */
-    final private function setEmbedded(?array $data, Mapper $map)
+    final private function setEmbedded(?array $rowData, Mapper $map, int $maxLevels, int $currentLevel)
     {
+        if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
+            /** @var Embedded[] $embeddings */
+            $embeddings = MapperCache::me()->embedded[$map->name()];
+            $missingColumns = [];
+            foreach ($embeddings as $embedding) {
+                if (!array_key_exists($embedding->name, $rowData))
+                    $missingColumns[] = $embedding->name;
+            }
+            if (count($missingColumns) > 0) {
+                throw new EntityException(sprintf("Missing embedded for FullEntity or StrictlyFilledEntity '%s': %s",
+                        get_class($this),
+                        json_encode($missingColumns)
+                    )
+                );
+            }
+        }
+
         foreach ($map->getEmbedded() as $embeddedName => $embeddedValue) {
 
-            //if (!property_exists($this, $embeddedName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$embeddedName]))
-            //    continue;
-
-            if (isset($data[$embeddedValue->name])) {
+            if ($currentLevel <= $maxLevels) {
                 if (isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
-                    if (is_string($data[$embeddedValue->name])) {
-                        $data[$embeddedValue->name] = json_decode($data[$embeddedValue->name], true);
+                    if (is_string($rowData[$embeddedValue->name])) {
+                        $rowData[$embeddedValue->name] = json_decode($rowData[$embeddedValue->name], true);
                     }
                 }
                 if (isset($embeddedValue->entityClass)) {
                     if ($embeddedValue->isIterable) {
                         $iterables = [];
-                        foreach ($data[$embeddedValue->name] as $value)
-                            $iterables[] = new $embeddedValue->entityClass($value);
+                        foreach ($rowData[$embeddedValue->name] as $value)
+                            $iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
 
                         $this->$embeddedName = $iterables;
                     } else {
-                        $this->$embeddedName = new $embeddedValue->entityClass($data[$embeddedValue->name]);
+                        $this->$embeddedName = new $embeddedValue->entityClass($rowData[$embeddedValue->name], $maxLevels, $currentLevel);
                     }
                 } else {
-                    $this->$embeddedName = $data[$embeddedValue->name];
+                    $this->$embeddedName = $rowData[$embeddedValue->name];
                 }
+            } else {
+                unset($this->$embeddedName);
             }
         }
     }
@@ -381,7 +400,10 @@ abstract class Entity
             //if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
             //    continue;
 
-            $this->$complexName = new $complexValue->complexClass($data, $maxLevels, $currentLevel);
+            if ($currentLevel <= $maxLevels)
+                $this->$complexName = new $complexValue->complexClass($data, $maxLevels, $currentLevel);
+            else
+                unset($this->$complexName);
         }
     }
 
@@ -402,7 +424,7 @@ abstract class Entity
      *
      * @return string
      */
-    public static function table()
+    public static function table(): string
     {
         $calledClass = get_called_class();
 

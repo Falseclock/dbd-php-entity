@@ -18,15 +18,55 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Join;
+namespace DBD\Entity\Tests\Entities\SelfReference;
 
-use DBD\Entity\Join;
+use DBD\Entity\Column;
+use DBD\Entity\Complex;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Mapper;
 
-/**
- * Class ManyToMany
- *
- * @package DBD\Entity\Join
- */
-final class ManyToMany extends Join
+class FourComplex extends Entity implements SyntheticEntity
 {
+    /**
+     * @var OneComplex
+     */
+    public $OneComplex;
+    /**
+     * @var ThreeComplex
+     */
+    public $ThreeComplex;
+    /**
+     * @var TwoComplex
+     */
+    public $TwoComplex;
+    public $id;
+}
+
+class FourComplexMap extends Mapper
+{
+    /**
+     * @var Column
+     */
+    public $id = [
+        Column::NAME => 'four_id',
+    ];
+    /**
+     * @var Complex
+     */
+    protected $OneComplex = [
+        Complex::TYPE => OneComplex::class,
+    ];
+    /**
+     * @var Complex
+     */
+    protected $ThreeComplex = [
+        Complex::TYPE => ThreeComplex::class,
+    ];
+    /**
+     * @var Complex
+     */
+    protected $TwoComplex = [
+        Complex::TYPE => TwoComplex::class,
+    ];
 }

@@ -18,15 +18,39 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Join;
+namespace DBD\Entity\Tests\Entities\SelfReference;
 
-use DBD\Entity\Join;
+use DBD\Entity\Column;
+use DBD\Entity\Embedded;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\StrictlyFilledEntity;
+use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Mapper;
 
-/**
- * Class ManyToMany
- *
- * @package DBD\Entity\Join
- */
-final class ManyToMany extends Join
+class FourEmbedded extends Entity implements SyntheticEntity, StrictlyFilledEntity
 {
+    /**
+     * @var OneEmbedded
+     */
+    public $OneEmbedded;
+
+    public $id;
+}
+
+class FourEmbeddedMap extends Mapper
+{
+    /**
+     * @var Column
+     */
+    public $id = [
+        Column::NAME => 'four_id',
+    ];
+    /**
+     * @var Embedded
+     */
+    protected $OneEmbedded = [
+        Embedded::NAME => "one",
+        Embedded::ENTITY_CLASS => OneEmbedded::class,
+        Embedded::IS_ITERABLE => false,
+    ];
 }

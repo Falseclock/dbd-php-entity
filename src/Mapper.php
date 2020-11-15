@@ -24,6 +24,7 @@ use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\MapperException;
 use DBD\Entity\Common\Utils;
+use Exception;
 use ReflectionException;
 
 /**
@@ -44,7 +45,7 @@ abstract class Mapper extends Singleton
      * @throws MapperException
      * @throws ReflectionException
      */
-    public static function me()
+    public static function me(): Mapper
     {
         return self::instantiate();
     }
@@ -83,7 +84,7 @@ abstract class Mapper extends Singleton
      * @return MapperVariables
      * @throws MapperException
      */
-    public function getAllVariables()
+    public function getAllVariables(): MapperVariables
     {
         $thisName = $this->name();
 
@@ -189,11 +190,14 @@ abstract class Mapper extends Singleton
         return MapperCache::me()->allVariables[$thisName];
     }
 
-    private function name()
+    /**
+     * Get simple Mapper class name without namespace
+     */
+    public function name()
     {
         $name = get_class($this);
 
-        return (substr($name, strrpos($name, '\\') + 1));
+        return substr($name, strrpos($name, '\\') + 1);
     }
 
     /**
@@ -218,14 +222,39 @@ abstract class Mapper extends Singleton
      *
      * @return string
      */
-    public function getEntityClass()
+    public function getEntityClass(): string
     {
         return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
     }
 
     /**
-     * @return mixed
+     * @param string $originName
+     *
+     * @return Column
      * @throws MapperException
+     */
+    public function findColumnByOriginName(string $originName): Column
+    {
+        foreach ($this->getColumns() as $column) {
+            if ($column->name == $originName) {
+                return $column;
+            }
+        }
+        throw new MapperException(sprintf("Can't find origin column '%s' in %s", $originName, get_class($this)));
+    }
+
+    /**
+     * @return Column[]
+     * @throws Exception
+     */
+    public function getColumns(): array
+    {
+        return MapperCache::me()->columns[$this->name()];
+    }
+
+    /**
+     * @return mixed
+     * @throws Exception
      */
     public function getTable()
     {
@@ -250,7 +279,7 @@ abstract class Mapper extends Singleton
 
     /**
      * @return mixed
-     * @throws MapperException
+     * @throws Exception
      */
     public function getBaseColumns()
     {
@@ -259,18 +288,18 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Constraint[]
-     * @throws MapperException
+     * @throws Exception
      */
-    public function getConstraints()
+    public function getConstraints(): array
     {
         return MapperCache::me()->constraints[$this->name()];
     }
 
     /**
      * @return Column[] that is associative array where key is property name
-     * @throws MapperException
+     * @throws Exception
      */
-    public function getPrimaryKey()
+    public function getPrimaryKey(): array
     {
         $keys = [];
         foreach (MapperCache::me()->columns[$this->name()] as $columnName => $column) {
@@ -286,34 +315,9 @@ abstract class Mapper extends Singleton
      *
      * @return string
      */
-    public function getAnnotation()
+    public function getAnnotation(): string
     {
         return $this::ANNOTATION;
-    }
-
-    /**
-     * @param string $originName
-     *
-     * @return Column
-     * @throws MapperException
-     */
-    public function findColumnByOriginName(string $originName)
-    {
-        foreach ($this->getColumns() as $column) {
-            if ($column->name == $originName) {
-                return $column;
-            }
-        }
-        throw new MapperException(sprintf("Can't find origin column '%s' in %s", $originName, get_class($this)));
-    }
-
-    /**
-     * @return Column[]
-     * @throws MapperException
-     */
-    public function getColumns()
-    {
-        return MapperCache::me()->columns[$this->name()];
     }
 
     /**
@@ -322,7 +326,7 @@ abstract class Mapper extends Singleton
      * @throws MapperException
      * @throws ReflectionException
      */
-    public static function meWithoutEnforcer()
+    public static function meWithoutEnforcer(): Mapper
     {
         return self::instantiate(false);
     }
@@ -344,18 +348,18 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Complex[]
-     * @throws MapperException
+     * @throws Exception
      */
-    public function getComplex()
+    public function getComplex(): array
     {
         return MapperCache::me()->complex[$this->name()];
     }
 
     /**
      * @return Embedded[]
-     * @throws MapperException
+     * @throws Exception
      */
-    public function getEmbedded()
+    public function getEmbedded(): array
     {
         return MapperCache::me()->embedded[$this->name()];
     }
@@ -378,9 +382,9 @@ abstract class Mapper extends Singleton
 
     /**
      * @return array
-     * @throws MapperException
+     * @throws Exception
      */
-    public function getOriginFieldNames()
+    public function getOriginFieldNames(): array
     {
         $thisName = $this->name();
         if (!isset(MapperCache::me()->originFieldNames[$thisName])) {

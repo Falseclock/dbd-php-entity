@@ -91,7 +91,7 @@ class Primitive extends Enum
      *
      * @return string
      */
-    public function getPhpVarType()
+    public function getPhpVarType(): string
     {
         switch ($this->value) {
             case self::Int16:

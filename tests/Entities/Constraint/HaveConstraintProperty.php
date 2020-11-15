@@ -18,61 +18,57 @@
  *                                                                              *
  ********************************************************************************/
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Tests\Entities\Constraint;
 
-/**
- * Class Utils
- *
- * @package DBD\Entity\Common
- */
-class Utils
+use DBD\Entity\Column;
+use DBD\Entity\Constraint;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Interfaces\FullMapper;
+use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Mapper;
+use DBD\Entity\Primitive;
+
+class HaveConstraintProperty extends Entity implements FullEntity, SyntheticEntity
+{
+    public $id;
+    public $companyId;
+    public $Company;
+}
+
+class HaveConstraintPropertyMap extends Mapper implements FullMapper
 {
     /**
-     * @param object $object
-     *
-     * @return array
+     * @var Column $id
+     * @see Company::$id
      */
-    public static function getObjectVars(object $object): array
-    {
-        return get_object_vars($object);
-    }
-
+    public $id = [
+        Column::NAME => "user_id",
+        Column::PRIMITIVE_TYPE => Primitive::Int32,
+        Column::NULLABLE => false,
+        Column::KEY => true,
+        Column::ORIGIN_TYPE => "int4"
+    ];
     /**
-     * @param array $bigArray
-     * @param array $smallArray
-     *
-     * @return array
+     * @var Column $companyId
+     * @see User::$companyId
      */
-    public static function arrayDiff(array $bigArray, array $smallArray): array
-    {
-        foreach ($smallArray as $key => $value) {
-            if (isset($bigArray[$key])) {
-                unset($bigArray[$key]);
-            }
-        }
-
-        return $bigArray;
-    }
-
+    public $companyId = [
+        Column::NAME => "company_id",
+        Column::PRIMITIVE_TYPE => Primitive::Int32,
+        Column::NULLABLE => true,
+        Column::ANNOTATION => "Reference to companies",
+        Column::ORIGIN_TYPE => "int4"
+    ];
     /**
-     * Returns value as a boolean.
-     *
-     * @param $variable
-     *
-     * @return bool
+     * @var Constraint $Company
      */
-    public static function convertBoolVar($variable): bool
-    {
-        if (is_scalar($variable))
-            $variable = strtolower(trim($variable));
-
-        switch ($variable) {
-            case 't':
-                return true;
-            case 'f':
-                return false;
-            default:
-                return filter_var($variable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        }
-    }
+    protected $Company = [
+        Constraint::LOCAL_COLUMN => "company_id",
+        Constraint::FOREIGN_SCHEME => Company::SCHEME,
+        Constraint::FOREIGN_TABLE => Company::TABLE,
+        Constraint::FOREIGN_COLUMN => "company_id",
+        Constraint::JOIN_TYPE => null,
+        Constraint::BASE_CLASS => Company::class,
+    ];
 }
