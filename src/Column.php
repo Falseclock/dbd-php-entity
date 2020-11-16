@@ -73,7 +73,7 @@ class Column
      * @param null $columnNameOrArray
      * @throws MapperException
      */
-    public function __construct($columnNameOrArray = null)
+    public function __construct($columnNameOrArray)
     {
         if (isset($columnNameOrArray)) {
             if (is_string($columnNameOrArray)) {
