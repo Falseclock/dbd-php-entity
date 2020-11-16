@@ -29,6 +29,7 @@ use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use Exception;
+use MP\Business\Entities\Membership\User\UserSimple;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
@@ -185,8 +186,8 @@ abstract class Entity
 
         $this->setBaseColumns($data, $map);
 
-        $this->setConstraints($data, $map, $maxLevels, $currentLevel);
-
+        //$this->setConstraints($data, $map, $maxLevels, $currentLevel);
+		// TODO: check if I declare Constraint in Mapper and use same property name in Entity
         $this->setEmbedded($data, $map, $maxLevels, $currentLevel);
 
         $this->setComplex($data, $map, $maxLevels, $currentLevel);
@@ -288,11 +289,10 @@ abstract class Entity
      */
     final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
     {
-
         foreach ($mapper->getConstraints() as $entityName => $constraint) {
 
-            if ($this instanceof FullEntity and property_exists($this, $entityName)) {
-                throw new EntityException(sprintf("FullEntity instance must not user constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
+            if ($this instanceof FullEntity and property_exists(UserSimple::class, $entityName)) {
+                throw new EntityException(sprintf("FullEntity instance must not use constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
             }
 
             /** Check we have data for this constraint */
@@ -347,11 +347,11 @@ abstract class Entity
             $embeddings = MapperCache::me()->embedded[$map->name()];
             $missingColumns = [];
             foreach ($embeddings as $embedding) {
-                if (!array_key_exists($embedding->name, $rowData))
+                if ($embedding->name !== false and !array_key_exists($embedding->name, $rowData))
                     $missingColumns[] = $embedding->name;
             }
             if (count($missingColumns) > 0) {
-                throw new EntityException(sprintf("Missing embedded for FullEntity or StrictlyFilledEntity '%s': %s",
+                throw new EntityException(sprintf("Seems you forgot to select columns for FullEntity or StrictlyFilledEntity '%s': %s",
                         get_class($this),
                         json_encode($missingColumns)
                     )
@@ -360,20 +360,27 @@ abstract class Entity
         }
 
         foreach ($map->getEmbedded() as $embeddedName => $embeddedValue) {
+			if ($embeddedValue->name === false)
+				continue;
 
             if ($currentLevel <= $maxLevels) {
                 if (isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
-                    if (is_string($rowData[$embeddedValue->name])) {
+                    if (isset($rowData[$embeddedValue->name]) and is_string($rowData[$embeddedValue->name])) {
                         $rowData[$embeddedValue->name] = json_decode($rowData[$embeddedValue->name], true);
                     }
                 }
                 if (isset($embeddedValue->entityClass)) {
                     if ($embeddedValue->isIterable) {
                         $iterables = [];
-                        foreach ($rowData[$embeddedValue->name] as $value)
-                            $iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
+                        if (isset($rowData[$embeddedValue->name]) and !is_null($rowData[$embeddedValue->name])) {
+							foreach($rowData[$embeddedValue->name] as $value)
+								$iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
 
-                        $this->$embeddedName = $iterables;
+							$this->$embeddedName = $iterables;
+						} else {
+                        	if (!isset($this->$embeddedName) )
+								$this->$embeddedName = null;
+						}
                     } else {
                         $this->$embeddedName = new $embeddedValue->entityClass($rowData[$embeddedValue->name], $maxLevels, $currentLevel);
                     }

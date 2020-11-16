@@ -35,6 +35,7 @@ class Embedded
     public const DB_TYPE = "embeddedDbType";
     public const ENTITY_CLASS = "embeddedEntityClass";
     public const IS_ITERABLE = "embeddedIsIterable";
+    /** @var string set to FALSE if you want avoid exceptions for Strictly Filled Entity */
     public const NAME = "embeddedName";
     /** @var string $name name of the columns in view or selected with AS */
     public $name;
