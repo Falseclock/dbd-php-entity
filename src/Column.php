@@ -87,11 +87,11 @@ class Column
                     }
                 }
             } else {
-                throw new MapperException("Column constructor accepts only string or array");
+                throw new MapperException("column constructor accepts only string or array");
             }
         }
 
         if (is_null($this->name))
-            throw new MapperException(sprintf("Column name does not set: %s", json_encode($columnNameOrArray)));
+            throw new MapperException(sprintf("columns not set: %s", json_encode($columnNameOrArray)));
     }
 }

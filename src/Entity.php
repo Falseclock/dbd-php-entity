@@ -44,17 +44,16 @@ abstract class Entity
     const SCHEME = "abstract";
     const TABLE = "abstract";
 
-    /**
-     * Конструктор модели
-     *
-     * @param array|null $data
-     * @param int $maxLevels
-     * @param int $currentLevel
-     *
-     * @throws EntityException
-     * @throws MapperException
-     * @throws ReflectionException
-     */
+	/**
+	 * Конструктор модели
+	 *
+	 * @param array|null $data
+	 * @param int        $maxLevels
+	 * @param int        $currentLevel
+	 *
+	 * @throws EntityException
+	 * @throws ReflectionException
+	 */
     public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
     {
         $calledClass = get_class($this);
@@ -62,7 +61,11 @@ abstract class Entity
         if (!$this instanceof SyntheticEntity)
             Enforcer::__add(__CLASS__, $calledClass);
 
-        $map = self::map();
+		try {
+			$map = self::map();
+		} catch(Exception $e) {
+			throw new EntityException(sprintf("Construction of %s failed, %s", $calledClass, $e->getMessage()));
+		}
 
         if (!isset(EntityCache::$mapCache[$calledClass])) {
 
@@ -364,6 +367,13 @@ abstract class Entity
 				continue;
 
             if ($currentLevel <= $maxLevels) {
+				$setterMethod = "set" . ucfirst($embeddedName);
+
+				if (method_exists($this, $setterMethod)) {
+					$this->$setterMethod($rowData[$embeddedValue->name]);
+					continue;
+				}
+
                 if (isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
                     if (isset($rowData[$embeddedValue->name]) and is_string($rowData[$embeddedValue->name])) {
                         $rowData[$embeddedValue->name] = json_decode($rowData[$embeddedValue->name], true);
