@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace DBD\Entity\Tests;
 
 use DBD\Entity\Column;
-use DBD\Entity\Common\MapperException;
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Primitive;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -56,19 +56,19 @@ class ColumnTest extends TestCase
 
     public function testNullInstanceUsage()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new Column(null);
     }
 
     public function testBoolInstanceUsage()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new Column(true);
     }
 
     public function testObjectInstanceUsage()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new Column(new stdClass());
     }
 }

@@ -20,7 +20,7 @@
 
 namespace DBD\Entity;
 
-use DBD\Entity\Common\MapperException;
+use DBD\Entity\Common\EntityException;
 
 /**
  * Class Column
@@ -71,7 +71,7 @@ class Column
      * Column constructor.
      *
      * @param null $columnNameOrArray
-     * @throws MapperException
+     * @throws EntityException
      */
     public function __construct($columnNameOrArray)
     {
@@ -87,11 +87,11 @@ class Column
                     }
                 }
             } else {
-                throw new MapperException("column constructor accepts only string or array");
+                throw new EntityException("column constructor accepts only string or array");
             }
         }
 
         if (is_null($this->name))
-            throw new MapperException(sprintf("columns not set: %s", json_encode($columnNameOrArray)));
+            throw new EntityException(sprintf("columns not set: %s", json_encode($columnNameOrArray)));
     }
 }

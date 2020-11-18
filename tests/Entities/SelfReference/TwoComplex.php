@@ -25,40 +25,39 @@ use DBD\Entity\Complex;
 use DBD\Entity\Entity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use DBD\Entity\Mapper;
-use DBD\Entity\Tests\Entities\PersonBase;
 
 class TwoComplex extends Entity implements SyntheticEntity
 {
-	public $id;
+    public $id;
     /**
      * @var ThreeComplex
      */
-	public $ThreeComplex;
+    public $ThreeComplex;
     /**
      * @var OneComplex
      */
-	public $OneComplex;
+    public $OneComplex;
 }
 
 class TwoComplexMap extends Mapper
 {
-	/**
-	 * @var Column
-	 */
-	public $id = [
-		Column::NAME => 'two_id',
-	];
+    /**
+     * @var Column
+     */
+    public $id = [
+        Column::NAME => 'two_id',
+    ];
 
-	/**
-	 * @var Complex
-	 */
-	protected $ThreeComplex = [
-		Complex::TYPE => ThreeComplex::class,
-	];
-	/**
-	 * @var Complex
-	 */
-	protected $OneComplex = [
-		Complex::TYPE => OneComplex::class,
-	];
+    /**
+     * @var Complex
+     */
+    protected $ThreeComplex = [
+        Complex::TYPE => ThreeComplex::class,
+    ];
+    /**
+     * @var Complex
+     */
+    protected $OneComplex = [
+        Complex::TYPE => OneComplex::class,
+    ];
 }

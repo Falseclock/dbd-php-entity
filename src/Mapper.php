@@ -22,7 +22,7 @@ namespace DBD\Entity;
 
 use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
-use DBD\Entity\Common\MapperException;
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\Utils;
 use Exception;
 use ReflectionException;
@@ -42,7 +42,6 @@ abstract class Mapper extends Singleton
      *
      * @return Mapper|static
      * @throws Common\EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public static function me(): Mapper
@@ -54,7 +53,6 @@ abstract class Mapper extends Singleton
      * @param bool $callEnforcer
      * @return Mapper|static
      * @throws Common\EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     private static function instantiate(bool $callEnforcer = true): Mapper
@@ -82,7 +80,7 @@ abstract class Mapper extends Singleton
      * Used when we need convert Mapper to Table instance
      *
      * @return MapperVariables
-     * @throws MapperException
+     * @throws EntityException
      */
     public function getAllVariables(): MapperVariables
     {
@@ -203,18 +201,18 @@ abstract class Mapper extends Singleton
     /**
      * @param $varValue
      * @param string $varName
-     * @throws MapperException
+     * @throws EntityException
      */
     private function checkProperty($varValue, string $varName): void
     {
         if (is_null($varValue))
-            throw new MapperException(sprintf("property '\$%s' of %s is null", $varName, get_class($this)));
+            throw new EntityException(sprintf("property '\$%s' of %s is null", $varName, get_class($this)));
 
         if (!is_array($varValue))
-            throw new MapperException(sprintf("property '\$%s' of %s is not array", $varName, get_class($this)));
+            throw new EntityException(sprintf("property '\$%s' of %s is not array", $varName, get_class($this)));
 
         if (count($varValue) == 0)
-            throw new MapperException(sprintf("property '\$%s' of %s does not have definitions", $varName, get_class($this)));
+            throw new EntityException(sprintf("property '\$%s' of %s does not have definitions", $varName, get_class($this)));
     }
 
     /**
@@ -231,7 +229,7 @@ abstract class Mapper extends Singleton
      * @param string $originName
      *
      * @return Column
-     * @throws MapperException
+     * @throws EntityException
      */
     public function findColumnByOriginName(string $originName): Column
     {
@@ -240,7 +238,7 @@ abstract class Mapper extends Singleton
                 return $column;
             }
         }
-        throw new MapperException(sprintf("Can't find origin column '%s' in %s", $originName, get_class($this)));
+        throw new EntityException(sprintf("Can't find origin column '%s' in %s", $originName, get_class($this)));
     }
 
     /**
@@ -323,7 +321,6 @@ abstract class Mapper extends Singleton
     /**
      * @return Mapper|static
      * @throws Common\EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public static function meWithoutEnforcer(): Mapper
@@ -336,12 +333,12 @@ abstract class Mapper extends Singleton
      * @param $name
      *
      * @return mixed
-     * @throws MapperException
+     * @throws EntityException
      */
     public function __get($name)
     {
         if (!property_exists($this, $name))
-            throw new MapperException(sprintf("Can't find property '\$%s' of '%s'", $name, get_class($this)));
+            throw new EntityException(sprintf("Can't find property '\$%s' of '%s'", $name, get_class($this)));
 
         return $this->$name;
     }
@@ -368,7 +365,7 @@ abstract class Mapper extends Singleton
      * @param Column $column
      *
      * @return mixed
-     * @throws MapperException
+     * @throws EntityException
      */
     public function getVarNameByColumn(Column $column)
     {
@@ -377,7 +374,7 @@ abstract class Mapper extends Singleton
                 return $varName;
         }
 
-        throw new MapperException(sprintf("Seems column '%s' does not belong to this mapper", $column->name));
+        throw new EntityException(sprintf("Seems column '%s' does not belong to this mapper", $column->name));
     }
 
     /**

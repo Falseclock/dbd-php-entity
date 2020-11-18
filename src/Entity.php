@@ -23,7 +23,6 @@ namespace DBD\Entity;
 use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
-use DBD\Entity\Common\MapperException;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
@@ -44,16 +43,16 @@ abstract class Entity
     const SCHEME = "abstract";
     const TABLE = "abstract";
 
-	/**
-	 * Конструктор модели
-	 *
-	 * @param array|null $data
-	 * @param int        $maxLevels
-	 * @param int        $currentLevel
-	 *
-	 * @throws EntityException
-	 * @throws ReflectionException
-	 */
+    /**
+     * Конструктор модели
+     *
+     * @param array|null $data
+     * @param int $maxLevels
+     * @param int $currentLevel
+     *
+     * @throws EntityException
+     * @throws ReflectionException
+     */
     public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
     {
         $calledClass = get_class($this);
@@ -61,11 +60,11 @@ abstract class Entity
         if (!$this instanceof SyntheticEntity)
             Enforcer::__add(__CLASS__, $calledClass);
 
-		try {
-			$map = self::map();
-		} catch(Exception $e) {
-			throw new EntityException(sprintf("Construction of %s failed, %s", $calledClass, $e->getMessage()));
-		}
+        try {
+            $map = self::map();
+        } catch (Exception $e) {
+            throw new EntityException(sprintf("Construction of %s failed, %s", $calledClass, $e->getMessage()));
+        }
 
         if (!isset(EntityCache::$mapCache[$calledClass])) {
 
@@ -119,7 +118,6 @@ abstract class Entity
 
     /**
      * @return Singleton|Mapper|static
-     * @throws Common\MapperException
      * @throws EntityException
      * @throws ReflectionException
      */
@@ -131,7 +129,7 @@ abstract class Entity
         $mapClass = $calledClass . Mapper::POSTFIX;
 
         if (!class_exists($mapClass, false))
-            throw new MapperException(sprintf("Class %s does not have Map definition", $calledClass));
+            throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
 
         $reflection = new ReflectionClass($calledClass);
         $interfaces = $reflection->getInterfaces();
@@ -190,7 +188,7 @@ abstract class Entity
         $this->setBaseColumns($data, $map);
 
         //$this->setConstraints($data, $map, $maxLevels, $currentLevel);
-		// TODO: check if I declare Constraint in Mapper and use same property name in Entity
+        // TODO: check if I declare Constraint in Mapper and use same property name in Entity
         $this->setEmbedded($data, $map, $maxLevels, $currentLevel);
 
         $this->setComplex($data, $map, $maxLevels, $currentLevel);
@@ -283,60 +281,6 @@ abstract class Entity
     }
 
     /**
-     * @param array $rowData
-     * @param Mapper $mapper
-     * @param int $maxLevels
-     * @param int $currentLevel
-     *
-     * @throws Exception
-     */
-    final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
-    {
-        foreach ($mapper->getConstraints() as $entityName => $constraint) {
-
-            if ($this instanceof FullEntity and property_exists(UserSimple::class, $entityName)) {
-                throw new EntityException(sprintf("FullEntity instance must not use constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
-            }
-
-            /** Check we have data for this constraint */
-            if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
-                continue;
-
-            $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
-
-            // Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
-            // то просто их прогоняем через класс и на выходе получим готовый объект
-
-            $newConstraintValue = null;
-
-            if (isset($constraintValue)) {
-                if ($currentLevel <= $maxLevels) {
-                    $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-                } else {
-                    // We skipping level. But we should also remove unsetted properties to issue notice of exception
-                    // that calling variable on undefined
-                    foreach ($mapper->getConstraints() as $constraintToRemove => $constraintToRemoveValue) {
-                        unset($this->$constraintToRemove);
-                    }
-                }
-            }
-
-            $setterMethod = "set" . ucfirst($entityName);
-
-            if (method_exists($this, $setterMethod)) {
-                $this->$setterMethod($newConstraintValue);
-            } else {
-                // Если у нас переменная класа уже инициализирована, и нету значения из базы
-                // то скорее всего этот объект является массивом данных
-                if (!isset($this->$entityName) or isset($newConstraintValue)) {
-                    if (isset($newConstraintValue))
-                        $this->$entityName = $newConstraintValue;
-                }
-            }
-        }
-    }
-
-    /**
      * @param array|null $rowData
      * @param Mapper $map
      * @param int $maxLevels
@@ -363,16 +307,16 @@ abstract class Entity
         }
 
         foreach ($map->getEmbedded() as $embeddedName => $embeddedValue) {
-			if ($embeddedValue->name === false)
-				continue;
+            if ($embeddedValue->name === false)
+                continue;
 
             if ($currentLevel <= $maxLevels) {
-				$setterMethod = "set" . ucfirst($embeddedName);
+                $setterMethod = "set" . ucfirst($embeddedName);
 
-				if (method_exists($this, $setterMethod)) {
-					$this->$setterMethod($rowData[$embeddedValue->name]);
-					continue;
-				}
+                if (method_exists($this, $setterMethod)) {
+                    $this->$setterMethod($rowData[$embeddedValue->name]);
+                    continue;
+                }
 
                 if (isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
                     if (isset($rowData[$embeddedValue->name]) and is_string($rowData[$embeddedValue->name])) {
@@ -383,14 +327,14 @@ abstract class Entity
                     if ($embeddedValue->isIterable) {
                         $iterables = [];
                         if (isset($rowData[$embeddedValue->name]) and !is_null($rowData[$embeddedValue->name])) {
-							foreach($rowData[$embeddedValue->name] as $value)
-								$iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
+                            foreach ($rowData[$embeddedValue->name] as $value)
+                                $iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
 
-							$this->$embeddedName = $iterables;
-						} else {
-                        	if (!isset($this->$embeddedName) )
-								$this->$embeddedName = null;
-						}
+                            $this->$embeddedName = $iterables;
+                        } else {
+                            if (!isset($this->$embeddedName))
+                                $this->$embeddedName = null;
+                        }
                     } else {
                         $this->$embeddedName = new $embeddedValue->entityClass($rowData[$embeddedValue->name], $maxLevels, $currentLevel);
                     }
@@ -446,5 +390,59 @@ abstract class Entity
         $calledClass = get_called_class();
 
         return $calledClass::SCHEME . "." . $calledClass::TABLE;
+    }
+
+    /**
+     * @param array $rowData
+     * @param Mapper $mapper
+     * @param int $maxLevels
+     * @param int $currentLevel
+     *
+     * @throws Exception
+     */
+    final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
+    {
+        foreach ($mapper->getConstraints() as $entityName => $constraint) {
+
+            if ($this instanceof FullEntity and property_exists(UserSimple::class, $entityName)) {
+                throw new EntityException(sprintf("FullEntity instance must not use constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
+            }
+
+            /** Check we have data for this constraint */
+            if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
+                continue;
+
+            $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
+
+            // Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
+            // то просто их прогоняем через класс и на выходе получим готовый объект
+
+            $newConstraintValue = null;
+
+            if (isset($constraintValue)) {
+                if ($currentLevel <= $maxLevels) {
+                    $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
+                } else {
+                    // We skipping level. But we should also remove unsetted properties to issue notice of exception
+                    // that calling variable on undefined
+                    foreach ($mapper->getConstraints() as $constraintToRemove => $constraintToRemoveValue) {
+                        unset($this->$constraintToRemove);
+                    }
+                }
+            }
+
+            $setterMethod = "set" . ucfirst($entityName);
+
+            if (method_exists($this, $setterMethod)) {
+                $this->$setterMethod($newConstraintValue);
+            } else {
+                // Если у нас переменная класа уже инициализирована, и нету значения из базы
+                // то скорее всего этот объект является массивом данных
+                if (!isset($this->$entityName) or isset($newConstraintValue)) {
+                    if (isset($newConstraintValue))
+                        $this->$entityName = $newConstraintValue;
+                }
+            }
+        }
     }
 }

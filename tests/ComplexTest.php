@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace DBD\Entity\Tests;
 
-use DBD\Entity\Common\MapperException;
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Complex;
 use DBD\Entity\Entity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
@@ -112,19 +112,19 @@ class ComplexTest extends TestCase
 
     public function testNullInstanceUsage()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new Complex(null);
     }
 
     public function testBoolInstanceUsage()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new Complex(true);
     }
 
     public function testObjectInstanceUsage()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new Complex(new stdClass());
     }
 }

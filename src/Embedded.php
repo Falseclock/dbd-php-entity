@@ -20,7 +20,7 @@
 
 namespace DBD\Entity;
 
-use DBD\Entity\Common\MapperException;
+use DBD\Entity\Common\EntityException;
 
 /**
  * Class Embedded used when you generate value with view or with calculations or need
@@ -50,7 +50,7 @@ class Embedded
      * Embedded constructor.
      *
      * @param array|null $arrayOfValues
-     * @throws MapperException
+     * @throws EntityException
      */
     public function __construct(array $arrayOfValues)
     {
@@ -72,6 +72,6 @@ class Embedded
         }
 
         if (is_null($this->name))
-            throw new MapperException("Embedded name not set");
+            throw new EntityException("Embedded name not set");
     }
 }

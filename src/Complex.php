@@ -20,7 +20,7 @@
 
 namespace DBD\Entity;
 
-use DBD\Entity\Common\MapperException;
+use DBD\Entity\Common\EntityException;
 
 /**
  * Use Complex when you need JOIN several tables and select all in once
@@ -38,7 +38,7 @@ class Complex
      * Complex constructor.
      *
      * @param null $complexNameOrArray
-     * @throws MapperException
+     * @throws EntityException
      */
     public function __construct($complexNameOrArray = null)
     {
@@ -50,11 +50,11 @@ class Complex
                     $this->$key = $value;
                 }
             } else {
-                throw new MapperException("Complex constructor accepts only string or array");
+                throw new EntityException("Complex constructor accepts only string or array");
             }
         }
 
         if (is_null($this->complexClass))
-            throw new MapperException("Complex className not set");
+            throw new EntityException("Complex className not set");
     }
 }

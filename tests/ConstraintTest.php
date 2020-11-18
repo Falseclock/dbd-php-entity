@@ -45,7 +45,6 @@ class ConstraintTest extends TestCase
         $data = ['company_id' => 1, 'user_id' => 2];
 
         $this->expectException(EntityException::class);
-        /** @noinspection PhpExpressionResultUnusedInspection */
         new HaveConstraintProperty($data);
     }
 

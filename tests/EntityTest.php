@@ -24,7 +24,6 @@ namespace DBD\Entity\Tests;
 
 use DateTime;
 use DBD\Entity\Common\EntityException;
-use DBD\Entity\Common\MapperException;
 use DBD\Entity\Entity;
 use DBD\Entity\EntityCache;
 use DBD\Entity\Interfaces\FullEntity;
@@ -173,7 +172,6 @@ class EntityTest extends TestCase
      * Test Synthetic entity can be without ANNOTATION, TABLE and SCHEMA constants
      *
      * @throws EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public function testSynthetic()
@@ -208,7 +206,6 @@ class EntityTest extends TestCase
      * Just test instantiation
      *
      * @throws EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public function testInstance()
@@ -234,7 +231,6 @@ class EntityTest extends TestCase
      * Test setters functions
      *
      * @throws EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public function testSetters()
@@ -336,19 +332,17 @@ class EntityTest extends TestCase
      * When Entity class does not have Mapper class
      *
      * @throws EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public function testMissingMapper()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         PersonBaseWithoutMapping::map();
     }
 
     /**
      *
      * @throws EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public function testOnlyDeclared()

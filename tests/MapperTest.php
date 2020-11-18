@@ -24,7 +24,6 @@ namespace DBD\Entity\Tests;
 
 use DBD\Entity\Column;
 use DBD\Entity\Common\EntityException;
-use DBD\Entity\Common\MapperException;
 use DBD\Entity\Tests\Entities\Embedded\CountryMap;
 use DBD\Entity\Tests\Entities\PersonBaseMap;
 use DBD\Entity\Tests\Fixtures\MapperBoolProperty;
@@ -38,30 +37,29 @@ class MapperTest extends TestCase
 {
     public function testNullProperty()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         MapperNullProperty::me();
     }
 
     public function testBoolProperty()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         MapperBoolProperty::me();
     }
 
     public function testEmptyProperty()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         MapperEmptyProperty::me();
     }
 
     public function testUnknownProperty()
     {
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         PersonBaseMap::me()->iDoNotKnow;
     }
 
     /**
-     * @throws MapperException
      * @throws EntityException
      * @throws ReflectionException
      */
@@ -91,14 +89,14 @@ class MapperTest extends TestCase
         $columns = CountryMap::me()->getColumns();
         self::assertInstanceOf(Column::class, array_shift($columns));
 
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         PersonBaseMap::me()->getVarNameByColumn(array_shift($columns));
     }
 
     public function testFindColumnByOriginName()
     {
         $mapper = PersonBaseMap::me();
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         $mapper->findColumnByOriginName("unknown field");
     }
 }

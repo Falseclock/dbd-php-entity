@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace DBD\Entity\Tests;
 
 use DBD\Entity\Common\EntityException;
-use DBD\Entity\Common\MapperException;
 use DBD\Entity\Embedded;
 use DBD\Entity\Entity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
@@ -64,7 +63,6 @@ class EmbeddedTest extends TestCase
 
         // $four contains only simple one, so should be exception
         $this->expectException(EntityException::class);
-        /** @noinspection PhpExpressionResultUnusedInspection */
         new OneEmbedded($data, 4);
     }
 
@@ -72,7 +70,6 @@ class EmbeddedTest extends TestCase
     {
         $data = ['one_id' => 1];
         $this->expectException(EntityException::class);
-        /** @noinspection PhpExpressionResultUnusedInspection */
         new OneEmbedded($data);
     }
 
@@ -154,7 +151,7 @@ class EmbeddedTest extends TestCase
         self::assertNotNull($embedded->entityClass);
         self::assertNotNull($embedded->isIterable);
 
-        $this->expectException(MapperException::class);
+        $this->expectException(EntityException::class);
         new Embedded([]);
     }
 }

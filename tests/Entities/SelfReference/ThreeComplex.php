@@ -31,42 +31,42 @@ class ThreeComplex extends Entity implements SyntheticEntity
     /**
      * @var FourComplex
      */
-	public $FourComplex;
+    public $FourComplex;
     /**
      * @var OneComplex
      */
-	public $OneComplex;
+    public $OneComplex;
     /**
      * @var TwoComplex
      */
-	public $TwoComplex;
-	public $id;
+    public $TwoComplex;
+    public $id;
 }
 
 class ThreeComplexMap extends Mapper
 {
-	/**
-	 * @var Column
-	 */
-	public $id = [
-		Column::NAME => 'three_id',
-	];
-	/**
-	 * @var Complex
-	 */
-	protected $FourComplex = [
-		Complex::TYPE => FourComplex::class,
-	];
-	/**
-	 * @var Complex
-	 */
-	protected $OneComplex = [
-		Complex::TYPE => OneComplex::class,
-	];
-	/**
-	 * @var Complex
-	 */
-	protected $TwoComplex = [
-		Complex::TYPE => TwoComplex::class,
-	];
+    /**
+     * @var Column
+     */
+    public $id = [
+        Column::NAME => 'three_id',
+    ];
+    /**
+     * @var Complex
+     */
+    protected $FourComplex = [
+        Complex::TYPE => FourComplex::class,
+    ];
+    /**
+     * @var Complex
+     */
+    protected $OneComplex = [
+        Complex::TYPE => OneComplex::class,
+    ];
+    /**
+     * @var Complex
+     */
+    protected $TwoComplex = [
+        Complex::TYPE => TwoComplex::class,
+    ];
 }

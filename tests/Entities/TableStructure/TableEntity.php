@@ -24,7 +24,6 @@ use DBD\Common\DBDException;
 use DBD\Common\PgUtils;
 use DBD\Entity\Column;
 use DBD\Entity\Common\EntityException;
-use DBD\Entity\Common\MapperException;
 use DBD\Entity\Constraint;
 use DBD\Entity\Embedded;
 use DBD\Entity\Entity;
@@ -50,7 +49,6 @@ class TableEntity extends Entity implements SyntheticEntity, StrictlyFilledEntit
      * @param string|null $constraints
      *
      * @throws EntityException
-     * @throws MapperException
      * @throws ReflectionException
      */
     public function setForeignKeys(?string $constraints): void
@@ -79,7 +77,6 @@ class TableEntity extends Entity implements SyntheticEntity, StrictlyFilledEntit
      * @throws DBDException
      * @throws EntityException
      * @throws ReflectionException
-     * @throws MapperException
      */
     public function setColumns(string $columns): void
     {
