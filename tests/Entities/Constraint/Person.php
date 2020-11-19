@@ -34,7 +34,7 @@ class Person extends Entity implements FullEntity
 
     /**
      * @var string $firstName
-     * @see PersonMap::$firstName
+     * @see \MP\Business\Entities\Membership\Person\PersonMap::$firstName
      */
     public $firstName;
 
@@ -51,7 +51,7 @@ class PersonMap extends Mapper implements FullMapper
 
     /**
      * @var Column $firstName
-     * @see Person::$firstName
+     * @see \MP\Business\Entities\Membership\Person\Person::$firstName
      */
     public $firstName = [
         Column::NAME => "person_first_name",

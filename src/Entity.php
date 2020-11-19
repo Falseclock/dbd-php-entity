@@ -28,7 +28,6 @@ use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use Exception;
-use MP\Business\Entities\Membership\User\UserSimple;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
@@ -404,7 +403,7 @@ abstract class Entity
     {
         foreach ($mapper->getConstraints() as $entityName => $constraint) {
 
-            if ($this instanceof FullEntity and property_exists(UserSimple::class, $entityName)) {
+            if ($this instanceof FullEntity) {
                 throw new EntityException(sprintf("FullEntity instance must not use constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
             }
 
