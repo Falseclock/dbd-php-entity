@@ -92,6 +92,6 @@ class Column
         }
 
         if (is_null($this->name))
-            throw new EntityException(sprintf("columns not set: %s", json_encode($columnNameOrArray)));
+            throw new EntityException(sprintf("columns not set: %s. Check that Embedded and Complex fields are protected type.", json_encode($columnNameOrArray)));
     }
 }
