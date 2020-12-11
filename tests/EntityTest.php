@@ -45,11 +45,17 @@ use DBD\Entity\Tests\Entities\UnUsedPropertyInMapper;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionProperty;
 
+/**
+ * Class EntityTest
+ * @package DBD\Entity\Tests
+ */
 class EntityTest extends TestCase
 {
+    /**
+     * @throws EntityException
+     */
     public function testMapperHasPropertyNotUsedInEntity()
     {
         $entity = new UnUsedPropertyInMapper();
@@ -59,6 +65,10 @@ class EntityTest extends TestCase
         self::assertInstanceOf(Entity::class, $entity);
     }
 
+    /**
+     * @throws EntityException
+     * @noinspection PhpExpressionResultUnusedInspection
+     */
     public function testNullValueToNonNull()
     {
         $personData = Data::getPersonFullEntityData();
@@ -68,6 +78,9 @@ class EntityTest extends TestCase
         new PersonBase($personData);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testDeclarationChain3()
     {
         $d = new D(Data::getDeclarationChainData());
@@ -89,6 +102,9 @@ class EntityTest extends TestCase
         }
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testDeclarationChain2()
     {
         $c = new C(Data::getDeclarationChainData());
@@ -109,10 +125,13 @@ class EntityTest extends TestCase
         self::assertFalse(isset($c->$missingProperty), "C class still has property '{$missingProperty}'");
 
         // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
-        $this->expectNotice();
+        self::expectNotice();
         $c->$missingProperty;
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testDeclarationChain1()
     {
         $b = new B(Data::getDeclarationChainData());
@@ -131,10 +150,13 @@ class EntityTest extends TestCase
         self::assertFalse(isset($b->$missingProperty));
 
         // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
-        $this->expectNotice();
+        self::expectNotice();
         $b->$missingProperty;
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testJsonType()
     {
         $entity = new JsonTypeColumn();
@@ -172,7 +194,6 @@ class EntityTest extends TestCase
      * Test Synthetic entity can be without ANNOTATION, TABLE and SCHEMA constants
      *
      * @throws EntityException
-     * @throws ReflectionException
      */
     public function testSynthetic()
     {
@@ -194,6 +215,7 @@ class EntityTest extends TestCase
 
     /**
      * All Entity variables must be mapped in case of FullEntity or StrictlyFilledEntity
+     * @noinspection PhpExpressionResultUnusedInspection
      */
     public function testUnmappedProperty()
     {
@@ -206,7 +228,6 @@ class EntityTest extends TestCase
      * Just test instantiation
      *
      * @throws EntityException
-     * @throws ReflectionException
      */
     public function testInstance()
     {
@@ -231,7 +252,6 @@ class EntityTest extends TestCase
      * Test setters functions
      *
      * @throws EntityException
-     * @throws ReflectionException
      */
     public function testSetters()
     {
@@ -314,6 +334,8 @@ class EntityTest extends TestCase
 
     /**
      * Case when we selecting a lot of fields and forget to select some of them for FullEntity or StrictlyFilledEntity
+     * @throws EntityException
+     * @noinspection PhpExpressionResultUnusedInspection
      */
     public function testMissingColumns()
     {
@@ -332,7 +354,6 @@ class EntityTest extends TestCase
      * When Entity class does not have Mapper class
      *
      * @throws EntityException
-     * @throws ReflectionException
      */
     public function testMissingMapper()
     {
@@ -343,7 +364,7 @@ class EntityTest extends TestCase
     /**
      *
      * @throws EntityException
-     * @throws ReflectionException
+     * @noinspection PhpExpressionResultUnusedInspection
      */
     public function testOnlyDeclared()
     {

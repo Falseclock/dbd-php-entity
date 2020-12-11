@@ -22,22 +22,40 @@ declare(strict_types=1);
 
 namespace DBD\Entity\Tests;
 
+use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Tests\Entities\WithoutConstants;
 use DBD\Entity\Tests\Entities\WithoutConstantsMap;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class EnforcerTest
+ * @package DBD\Entity\Tests
+ */
 class EnforcerTest extends TestCase
 {
-    public function testExceptionOnEntity()
+    public function testEnforcerException()
     {
         self::expectException(EntityException::class);
+        Enforcer::__add(__DIR__, __LINE__);
+    }
+
+    /**
+     *
+     * @noinspection PhpExpressionResultUnusedInspection
+     */
+    public function testExceptionOnEntity()
+    {
+        self::expectNotice();
         new WithoutConstants();
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testExceptionOnMapper()
     {
-        self::expectException(EntityException::class);
+        self::expectNotice();
         WithoutConstantsMap::me();
     }
 }

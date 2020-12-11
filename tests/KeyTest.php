@@ -22,12 +22,20 @@ declare(strict_types=1);
 
 namespace DBD\Entity\Tests;
 
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Key;
 use DBD\Entity\Tests\Entities\PersonBaseMap;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class KeyTest
+ * @package DBD\Entity\Tests
+ */
 class KeyTest extends TestCase
 {
+    /**
+     * @throws EntityException
+     */
     public function testConstruction()
     {
         $map = PersonBaseMap::me();

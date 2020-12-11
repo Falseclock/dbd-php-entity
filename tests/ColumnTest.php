@@ -28,8 +28,15 @@ use DBD\Entity\Primitive;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+/**
+ * Class ColumnTest
+ * @package DBD\Entity\Tests
+ */
 class ColumnTest extends TestCase
 {
+    /**
+     * @throws EntityException
+     */
     public function testArrayInstanceUsage()
     {
         $column = new Column([
@@ -45,6 +52,9 @@ class ColumnTest extends TestCase
         self::assertNotNull($column);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testStringInstanceUsage()
     {
         $columnName = "table_column_name";
@@ -54,18 +64,27 @@ class ColumnTest extends TestCase
         self::assertEquals($columnName, $column->name);
     }
 
+    /**
+     *
+     */
     public function testNullInstanceUsage()
     {
         $this->expectException(EntityException::class);
         new Column(null);
     }
 
+    /**
+     *
+     */
     public function testBoolInstanceUsage()
     {
         $this->expectException(EntityException::class);
         new Column(true);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testObjectInstanceUsage()
     {
         $this->expectException(EntityException::class);

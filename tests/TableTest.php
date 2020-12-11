@@ -20,6 +20,7 @@
 
 namespace DBD\Entity\Tests;
 
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Entity;
 use DBD\Entity\Table;
 use DBD\Entity\Tests\Entities\Constraint\TenderLot;
@@ -33,6 +34,9 @@ use PHPUnit\Framework\TestCase;
  */
 class TableTest extends TestCase
 {
+    /**
+     * @throws EntityException
+     */
     public function testEntity()
     {
         $entity = new TableEntity(Data::getTableStructureData());

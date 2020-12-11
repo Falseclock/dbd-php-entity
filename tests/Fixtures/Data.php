@@ -18,8 +18,11 @@
  *                                                                              *
  ********************************************************************************/
 
+declare(strict_types=1);
+
 namespace DBD\Entity\Tests\Fixtures;
 
+use DBD\Entity\Common\EntityException;
 use DBD\Entity\Tests\Entities\AddressMap;
 use DBD\Entity\Tests\Entities\Constraint\CompanyMap;
 use DBD\Entity\Tests\Entities\Constraint\LevelOneMap;
@@ -37,9 +40,16 @@ use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\PersonBaseMap;
 use DBD\Entity\Tests\Entities\UnUsedPropertyInMapperMap;
 
+/**
+ * Class Data
+ * @package DBD\Entity\Tests\Fixtures
+ */
 class Data
 {
-    public static function getTableStructureData()
+    /**
+     * @return string[]
+     */
+    public static function getTableStructureData(): array
     {
         return [
             "table_schema" => "tender",
@@ -51,7 +61,11 @@ class Data
         ];
     }
 
-    public static function getJsonTypeColumnData()
+    /**
+     * @return string[]
+     * @throws EntityException
+     */
+    public static function getJsonTypeColumnData(): array
     {
         return [
             JsonTypeColumnMap::me()->json->name => '{
@@ -64,7 +78,11 @@ class Data
         ];
     }
 
-    public static function getDeclarationChainData()
+    /**
+     * @return bool[]
+     * @throws EntityException
+     */
+    public static function getDeclarationChainData(): array
     {
         return [
             AMap::meWithoutEnforcer()->a1->name => true,
@@ -73,19 +91,31 @@ class Data
         ];
     }
 
-    public static function getUnUsedPropertyInMapperData()
+    /**
+     * @return int[]
+     * @throws EntityException
+     */
+    public static function getUnUsedPropertyInMapperData(): array
     {
         return [
             UnUsedPropertyInMapperMap::meWithoutEnforcer()->id->name => 1,
         ];
     }
 
-    public static function getJustComplexData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getJustComplexData(): array
     {
         return array_merge(self::getPersonFullEntityData(), self::getAddressData());
     }
 
-    public static function getPersonFullEntityData()
+    /**
+     * @return string[]
+     * @throws EntityException
+     */
+    public static function getPersonFullEntityData(): array
     {
         return [
             PersonBaseMap::me()->name->name => 'Alfa',
@@ -96,7 +126,11 @@ class Data
         ];
     }
 
-    public static function getAddressData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getAddressData(): array
     {
         return [
             AddressMap::me()->id->name => 111,
@@ -104,12 +138,20 @@ class Data
         ];
     }
 
-    public static function getUserFullData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getUserFullData(): array
     {
         return array_merge(self::getUserData(), self::getPersonData(), self::getCompanyData());
     }
 
-    public static function getUserData()
+    /**
+     * @return int[]
+     * @throws EntityException
+     */
+    public static function getUserData(): array
     {
         return [
             UserMap::me()->id->name => 1,
@@ -118,7 +160,11 @@ class Data
         ];
     }
 
-    public static function getPersonData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getPersonData(): array
     {
         return [
             PersonMap::me()->id->name => 2,
@@ -126,7 +172,11 @@ class Data
         ];
     }
 
-    public static function getCompanyData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getCompanyData(): array
     {
         return [
             CompanyMap::me()->id->name => 3,
@@ -134,17 +184,29 @@ class Data
         ];
     }
 
-    public static function getUserNonFullData()
+    /**
+     * @return int[]
+     * @throws EntityException
+     */
+    public static function getUserNonFullData(): array
     {
         return self::getUserData();
     }
 
-    public static function getLongChainData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getLongChainData(): array
     {
         return array_merge(self::getUserData(), self::getLevelOneData(), self::getLevelTwoData());
     }
 
-    public static function getLevelOneData()
+    /**
+     * @return int[]
+     * @throws EntityException
+     */
+    public static function getLevelOneData(): array
     {
         return [
             LevelOneMap::me()->id->name => 111,
@@ -152,7 +214,11 @@ class Data
         ];
     }
 
-    public static function getLevelTwoData()
+    /**
+     * @return int[]
+     * @throws EntityException
+     */
+    public static function getLevelTwoData(): array
     {
         return [
             LevelTwoMap::me()->id->name => 222,
@@ -161,12 +227,20 @@ class Data
         ];
     }
 
-    public static function getCountryWithRegionsData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getCountryWithRegionsData(): array
     {
         return array_merge(self::getCountryData(), [CountryWithRegionsMap::me()->Regions->name => self::getRegionsJsonData()]);
     }
 
-    public static function getCountryData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getCountryData(): array
     {
         return [
             CountryMap::me()->id->name => 9,
@@ -174,12 +248,20 @@ class Data
         ];
     }
 
+    /**
+     * @return false|string
+     * @throws EntityException
+     */
     public static function getRegionsJsonData()
     {
         return json_encode(self::getRegionsData(), JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
     }
 
-    public static function getRegionsData()
+    /**
+     * @return array[]
+     * @throws EntityException
+     */
+    public static function getRegionsData(): array
     {
         return [
             [
@@ -201,12 +283,20 @@ class Data
         ];
     }
 
-    public static function getStreetWithZipCodeJsonData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getStreetWithZipCodeJsonData(): array
     {
         return array_merge(self::getStreetData(), [StreetWithZipCodeMap::me()->ZipCode->name => self::getZipCodeJsonData()]);
     }
 
-    public static function getStreetData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getStreetData(): array
     {
         return [
             StreetMap::me()->id->name => 123,
@@ -214,12 +304,20 @@ class Data
         ];
     }
 
+    /**
+     * @return false|string
+     * @throws EntityException
+     */
     public static function getZipCodeJsonData()
     {
         return json_encode(self::getZipCodeData(), JSON_UNESCAPED_UNICODE);
     }
 
-    public static function getZipCodeData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getZipCodeData(): array
     {
         return [
             ZipCodeMap::me()->id->name => 480000,
@@ -227,7 +325,11 @@ class Data
         ];
     }
 
-    public static function getStreetWithZipCodeNotJsonData()
+    /**
+     * @return array
+     * @throws EntityException
+     */
+    public static function getStreetWithZipCodeNotJsonData(): array
     {
         return array_merge(self::getStreetData(), [StreetWithZipCodeMap::me()->ZipCode->name => self::getZipCodeData()]);
     }

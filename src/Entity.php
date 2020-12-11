@@ -50,7 +50,6 @@ abstract class Entity
      * @param int $currentLevel
      *
      * @throws EntityException
-     * @throws ReflectionException
      */
     public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
     {
@@ -118,25 +117,28 @@ abstract class Entity
     /**
      * @return Singleton|Mapper|static
      * @throws EntityException
-     * @throws ReflectionException
      */
     final public static function map()
     {
-        $calledClass = get_called_class();
+        try {
+            $calledClass = get_called_class();
 
-        /** @var Mapper $mapClass */
-        $mapClass = $calledClass . Mapper::POSTFIX;
+            /** @var Mapper $mapClass */
+            $mapClass = $calledClass . Mapper::POSTFIX;
 
-        if (!class_exists($mapClass, false))
-            throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+            if (!class_exists($mapClass, false))
+                throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
 
-        $reflection = new ReflectionClass($calledClass);
-        $interfaces = $reflection->getInterfaces();
+            $reflection = new ReflectionClass($calledClass);
+            $interfaces = $reflection->getInterfaces();
 
-        if (isset($interfaces[SyntheticEntity::class]))
-            return $mapClass::meWithoutEnforcer();
-        else
-            return $mapClass::me();
+            if (isset($interfaces[SyntheticEntity::class]))
+                return $mapClass::meWithoutEnforcer();
+            else
+                return $mapClass::me();
+        } catch (ReflectionException $e) {
+            throw new EntityException($e->getMessage(), $e->getCode(), $e);
+        }
     }
 
     /**
@@ -178,7 +180,6 @@ abstract class Entity
      * @param int $currentLevel
      *
      * @throws EntityException
-     * @throws Exception
      */
     final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void
     {
@@ -284,7 +285,7 @@ abstract class Entity
      * @param Mapper $map
      * @param int $maxLevels
      * @param int $currentLevel
-     * @throws Exception
+     * @throws EntityException
      */
     final private function setEmbedded(?array $rowData, Mapper $map, int $maxLevels, int $currentLevel)
     {
@@ -351,8 +352,6 @@ abstract class Entity
      * @param Mapper $map
      * @param int $maxLevels
      * @param int $currentLevel
-     *
-     * @throws Exception
      */
     private function setComplex(?array $data, Mapper $map, int $maxLevels, int $currentLevel)
     {
@@ -396,10 +395,9 @@ abstract class Entity
      * @param Mapper $mapper
      * @param int $maxLevels
      * @param int $currentLevel
-     *
-     * @throws Exception
+     * @throws EntityException
      */
-    final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
+    /*final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
     {
         foreach ($mapper->getConstraints() as $entityName => $constraint) {
 
@@ -407,7 +405,7 @@ abstract class Entity
                 throw new EntityException(sprintf("FullEntity instance must not use constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
             }
 
-            /** Check we have data for this constraint */
+            // Check we have data for this constraint
             if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
                 continue;
 
@@ -443,5 +441,5 @@ abstract class Entity
                 }
             }
         }
-    }
+    }*/
 }

@@ -20,12 +20,11 @@
 
 namespace DBD\Entity;
 
+use DBD\Common\Instantiatable;
 use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\Utils;
-use Exception;
-use ReflectionException;
 
 /**
  * Class Mapper
@@ -41,10 +40,9 @@ abstract class Mapper extends Singleton
      * Used for quick access to the mapper without instantiating it and have only one instance
      *
      * @return Mapper|static
-     * @throws Common\EntityException
-     * @throws ReflectionException
+     * @throws EntityException
      */
-    public static function me(): Mapper
+    public static function me(): Instantiatable
     {
         return self::instantiate();
     }
@@ -52,8 +50,7 @@ abstract class Mapper extends Singleton
     /**
      * @param bool $callEnforcer
      * @return Mapper|static
-     * @throws Common\EntityException
-     * @throws ReflectionException
+     * @throws EntityException
      */
     private static function instantiate(bool $callEnforcer = true): Mapper
     {
@@ -243,7 +240,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Column[]
-     * @throws Exception
      */
     public function getColumns(): array
     {
@@ -252,7 +248,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return mixed
-     * @throws Exception
      */
     public function getTable()
     {
@@ -277,7 +272,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return mixed
-     * @throws Exception
      */
     public function getBaseColumns()
     {
@@ -286,7 +280,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Constraint[]
-     * @throws Exception
      */
     public function getConstraints(): array
     {
@@ -295,7 +288,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Column[] that is associative array where key is property name
-     * @throws Exception
      */
     public function getPrimaryKey(): array
     {
@@ -320,8 +312,7 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Mapper|static
-     * @throws Common\EntityException
-     * @throws ReflectionException
+     * @throws EntityException
      */
     public static function meWithoutEnforcer(): Mapper
     {
@@ -345,7 +336,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Complex[]
-     * @throws Exception
      */
     public function getComplex(): array
     {
@@ -354,7 +344,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return Embedded[]
-     * @throws Exception
      */
     public function getEmbedded(): array
     {
@@ -379,7 +368,6 @@ abstract class Mapper extends Singleton
 
     /**
      * @return array
-     * @throws Exception
      */
     public function getOriginFieldNames(): array
     {

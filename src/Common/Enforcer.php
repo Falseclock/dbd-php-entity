@@ -35,16 +35,19 @@ class Enforcer
      * @param $c
      *
      * @throws EntityException
-     * @throws ReflectionException
      */
     public static function __add($class, $c)
     {
-        $reflection = new ReflectionClass($class);
-        $constantsForced = $reflection->getConstants();
-        foreach ($constantsForced as $constant => $value) {
-            if (constant("$c::$constant") == "abstract") {
-                throw new EntityException("Undefined $constant in " . (string)$c);
+        try {
+            $reflection = new ReflectionClass($class);
+            $constantsForced = $reflection->getConstants();
+            foreach ($constantsForced as $constant => $value) {
+                if (constant("$c::$constant") == "abstract") {
+                    trigger_error("Undefined $constant in " . (string)$c);
+                }
             }
+        } catch (ReflectionException $e) {
+            throw new EntityException($e->getMessage());
         }
     }
 }

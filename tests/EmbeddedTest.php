@@ -41,8 +41,16 @@ use PHPUnit\Framework\TestCase;
 
 // TODO: test Embedded has Complex or Constraint
 
+/**
+ * Class EmbeddedTest
+ * @package DBD\Entity\Tests
+ */
 class EmbeddedTest extends TestCase
 {
+    /**
+     * @throws EntityException
+     * @noinspection PhpExpressionResultUnusedInspection
+     */
     public function testSelfReferenceChain()
     {
         $one = ['one_id' => 1];
@@ -66,6 +74,10 @@ class EmbeddedTest extends TestCase
         new OneEmbedded($data, 4);
     }
 
+    /**
+     * @throws EntityException
+     * @noinspection PhpExpressionResultUnusedInspection
+     */
     public function testMissingColumns()
     {
         $data = ['one_id' => 1];
@@ -73,6 +85,9 @@ class EmbeddedTest extends TestCase
         new OneEmbedded($data);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testNoEntity()
     {
         $data = Data::getStreetWithZipCodeNotJsonData();
@@ -87,6 +102,9 @@ class EmbeddedTest extends TestCase
         self::assertNotNull($embedded->ZipCode[ZipCodeMap::me()->value->name]);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testNonIterableNonJson()
     {
         $data = Data::getStreetWithZipCodeNotJsonData();
@@ -101,6 +119,9 @@ class EmbeddedTest extends TestCase
 
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testNonIterable()
     {
         $data = Data::getStreetWithZipCodeJsonData();
@@ -114,6 +135,9 @@ class EmbeddedTest extends TestCase
         self::assertNotNull($embedded->ZipCode->value);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testCreationIterable()
     {
         $embedded = new CountryWithRegions();
@@ -137,6 +161,9 @@ class EmbeddedTest extends TestCase
         }
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testConstruction()
     {
         $embedded = new Embedded([

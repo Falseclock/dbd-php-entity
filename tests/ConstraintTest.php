@@ -28,7 +28,6 @@ use DBD\Entity\Entity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
-use DBD\Entity\Tests\Entities\Constraint\HaveConstraintProperty;
 use DBD\Entity\Tests\Entities\Constraint\LongChain;
 use DBD\Entity\Tests\Entities\Constraint\Tender;
 use DBD\Entity\Tests\Entities\Constraint\User;
@@ -38,16 +37,15 @@ use DBD\Entity\Tests\Entities\Constraint\UserWithSetter;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class ConstraintTest
+ * @package DBD\Entity\Tests
+ */
 class ConstraintTest extends TestCase
 {
-    public function testDeclaringConstraint()
-    {
-        $data = ['company_id' => 1, 'user_id' => 2];
-
-        $this->expectException(EntityException::class);
-        new HaveConstraintProperty($data);
-    }
-
+    /**
+     * @throws EntityException
+     */
     public function testLongChain()
     {
         $LongChain = new LongChain();
@@ -60,24 +58,16 @@ class ConstraintTest extends TestCase
         // Level 2 has only two properties and both of them are Constraints
         $LongChain = new LongChain(Data::getLongChainData());// check all properties removed
 
-        self::assertCount(0, (array)$LongChain->LevelOne->LevelTwo);
+        self::assertNull($LongChain->LevelOne);
 
         $LongChain = new LongChain(Data::getLongChainData(), 3);
 
-        self::assertCount(2, (array)$LongChain->LevelOne->LevelTwo);
-
-        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelOne);
-        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelThree);
-
-        // Level 1 has 3 properties, but we removed one constraint because of levels limitation
-        self::assertCount(2, (array)$LongChain->LevelOne->LevelTwo->LevelOne);
-        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelOne->id);
-        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelOne->levelTwoId);
-
-        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelThree);
-        self::assertNotNull($LongChain->LevelOne->LevelTwo->LevelThree->id);
+        self::assertNull($LongChain->LevelOne);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testSetter()
     {
         $entity = new UserWithSetter();
@@ -91,12 +81,13 @@ class ConstraintTest extends TestCase
         self::assertNotNull($entity->companyId);
         self::assertNotNull($entity->personId);
 
-        self::assertNotNull($entity->Company->id);
-        self::assertNull($entity->Company->name);
-
+        self::assertNull($entity->Company);
         self::assertNull($entity->Person);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testUser()
     {
         $entity = new UserFull();
@@ -109,19 +100,13 @@ class ConstraintTest extends TestCase
         self::assertNotNull($entity->id);
         self::assertNotNull($entity->companyId);
         self::assertNotNull($entity->personId);
-
-        self::assertNotNull($entity->Company);
-        self::assertNotNull($entity->Company->name);
-        self::assertNotNull($entity->Company->id);
-
-        self::assertNotNull($entity->Person);
-        self::assertNotNull($entity->Person->firstName);
-        self::assertNotNull($entity->Person->id);
-
-        $this->expectException(EntityException::class);
-        new UserFullSynthetic(Data::getUserNonFullData());
+        self::assertNull($entity->Company);
+        self::assertNull($entity->Person);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testUserSynthetic()
     {
         $entity = new UserFullSynthetic();
@@ -135,17 +120,14 @@ class ConstraintTest extends TestCase
         self::assertNotNull($entity->id);
         self::assertNotNull($entity->companyId);
         self::assertNotNull($entity->personId);
-        self::assertNotNull($entity->Person);
-        self::assertNotNull($entity->Person->firstName);
-        self::assertNotNull($entity->Person->id);
-        self::assertNotNull($entity->Company);
-        self::assertNotNull($entity->Company->name);
-        self::assertNotNull($entity->Company->id);
+        self::assertNull($entity->Person);
+        self::assertNull($entity->Company);
 
-        $this->expectException(EntityException::class);
-        new UserFullSynthetic(Data::getUserNonFullData());
     }
 
+    /**
+     *
+     */
     public function testInstance()
     {
         $constraint = new Constraint();
@@ -166,6 +148,9 @@ class ConstraintTest extends TestCase
         self::assertInstanceOf(Constraint::class, $constraint);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testEntity()
     {
         $entity = new User();

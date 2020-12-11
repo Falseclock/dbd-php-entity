@@ -38,8 +38,15 @@ use stdClass;
 
 // TODO: test Complex has Embedded or Constraint
 
+/**
+ * Class ComplexTest
+ * @package DBD\Entity\Tests
+ */
 class ComplexTest extends TestCase
 {
+    /**
+     * @throws EntityException
+     */
     public function testSelfReferenceChain()
     {
         $data = [
@@ -73,6 +80,9 @@ class ComplexTest extends TestCase
         self::assertCount(1, get_object_vars($entity->FourComplex->ThreeComplex));
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testComplexDefinition()
     {
         $entity = new OnlyComplex();
@@ -92,6 +102,9 @@ class ComplexTest extends TestCase
         self::assertNotNull($entity->Person->email);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testArrayInstanceUsage()
     {
         $complex = new Complex([
@@ -101,6 +114,9 @@ class ComplexTest extends TestCase
         self::assertNotNull($complex);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testStringInstanceUsage()
     {
         $complexName = PersonBase::class;
@@ -110,18 +126,27 @@ class ComplexTest extends TestCase
         self::assertEquals($complexName, $complex->complexClass);
     }
 
+    /**
+     *
+     */
     public function testNullInstanceUsage()
     {
         $this->expectException(EntityException::class);
         new Complex(null);
     }
 
+    /**
+     *
+     */
     public function testBoolInstanceUsage()
     {
         $this->expectException(EntityException::class);
         new Complex(true);
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testObjectInstanceUsage()
     {
         $this->expectException(EntityException::class);

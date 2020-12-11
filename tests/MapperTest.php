@@ -31,28 +31,43 @@ use DBD\Entity\Tests\Fixtures\MapperEmptyProperty;
 use DBD\Entity\Tests\Fixtures\MapperNullProperty;
 use DBD\Entity\Tests\Fixtures\MapperWithTwoKeys;
 use PHPUnit\Framework\TestCase;
-use ReflectionException;
 
+/**
+ * Class MapperTest
+ * @package DBD\Entity\Tests
+ */
 class MapperTest extends TestCase
 {
+    /**
+     * @throws EntityException
+     */
     public function testNullProperty()
     {
         $this->expectException(EntityException::class);
         MapperNullProperty::me();
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testBoolProperty()
     {
         $this->expectException(EntityException::class);
         MapperBoolProperty::me();
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testEmptyProperty()
     {
         $this->expectException(EntityException::class);
         MapperEmptyProperty::me();
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testUnknownProperty()
     {
         $this->expectException(EntityException::class);
@@ -61,7 +76,6 @@ class MapperTest extends TestCase
 
     /**
      * @throws EntityException
-     * @throws ReflectionException
      */
     public function testPrimaryKeys()
     {
@@ -74,6 +88,9 @@ class MapperTest extends TestCase
         }
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testVarNameByColumn()
     {
         $primaryKeys = PersonBaseMap::me()->getPrimaryKey();
@@ -93,6 +110,9 @@ class MapperTest extends TestCase
         PersonBaseMap::me()->getVarNameByColumn(array_shift($columns));
     }
 
+    /**
+     * @throws EntityException
+     */
     public function testFindColumnByOriginName()
     {
         $mapper = PersonBaseMap::me();
