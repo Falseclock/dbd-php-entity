@@ -181,7 +181,7 @@ abstract class Entity
      *
      * @throws EntityException
      */
-    final private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void
+    private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void
     {
         $currentLevel++;
 
@@ -204,7 +204,7 @@ abstract class Entity
      *
      * @throws EntityException
      */
-    final private function setBaseColumns(array $rowData, Mapper $mapper)
+    private function setBaseColumns(array $rowData, Mapper $mapper)
     {
         $calledClass = get_called_class();
 
@@ -287,7 +287,7 @@ abstract class Entity
      * @param int $currentLevel
      * @throws EntityException
      */
-    final private function setEmbedded(?array $rowData, Mapper $map, int $maxLevels, int $currentLevel)
+    private function setEmbedded(?array $rowData, Mapper $map, int $maxLevels, int $currentLevel)
     {
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
             /** @var Embedded[] $embeddings */

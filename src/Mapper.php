@@ -50,6 +50,7 @@ abstract class Mapper extends Singleton
     /**
      * @param bool $callEnforcer
      * @return Mapper|static
+     * @throws Common\EntityException
      * @throws EntityException
      */
     private static function instantiate(bool $callEnforcer = true): Mapper
