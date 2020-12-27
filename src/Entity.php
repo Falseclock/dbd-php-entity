@@ -397,7 +397,7 @@ abstract class Entity
      * @param int $currentLevel
      * @throws EntityException
      */
-    /*final private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
+    /*private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
     {
         foreach ($mapper->getConstraints() as $entityName => $constraint) {
 
