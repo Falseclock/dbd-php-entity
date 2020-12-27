@@ -9,3 +9,4 @@ vendor/*
 /php-coveralls
 /phpunit
 /build/
+/.phpunit.cache/

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         verbose="true">
+    <testsuites>
+        <testsuite name="default">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage cacheDirectory=".phpunit.cache/code-coverage"
+              processUncoveredFiles="true">
+        <include>
+            <directory>src</directory>
+        </include>
+        <exclude>
+            <directory>src/DBD/Entity/Interfaces/</directory>
+            <directory>src/DBD/Entity/Join/</directory>
+            <file>src/DBD/Entity/Join.php</file>
+            <file>src/DBD/Entity/Order.php</file>
+            <file>src/DBD/Entity/View.php</file>
+            <file>src/DBD/Entity/Type.php</file>
+            <file>src/DBD/Entity/Primitive.php</file>
+            <file>src/DBD/Entity/EntityCache.php</file>
+            <file>src/DBD/Entity/MapperCache.php</file>
+        </exclude>
+    </coverage>
+</phpunit>
