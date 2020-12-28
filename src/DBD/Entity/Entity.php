@@ -306,9 +306,9 @@ abstract class Entity
         }
 
         foreach ($map->getEmbedded() as $embeddedName => $embeddedValue) {
-            if ($embeddedValue->name === false)
+            if ($embeddedValue->name === false) {
                 continue;
-
+            }
             if ($currentLevel <= $maxLevels) {
                 $setterMethod = "set" . ucfirst($embeddedName);
 
@@ -330,9 +330,6 @@ abstract class Entity
                                 $iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
 
                             $this->$embeddedName = $iterables;
-                        } else {
-                            if (!isset($this->$embeddedName))
-                                $this->$embeddedName = null;
                         }
                     } else {
                         $this->$embeddedName = new $embeddedValue->entityClass($rowData[$embeddedValue->name], $maxLevels, $currentLevel);

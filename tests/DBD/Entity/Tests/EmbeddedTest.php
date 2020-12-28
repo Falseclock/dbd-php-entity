@@ -26,6 +26,7 @@ use DBD\Entity\Common\EntityException;
 use DBD\Entity\Embedded;
 use DBD\Entity\Entity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
+use DBD\Entity\Interfaces\SyntheticEntity;
 use DBD\Entity\Tests\Entities\Constraint\Person;
 use DBD\Entity\Tests\Entities\Embedded\CountryWithRegions;
 use DBD\Entity\Tests\Entities\Embedded\Region;
@@ -36,6 +37,8 @@ use DBD\Entity\Tests\Entities\Embedded\ZipCode;
 use DBD\Entity\Tests\Entities\Embedded\ZipCodeMap;
 use DBD\Entity\Tests\Entities\SelfReference\OneEmbedded;
 use DBD\Entity\Tests\Fixtures\Data;
+use DBD\Entity\Tests\Fixtures\FalseName;
+use DBD\Entity\Tests\Fixtures\FalseNameMap;
 use DBD\Entity\Type;
 use PHPUnit\Framework\TestCase;
 
@@ -180,5 +183,45 @@ class EmbeddedTest extends TestCase
 
         $this->expectException(EntityException::class);
         new Embedded([]);
+    }
+
+    /**
+     * @throws EntityException
+     */
+    public function testEmbeddedWithFalseName()
+    {
+        $entity = new FalseName();
+        self::assertInstanceOf(Entity::class, $entity);
+        self::assertInstanceOf(StrictlyFilledEntity::class, $entity);
+        self::assertInstanceOf(SyntheticEntity::class, $entity);
+        /** @var FalseNameMap $map */
+        $map = FalseName::map();
+        $entity = new FalseName([$map->id->name => 1, 'setter' => "{}"]);
+        self::assertObjectHasAttribute('debug', $entity);
+        self::assertNull($entity->debug);
+    }
+
+    /**
+     * @throws EntityException
+     */
+    public function testSetterMethod()
+    {
+        /** @var FalseNameMap $map */
+        $map = FalseName::map();
+        $json = '{
+           "name":"John",
+           "age":31,
+           "city":"New York"
+        }';
+
+        $entity = new FalseName([$map->id->name => 1, 'setter' => $json]);
+
+        self::assertNotNull($entity->json);
+        self::assertIsObject($entity);
+        self::assertSame("John", $entity->json->name);
+        self::assertSame(31, $entity->json->age);
+        self::assertSame("New York", $entity->json->city);
+
+        self::assertJsonStringEqualsJsonString($json, json_encode($entity->json));
     }
 }

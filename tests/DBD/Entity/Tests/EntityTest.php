@@ -404,4 +404,13 @@ class EntityTest extends TestCase
         $this->expectException(EntityException::class);
         new PersonBaseOnlyDeclared($personData);
     }
+
+    /**
+     *
+     * @noinspection PhpUnusedLocalVariableInspection
+     */
+    public function testConstructionException() {
+        self::expectException(EntityException::class);
+        $aaa = new PersonBaseWithoutMapping();
+    }
 }
