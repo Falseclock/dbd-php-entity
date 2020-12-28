@@ -24,8 +24,7 @@
   "require": {
     "php": "^7.1|^8.0",
     "ext-json": "*",
-    "myclabs/php-enum": "^1.7.7",
-    "falseclock/dbd-php-common": "dev-master"
+    "myclabs/php-enum": "^1.7.7"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5.0",
@@ -33,12 +32,14 @@
   },
   "autoload": {
     "psr-4": {
-      "DBD\\Entity\\": "src/DBD/Entity/"
+      "DBD\\": "src/DBD/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "DBD\\Entity\\Tests\\": "tests/DBD/Entity/Tests/"
+      "DBD\\Entity\\Tests\\": "tests/DBD/Entity/Tests/",
+      "DBD\\Common\\Tests\\": "tests/DBD/Common/Tests/",
+      "DBD\\Common\\Tests\\Fixtures\\": "tests/DBD/Common/Tests/Fixtures"
     },
     "files": [
       "tests/DBD/Entity/Tests/Entities/PersonBase.php",

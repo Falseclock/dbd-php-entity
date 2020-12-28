@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
+use DBD\Entity\Common\EntityException;
 use MyCLabs\Enum\Enum;
 
 /**
@@ -87,6 +88,88 @@ class Primitive extends Enum
     public const String = "String";
     /** @var string Clock time 00:00-23:59:59.999999999999 */
     public const TimeOfDay = "TimeOfDay";
+
+    /**
+     * @param string $type
+     *
+     * @return Primitive
+     * @throws EntityException
+     */
+    public static function fromType(string $type): Primitive
+    {
+        switch (strtolower(trim($type))) {
+
+            case 'bytea':
+                return Primitive::Binary();
+
+            case 'boolean':
+            case 'bool':
+                return Primitive::Boolean();
+
+            case 'date':
+            case 'timestamp':
+                return Primitive::Date();
+
+            case 'time':
+            case 'timetz':
+                return Primitive::TimeOfDay();
+
+            case 'timestamptz':
+                return Primitive::DateTimeOffset();
+            case 'numeric':
+            case 'decimal':
+                return Primitive::Decimal();
+
+            case 'float8':
+                return Primitive::Double();
+
+            case 'interval':
+                return Primitive::Duration();
+
+            case 'uuid':
+                return Primitive::Guid();
+
+            case 'int2':
+            case 'smallint':
+            case 'smallserial':
+            case 'serial2':
+                return Primitive::Int16();
+
+            case 'int':
+            case 'int4':
+            case 'integer':
+            case 'serial4':
+            case 'serial':
+                return Primitive::Int32();
+
+            case 'int8':
+            case 'bigint':
+            case 'bigserial':
+            case 'serial8':
+                return Primitive::Int64();
+
+            case 'float4':
+            case 'real':
+                return Primitive::Single();
+
+            case 'varchar':
+            case 'text':
+            case 'cidr':
+            case 'inet':
+            case 'json':
+            case 'jsonb':
+            case 'macaddr':
+            case 'macaddr8':
+            case 'char':
+            case 'tsquery':
+            case 'tsvector':
+            case 'xml':
+            case 'bpchar':
+                return Primitive::String();
+        }
+
+        throw new EntityException("Not described type found: {$type}");
+    }
 
     /**
      * If you need to set your own types - just extend this class and override this method

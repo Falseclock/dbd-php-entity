@@ -31,7 +31,6 @@ use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use Exception;
 use ReflectionClass;
-use ReflectionException;
 use ReflectionObject;
 
 /**
@@ -119,28 +118,26 @@ abstract class Entity
     /**
      * @return Singleton|Mapper|static
      * @throws EntityException
+     * @noinspection PhpDocMissingThrowsInspection ReflectionClass will never throw exception because of get_called_class()
      */
     final public static function map()
     {
-        try {
-            $calledClass = get_called_class();
+        $calledClass = get_called_class();
 
-            /** @var Mapper $mapClass */
-            $mapClass = $calledClass . Mapper::POSTFIX;
+        /** @var Mapper $mapClass */
+        $mapClass = $calledClass . Mapper::POSTFIX;
 
-            if (!class_exists($mapClass, false))
-                throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+        if (!class_exists($mapClass, false))
+            throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
 
-            $reflection = new ReflectionClass($calledClass);
-            $interfaces = $reflection->getInterfaces();
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $reflection = new ReflectionClass($calledClass);
+        $interfaces = $reflection->getInterfaces();
 
-            if (isset($interfaces[SyntheticEntity::class]))
-                return $mapClass::meWithoutEnforcer();
-            else
-                return $mapClass::me();
-        } catch (ReflectionException $e) {
-            throw new EntityException($e->getMessage(), $e->getCode(), $e);
-        }
+        if (isset($interfaces[SyntheticEntity::class]))
+            return $mapClass::meWithoutEnforcer();
+        else
+            return $mapClass::me();
     }
 
     /**

@@ -20,61 +20,17 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Common;
+namespace DBD\Common\Tests\Fixtures;
 
-/**
- * Class Utils
- *
- * @package DBD\Entity\Common
- */
-class Utils
+use DBD\Common\Singleton;
+
+class BadSingleTone extends Singleton
 {
     /**
-     * @param object $object
-     *
-     * @return array
+     * @return BadSingleTone
      */
-    public static function getObjectVars($object): array
+    public function tryToClone(): BadSingleTone
     {
-        return get_object_vars($object);
-    }
-
-    /**
-     * @param array $bigArray
-     * @param array $smallArray
-     *
-     * @return array
-     */
-    public static function arrayDiff(array $bigArray, array $smallArray): array
-    {
-        foreach ($smallArray as $key => $value) {
-            if (isset($bigArray[$key])) {
-                unset($bigArray[$key]);
-            }
-        }
-
-        return $bigArray;
-    }
-
-    /**
-     * Returns value as a boolean.
-     *
-     * @param $variable
-     *
-     * @return bool|null
-     */
-    public static function convertBoolVar($variable): ?bool
-    {
-        if (is_string($variable))
-            $variable = strtolower(trim($variable));
-
-        switch ($variable) {
-            case 't':
-                return true;
-            case 'f':
-                return false;
-            default:
-                return filter_var($variable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        }
+        return clone $this;
     }
 }

@@ -20,61 +20,23 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Common;
+namespace DBD\Common\Tests;
 
-/**
- * Class Utils
- *
- * @package DBD\Entity\Common
- */
-class Utils
+use DBD\Common\Tests\Fixtures\BadSingleTone;
+use DBD\Entity\Common\EntityException;
+use PHPUnit\Framework\TestCase;
+
+class SingletonTest extends TestCase
 {
     /**
-     * @param object $object
-     *
-     * @return array
      */
-    public static function getObjectVars($object): array
+    public function testClone()
     {
-        return get_object_vars($object);
-    }
+        $test = BadSingleTone::me();
 
-    /**
-     * @param array $bigArray
-     * @param array $smallArray
-     *
-     * @return array
-     */
-    public static function arrayDiff(array $bigArray, array $smallArray): array
-    {
-        foreach ($smallArray as $key => $value) {
-            if (isset($bigArray[$key])) {
-                unset($bigArray[$key]);
-            }
-        }
+        self::expectException(EntityException::class);
 
-        return $bigArray;
-    }
-
-    /**
-     * Returns value as a boolean.
-     *
-     * @param $variable
-     *
-     * @return bool|null
-     */
-    public static function convertBoolVar($variable): ?bool
-    {
-        if (is_string($variable))
-            $variable = strtolower(trim($variable));
-
-        switch ($variable) {
-            case 't':
-                return true;
-            case 'f':
-                return false;
-            default:
-                return filter_var($variable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        }
+        /** @noinspection PhpExpressionResultUnusedInspection */
+        $test->tryToClone();
     }
 }

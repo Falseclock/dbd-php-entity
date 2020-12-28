@@ -20,8 +20,6 @@
 
 namespace DBD\Entity\Tests\Entities\TableStructure;
 
-use DBD\Common\DBDException;
-use DBD\Common\PgUtils;
 use DBD\Entity\Column;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Constraint;
@@ -74,9 +72,7 @@ class TableEntity extends Entity implements SyntheticEntity, StrictlyFilledEntit
     /**
      * @param string $columns
      *
-     * @throws DBDException
      * @throws EntityException
-     * @throws ReflectionException
      */
     public function setColumns(string $columns): void
     {
@@ -90,7 +86,7 @@ class TableEntity extends Entity implements SyntheticEntity, StrictlyFilledEntit
             $column->defaultValue = $columnInitial->defaultValue;
             $column->annotation = $columnInitial->comment;
             $column->key = $columnInitial->isPrimary;
-            $column->type = PgUtils::getPrimitive($columnInitial->udtType);
+            $column->type = Primitive::fromType($columnInitial->udtType);
             $column->originType = $columnInitial->udtType;
             $column->maxLength = $columnInitial->characterLength;
 
