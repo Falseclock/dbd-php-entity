@@ -2,6 +2,7 @@
 
 namespace DBD\Entity;
 
+use DBD\Common\Instantiatable;
 use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
@@ -320,7 +321,7 @@ abstract class Mapper extends Singleton
 	 *
 	 * @throws Exception
 	 */
-	public static function me() {
+	public static function me(): Instantiatable {
 
 		/** @var static $self */
 		$self = parent::me();
