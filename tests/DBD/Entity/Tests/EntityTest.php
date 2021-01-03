@@ -56,6 +56,17 @@ class EntityTest extends TestCase
     /**
      * @throws EntityException
      */
+    public function testRaw()
+    {
+        $personData = Data::getPersonFullEntityData();
+        $person = new PersonBaseSetters($personData);
+
+        self::assertSame($personData, $person->raw());
+    }
+
+    /**
+     * @throws EntityException
+     */
     public function testMapperHasPropertyNotUsedInEntity()
     {
         $entity = new UnUsedPropertyInMapper();
@@ -409,7 +420,8 @@ class EntityTest extends TestCase
      *
      * @noinspection PhpUnusedLocalVariableInspection
      */
-    public function testConstructionException() {
+    public function testConstructionException()
+    {
         self::expectException(EntityException::class);
         $aaa = new PersonBaseWithoutMapping();
     }
