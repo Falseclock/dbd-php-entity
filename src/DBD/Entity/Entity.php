@@ -43,6 +43,9 @@ abstract class Entity
     const SCHEME = "abstract";
     const TABLE = "abstract";
 
+    /** @var array */
+    private $rawData;
+
     /**
      * Конструктор модели
      *
@@ -54,6 +57,8 @@ abstract class Entity
      */
     public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
     {
+        $this->rawData = $data;
+
         $calledClass = get_class($this);
 
         if (!$this instanceof SyntheticEntity)
@@ -87,7 +92,7 @@ abstract class Entity
 
         if ($this instanceof OnlyDeclaredPropertiesEntity) {
             foreach (get_object_vars($this) as $varName => $varValue) {
-                if (!isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$varName])) {
+                if (!isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$varName]) && $varName != 'rawData') {
                     unset($this->$varName);
                     EntityCache::$mapCache[$calledClass][EntityCache::UNSET_PROPERTIES][$varName] = true;
                 }
@@ -97,12 +102,12 @@ abstract class Entity
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
             $checkAgainst = array_merge($map->getColumns(), $map->getComplex(), $map->getEmbedded(), $map->getConstraints());
             foreach (get_object_vars($this) as $propertyName => $propertyDefaultValue) {
-                if (!array_key_exists($propertyName, $checkAgainst))
+                if (!array_key_exists($propertyName, $checkAgainst) && $propertyName != 'rawData')
                     throw new EntityException(sprintf("Strict Entity %s has unmapped property '%s'", $calledClass, $propertyName));
             }
         }
 
-        if (!isset($data))
+        if (is_null($this->rawData))
             return;
 
         // Если мы определяем класс с интерфейсом OnlyDeclaredPropertiesEntity и экстендим его
@@ -112,7 +117,7 @@ abstract class Entity
         //	throw new EntityException("Class " . $reflectionObject->getParentClass()->getShortName() . " which implements OnlyDeclaredPropertiesEntity interface must be final");
 
         if ($currentLevel <= $maxLevels)
-            $this->setModelData($data, $map, $maxLevels, $currentLevel);
+            $this->setModelData($map, $maxLevels, $currentLevel);
     }
 
     /**
@@ -173,24 +178,22 @@ abstract class Entity
     }
 
     /**
-     * @param array|null $data
      * @param Mapper $map
      * @param int $maxLevels
      * @param int $currentLevel
      *
      * @throws EntityException
      */
-    private function setModelData(?array $data, Mapper $map, int $maxLevels, int $currentLevel): void
+    private function setModelData(Mapper $map, int $maxLevels, int $currentLevel): void
     {
         $currentLevel++;
 
-        $this->setBaseColumns($data, $map);
+        $this->setBaseColumns($map);
 
-        //$this->setConstraints($data, $map, $maxLevels, $currentLevel);
         // TODO: check if I declare Constraint in Mapper and use same property name in Entity
-        $this->setEmbedded($data, $map, $maxLevels, $currentLevel);
+        $this->setEmbedded($map, $maxLevels, $currentLevel);
 
-        $this->setComplex($data, $map, $maxLevels, $currentLevel);
+        $this->setComplex($map, $maxLevels, $currentLevel);
 
         $this->postProcessing();
     }
@@ -198,12 +201,11 @@ abstract class Entity
     /**
      * Reads public variables and set them to the self instance
      *
-     * @param array $rowData associative array where key is column name and value is column fetched data
      * @param Mapper $mapper
      *
      * @throws EntityException
      */
-    private function setBaseColumns(array $rowData, Mapper $mapper)
+    private function setBaseColumns(Mapper $mapper)
     {
         $calledClass = get_called_class();
 
@@ -224,7 +226,7 @@ abstract class Entity
 
         /** If it is FullEntity or StrictlyFilledEntity, we must ensure all database columns are provided */
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
-            $intersection = array_intersect_key($fieldMapping, $rowData);
+            $intersection = array_intersect_key($fieldMapping, $this->rawData);
             if ($intersection != $fieldMapping) {
                 throw new EntityException(sprintf("Missing columns for FullEntity or StrictlyFilledEntity '%s': %s",
                         get_class($this),
@@ -238,7 +240,7 @@ abstract class Entity
          * @var string $originColumnName database origin column name
          * @var mixed $columnValue value of this columns
          */
-        foreach ($rowData as $originColumnName => $columnValue) {
+        foreach ($this->rawData as $originColumnName => &$columnValue) {
 
             /** process only if Entity class has such field declaration */
             if (!isset($fieldMapping[$originColumnName]))
@@ -273,27 +275,27 @@ abstract class Entity
                      * In this case we should not override default value if $columnValue is null
                      */
                     if (!isset($this->$property) and isset($columnValue))
-                        $this->$property = $columnValue;
+                        $this->$property = &$columnValue;
                 }
             }
         }
     }
 
     /**
-     * @param array|null $rowData
      * @param Mapper $map
      * @param int $maxLevels
      * @param int $currentLevel
+     *
      * @throws EntityException
      */
-    private function setEmbedded(?array $rowData, Mapper $map, int $maxLevels, int $currentLevel)
+    private function setEmbedded(Mapper $map, int $maxLevels, int $currentLevel)
     {
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
             /** @var Embedded[] $embeddings */
             $embeddings = MapperCache::me()->embedded[$map->name()];
             $missingColumns = [];
             foreach ($embeddings as $embedding) {
-                if ($embedding->name !== false and !array_key_exists($embedding->name, $rowData))
+                if ($embedding->name !== false and !array_key_exists($embedding->name, $this->rawData))
                     $missingColumns[] = $embedding->name;
             }
             if (count($missingColumns) > 0) {
@@ -313,29 +315,29 @@ abstract class Entity
                 $setterMethod = "set" . ucfirst($embeddedName);
 
                 if (method_exists($this, $setterMethod)) {
-                    $this->$setterMethod($rowData[$embeddedValue->name]);
+                    $this->$setterMethod($this->rawData[$embeddedValue->name]);
                     continue;
                 }
 
                 if (isset($embeddedValue->dbType) and $embeddedValue->dbType == Type::Json) {
-                    if (isset($rowData[$embeddedValue->name]) and is_string($rowData[$embeddedValue->name])) {
-                        $rowData[$embeddedValue->name] = json_decode($rowData[$embeddedValue->name], true);
+                    if (isset($this->rawData[$embeddedValue->name]) and is_string($this->rawData[$embeddedValue->name])) {
+                        $this->rawData[$embeddedValue->name] = json_decode($this->rawData[$embeddedValue->name], true);
                     }
                 }
                 if (isset($embeddedValue->entityClass)) {
                     if ($embeddedValue->isIterable) {
                         $iterables = [];
-                        if (isset($rowData[$embeddedValue->name]) and !is_null($rowData[$embeddedValue->name])) {
-                            foreach ($rowData[$embeddedValue->name] as $value)
+                        if (isset($this->rawData[$embeddedValue->name]) and !is_null($this->rawData[$embeddedValue->name])) {
+                            foreach ($this->rawData[$embeddedValue->name] as $value)
                                 $iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
 
                             $this->$embeddedName = $iterables;
                         }
                     } else {
-                        $this->$embeddedName = new $embeddedValue->entityClass($rowData[$embeddedValue->name], $maxLevels, $currentLevel);
+                        $this->$embeddedName = new $embeddedValue->entityClass($this->rawData[$embeddedValue->name], $maxLevels, $currentLevel);
                     }
                 } else {
-                    $this->$embeddedName = $rowData[$embeddedValue->name];
+                    $this->$embeddedName = &$this->rawData[$embeddedValue->name];
                 }
             } else {
                 unset($this->$embeddedName);
@@ -344,19 +346,18 @@ abstract class Entity
     }
 
     /**
-     * @param array|null $data
      * @param Mapper $map
      * @param int $maxLevels
      * @param int $currentLevel
      */
-    private function setComplex(?array $data, Mapper $map, int $maxLevels, int $currentLevel)
+    private function setComplex(Mapper $map, int $maxLevels, int $currentLevel)
     {
         foreach ($map->getComplex() as $complexName => $complexValue) {
             //if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
             //    continue;
 
             if ($currentLevel <= $maxLevels)
-                $this->$complexName = new $complexValue->complexClass($data, $maxLevels, $currentLevel);
+                $this->$complexName = new $complexValue->complexClass($this->rawData, $maxLevels, $currentLevel);
             else
                 unset($this->$complexName);
         }
@@ -387,55 +388,10 @@ abstract class Entity
     }
 
     /**
-     * @param array $rowData
-     * @param Mapper $mapper
-     * @param int $maxLevels
-     * @param int $currentLevel
-     * @throws EntityException
+     * @return array|null
      */
-    /*private function setConstraints(array $rowData, Mapper $mapper, int $maxLevels, int $currentLevel)
+    public function raw(): ?array
     {
-        foreach ($mapper->getConstraints() as $entityName => $constraint) {
-
-            if ($this instanceof FullEntity) {
-                throw new EntityException(sprintf("FullEntity instance must not use constraint fields, the proper way is to extend it and declare as Complex.\nBad entity is '%s', failed property '%s'", get_class($this), $entityName));
-            }
-
-            // Check we have data for this constraint
-            if (!property_exists($this, $entityName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$entityName]))
-                continue;
-
-            $constraintValue = isset($rowData[$constraint->localColumn->name]) ? $rowData[$constraint->localColumn->name] : null;
-
-            // Случай, когда мы просто делаем джоин таблицы и вытаскиваем дополнительные поля,
-            // то просто их прогоняем через класс и на выходе получим готовый объект
-
-            $newConstraintValue = null;
-
-            if (isset($constraintValue)) {
-                if ($currentLevel <= $maxLevels) {
-                    $newConstraintValue = new $constraint->class($rowData, $maxLevels, $currentLevel);
-                } else {
-                    // We skipping level. But we should also remove unsetted properties to issue notice of exception
-                    // that calling variable on undefined
-                    foreach ($mapper->getConstraints() as $constraintToRemove => $constraintToRemoveValue) {
-                        unset($this->$constraintToRemove);
-                    }
-                }
-            }
-
-            $setterMethod = "set" . ucfirst($entityName);
-
-            if (method_exists($this, $setterMethod)) {
-                $this->$setterMethod($newConstraintValue);
-            } else {
-                // Если у нас переменная класа уже инициализирована, и нету значения из базы
-                // то скорее всего этот объект является массивом данных
-                if (!isset($this->$entityName) or isset($newConstraintValue)) {
-                    if (isset($newConstraintValue))
-                        $this->$entityName = $newConstraintValue;
-                }
-            }
-        }
-    }*/
+        return $this->rawData;
+    }
 }
