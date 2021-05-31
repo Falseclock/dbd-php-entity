@@ -66,13 +66,14 @@ abstract class Entity
         }
 
         try {
+            /** @var Mapper $map */
             $map = self::map();
         } catch (Exception $e) {
             throw new EntityException(sprintf("Construction of %s failed, %s", $calledClass, $e->getMessage()));
         }
 
         if (!isset(EntityCache::$mapCache[$calledClass])) {
-
+            /** @scrutinizer ignore-call */
             $columnsDefinition = $map->getOriginFieldNames();
 
             EntityCache::$mapCache[$calledClass][EntityCache::ARRAY_MAP] = $columnsDefinition;
@@ -340,9 +341,9 @@ abstract class Entity
                     if ($embeddedValue->isIterable) {
                         $iterables = [];
                         if (isset($this->rawData[$embeddedValue->name]) and !is_null($this->rawData[$embeddedValue->name])) {
-                            foreach ($this->rawData[$embeddedValue->name] as $value)
+                            foreach ($this->rawData[$embeddedValue->name] as $value) {
                                 $iterables[] = new $embeddedValue->entityClass($value, $maxLevels, $currentLevel);
-
+                            }
                             $this->$embeddedName = $iterables;
                         }
                     } else {

@@ -72,7 +72,7 @@ class Column
     /**
      * Column constructor.
      *
-     * @param null $columnNameOrArray
+     * @param string|array $columnNameOrArray
      * @throws EntityException
      */
     public function __construct($columnNameOrArray)

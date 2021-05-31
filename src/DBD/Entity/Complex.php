@@ -39,7 +39,7 @@ class Complex
     /**
      * Complex constructor.
      *
-     * @param null $complexNameOrArray
+     * @param string|array $complexNameOrArray
      * @throws EntityException
      */
     public function __construct($complexNameOrArray = null)
