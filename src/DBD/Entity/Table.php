@@ -60,12 +60,14 @@ class Table
 
         foreach ($mapper->getColumns() as $column) {
             $table->columns[] = $column;
-            if ($column->key)
+            if ($column->key) {
                 $table->keys[] = $column;
+            }
         }
 
-        foreach ($mapper->getConstraints() as $constraint)
+        foreach ($mapper->getConstraints() as $constraint) {
             $table->constraints[] = $constraint;
+        }
 
         return $table;
     }

@@ -61,8 +61,9 @@ abstract class Entity
 
         $calledClass = get_class($this);
 
-        if (!$this instanceof SyntheticEntity)
+        if (!$this instanceof SyntheticEntity) {
             Enforcer::__add(__CLASS__, $calledClass);
+        }
 
         try {
             $map = self::map();
@@ -86,8 +87,9 @@ abstract class Entity
 
             // У нас может быть цепочка классов, где какой-то конечный уже не имеет интерфейса OnlyDeclaredPropertiesEntity
             // соответственно нам надо собрать все переменные всех дочерних классов, даже если они расширяют друг друга
-            if ($this instanceof OnlyDeclaredPropertiesEntity)
+            if ($this instanceof OnlyDeclaredPropertiesEntity) {
                 $this->collectDeclarationsOnly(new ReflectionObject($this), $calledClass);
+            }
         }
 
         if ($this instanceof OnlyDeclaredPropertiesEntity) {
@@ -102,22 +104,24 @@ abstract class Entity
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
             $checkAgainst = array_merge($map->getColumns(), $map->getComplex(), $map->getEmbedded(), $map->getConstraints());
             foreach (get_object_vars($this) as $propertyName => $propertyDefaultValue) {
-                if (!array_key_exists($propertyName, $checkAgainst) && $propertyName != 'rawData')
+                if (!array_key_exists($propertyName, $checkAgainst) && $propertyName != 'rawData') {
                     throw new EntityException(sprintf("Strict Entity %s has unmapped property '%s'", $calledClass, $propertyName));
+                }
             }
         }
 
-        if (is_null($this->rawData))
+        if (is_null($this->rawData)) {
             return;
-
+        }
         // Если мы определяем класс с интерфейсом OnlyDeclaredPropertiesEntity и экстендим его
         // то по сути мы не можем знать какие переменные классам нам обязательны к обработке.
         // Ладно еще если это 2 класса, а если цепочка?
         //if($this instanceof OnlyDeclaredPropertiesEntity and !$reflectionObject->isFinal())
         //	throw new EntityException("Class " . $reflectionObject->getParentClass()->getShortName() . " which implements OnlyDeclaredPropertiesEntity interface must be final");
 
-        if ($currentLevel <= $maxLevels)
+        if ($currentLevel <= $maxLevels) {
             $this->setModelData($map, $maxLevels, $currentLevel);
+        }
     }
 
     /**
@@ -129,20 +133,21 @@ abstract class Entity
     {
         $calledClass = get_called_class();
 
-        /** @var Mapper $mapClass */
         $mapClass = $calledClass . Mapper::POSTFIX;
 
-        if (!class_exists($mapClass, false))
+        if (!class_exists($mapClass, false)) {
             throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+        }
 
         /** @noinspection PhpUnhandledExceptionInspection */
         $reflection = new ReflectionClass($calledClass);
         $interfaces = $reflection->getInterfaces();
 
-        if (isset($interfaces[SyntheticEntity::class]))
+        if (isset($interfaces[SyntheticEntity::class])) {
             return $mapClass::meWithoutEnforcer();
-        else
+        } else {
             return $mapClass::me();
+        }
     }
 
     /**
@@ -156,15 +161,17 @@ abstract class Entity
 
             $declaringClass = $property->getDeclaringClass();
 
-            if ($declaringClass->name == $calledClass || $declaringClass->name == $parentClass)
+            if ($declaringClass->name == $calledClass || $declaringClass->name == $parentClass) {
                 EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES][$property->name] = true;
+            }
         }
 
         $parentClass = $reflectionObject->getParentClass();
         $parentInterfaces = $parentClass->getInterfaces();
 
-        if (isset($parentInterfaces[OnlyDeclaredPropertiesEntity::class]))
+        if (isset($parentInterfaces[OnlyDeclaredPropertiesEntity::class])) {
             $this->collectDeclarationsOnly($parentClass, $calledClass, $parentClass->name);
+        }
 
         /** If we have defined declaredProperties key, we must exclude some keys from reverseMap and arrayMap */
         if (isset(EntityCache::$mapCache[$calledClass][EntityCache::DECLARED_PROPERTIES])) {
@@ -243,14 +250,16 @@ abstract class Entity
         foreach ($this->rawData as $originColumnName => &$columnValue) {
 
             /** process only if Entity class has such field declaration */
-            if (!isset($fieldMapping[$originColumnName]))
+            if (!isset($fieldMapping[$originColumnName])) {
                 continue;
+            }
 
             /** @var string $property name of field declaration in Entity class */
             $property = $fieldMapping[$originColumnName];
 
-            if (!property_exists($this, $property))
+            if (!property_exists($this, $property)) {
                 continue;
+            }
 
             /** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
             $setterMethod = "set{$property}";
@@ -258,8 +267,9 @@ abstract class Entity
             /** @var Column $fieldDefinition */
             $fieldDefinition = $mapper->$property;
 
-            if (is_null($columnValue) and $fieldDefinition->nullable === false)
+            if (is_null($columnValue) and $fieldDefinition->nullable === false) {
                 throw new EntityException(sprintf("Column %s of %s shouldn't accept null values according Mapper definition", $originColumnName, $calledClass));
+            }
 
             /** We can define setter method for field definition in Entity class, so let's check it first */
             if (method_exists($this, $setterMethod)) {
@@ -274,8 +284,9 @@ abstract class Entity
                      * But some times we need to have default value for column in case of $rowData has null value
                      * In this case we should not override default value if $columnValue is null
                      */
-                    if (!isset($this->$property) and isset($columnValue))
+                    if (!isset($this->$property) and isset($columnValue)) {
                         $this->$property = &$columnValue;
+                    }
                 }
             }
         }
@@ -295,8 +306,9 @@ abstract class Entity
             $embeddings = MapperCache::me()->embedded[$map->name()];
             $missingColumns = [];
             foreach ($embeddings as $embedding) {
-                if ($embedding->name !== false and !array_key_exists($embedding->name, $this->rawData))
+                if ($embedding->name !== false and !array_key_exists($embedding->name, $this->rawData)) {
                     $missingColumns[] = $embedding->name;
+                }
             }
             if (count($missingColumns) > 0) {
                 throw new EntityException(sprintf("Seems you forgot to select columns for FullEntity or StrictlyFilledEntity '%s': %s",
@@ -356,10 +368,11 @@ abstract class Entity
             //if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
             //    continue;
 
-            if ($currentLevel <= $maxLevels)
+            if ($currentLevel <= $maxLevels) {
                 $this->$complexName = new $complexValue->complexClass($this->rawData, $maxLevels, $currentLevel);
-            else
+            } else {
                 unset($this->$complexName);
+            }
         }
     }
 
@@ -371,7 +384,7 @@ abstract class Entity
      */
     protected function postProcessing(): void
     {
-        /** @noinspection PhpUnnecessaryReturnInspection */
+        /** @noinspection PhpUnnecessaryStopStatementInspection */
         return;
     }
 

@@ -65,9 +65,9 @@ abstract class Mapper extends Singleton
         if (!isset(MapperCache::me()->fullyInstantiated[$class])) {
 
             // Check we set ANNOTATION properly in Mapper instance
-            if ($callEnforcer)
+            if ($callEnforcer) {
                 Enforcer::__add(__CLASS__, $class);
-
+            }
             $self->getAllVariables();
 
             MapperCache::me()->fullyInstantiated[$class] = true;
@@ -113,10 +113,11 @@ abstract class Mapper extends Singleton
                 if (isset($varValue[Constraint::LOCAL_COLUMN])) {
                     $constraints[$varName] = $varValue;
                 } else {
-                    if (isset($varValue[Embedded::NAME]))
+                    if (isset($varValue[Embedded::NAME])) {
                         $embedded[$varName] = $varValue;
-                    else if (isset($varValue[Complex::TYPE]))
+                    } else if (isset($varValue[Complex::TYPE])) {
                         $complex[$varName] = $varValue;
+                    }
                 }
             }
 
@@ -126,18 +127,18 @@ abstract class Mapper extends Singleton
                 MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
             }
             // У нас может не быть комплексов
-            if (!isset(MapperCache::me()->complex[$thisName]))
+            if (!isset(MapperCache::me()->complex[$thisName])) {
                 MapperCache::me()->complex[$thisName] = [];
-
+            }
             /** ----------------------EMBEDDED------------------------ */
             foreach ($embedded as $embeddedName => $embeddedValue) {
                 $this->$embeddedName = new Embedded($embeddedValue);
                 MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
             }
             // У нас может не быть эмбедов
-            if (!isset(MapperCache::me()->embedded[$thisName]))
+            if (!isset(MapperCache::me()->embedded[$thisName])) {
                 MapperCache::me()->embedded[$thisName] = [];
-
+            }
             /** ----------------------COLUMNS------------------------ */
             if (!isset(MapperCache::me()->columns[$thisName])) {
                 foreach ($columns as $columnName => $columnValue) {
@@ -147,12 +148,12 @@ abstract class Mapper extends Singleton
                 }
             }
             // У нас может не быть колонок
-            if (!isset(MapperCache::me()->columns[$thisName]))
+            if (!isset(MapperCache::me()->columns[$thisName])) {
                 MapperCache::me()->columns[$thisName] = [];
-
-            if (!isset(MapperCache::me()->baseColumns[$thisName]))
+            }
+            if (!isset(MapperCache::me()->baseColumns[$thisName])) {
                 MapperCache::me()->baseColumns[$thisName] = [];
-
+            }
             /** ----------------------CONSTRAINTS------------------------ */
             $temporaryConstraints = [];
             if (!isset(MapperCache::me()->constraints[$thisName])) {
@@ -164,17 +165,17 @@ abstract class Mapper extends Singleton
                     //$temporaryConstraint->localTable = $this->getTable();
 
                     // If we use View - we do not always need to define constraint fields
-                    if ($entityClass !== View::class)
+                    if ($entityClass !== View::class) {
                         $temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
-
+                    }
                     $temporaryConstraints[$constraintName] = $temporaryConstraint;
                 }
             }
 
             // У нас может не быть констрейнтов
-            if (!isset(MapperCache::me()->constraints[$thisName]))
+            if (!isset(MapperCache::me()->constraints[$thisName])) {
                 MapperCache::me()->constraints[$thisName] = [];
-
+            }
             MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $embedded, $complex);
 
             // Now fill constraint as map is ready
@@ -205,14 +206,15 @@ abstract class Mapper extends Singleton
      */
     private function checkProperty($varValue, string $varName): void
     {
-        if (is_null($varValue))
+        if (is_null($varValue)) {
             throw new EntityException(sprintf("property '\$%s' of %s is null", $varName, get_class($this)));
-
-        if (!is_array($varValue))
+        }
+        if (!is_array($varValue)) {
             throw new EntityException(sprintf("property '\$%s' of %s is not array", $varName, get_class($this)));
-
-        if (count($varValue) == 0)
+        }
+        if (count($varValue) == 0) {
             throw new EntityException(sprintf("property '\$%s' of %s does not have definitions", $varName, get_class($this)));
+        }
     }
 
     /**
@@ -296,8 +298,9 @@ abstract class Mapper extends Singleton
     {
         $keys = [];
         foreach (MapperCache::me()->columns[$this->name()] as $columnName => $column) {
-            if (isset($column->key) and $column->key === true)
+            if (isset($column->key) and $column->key === true) {
                 $keys[$columnName] = $column;
+            }
         }
 
         return $keys;
@@ -331,8 +334,9 @@ abstract class Mapper extends Singleton
      */
     public function __get($name)
     {
-        if (!property_exists($this, $name))
+        if (!property_exists($this, $name)) {
             throw new EntityException(sprintf("Can't find property '\$%s' of '%s'", $name, get_class($this)));
+        }
 
         return $this->$name;
     }
@@ -362,8 +366,9 @@ abstract class Mapper extends Singleton
     public function getVarNameByColumn(Column $column)
     {
         foreach ($this->getOriginFieldNames() as $varName => $originFieldName) {
-            if ($originFieldName == $column->name)
+            if ($originFieldName == $column->name) {
                 return $varName;
+            }
         }
 
         throw new EntityException(sprintf("Seems column '%s' does not belong to this mapper", $column->name));
@@ -376,12 +381,13 @@ abstract class Mapper extends Singleton
     {
         $thisName = $this->name();
         if (!isset(MapperCache::me()->originFieldNames[$thisName])) {
-            if (count($this->getColumns()))
-                foreach ($this->getColumns() as $columnName => $column)
+            if (count($this->getColumns())) {
+                foreach ($this->getColumns() as $columnName => $column) {
                     MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
-            else
+                }
+            } else {
                 MapperCache::me()->originFieldNames[$thisName] = [];
-
+            }
         }
 
         return MapperCache::me()->originFieldNames[$thisName];

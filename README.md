@@ -4,6 +4,7 @@ Easy way to convert any associative data to Object using Object-Relational Mappi
 
 [![Build Status](https://travis-ci.org/Falseclock/dbd-php-entity.svg?branch=master)](https://travis-ci.org/Falseclock/dbd-php-entity)
 [![Coverage Status](https://coveralls.io/repos/github/Falseclock/dbd-php-entity/badge.svg?branch=master)](https://coveralls.io/github/Falseclock/dbd-php-entity?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Falseclock/dbd-php-entity/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Falseclock/dbd-php-entity/?branch=master)
 [![PHP 7 ready](https://php7ready.timesplinter.ch/Falseclock/dbd-php-entity/master/badge.svg)](https://travis-ci.org/Falseclock/dbd-php-entity)
 
 [![Latest Stable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v)](//packagist.org/packages/falseclock/dbd-php-entity)

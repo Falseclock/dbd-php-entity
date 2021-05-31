@@ -65,8 +65,9 @@ class Utils
      */
     public static function convertBoolVar($variable): ?bool
     {
-        if (is_string($variable))
+        if (is_string($variable)) {
             $variable = strtolower(trim($variable));
+        }
 
         switch ($variable) {
             case 't':
