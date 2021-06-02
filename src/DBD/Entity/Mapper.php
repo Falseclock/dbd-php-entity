@@ -30,6 +30,8 @@ use DBD\Entity\Common\Utils;
 
 /**
  * Class Mapper
+ * @todo Check child classes for methods
+ * @todo check for private vars
  *
  * @package DBD\Entity
  */
@@ -90,8 +92,8 @@ abstract class Mapper extends Singleton
 
             /**
              * All available variables
-             * Columns and Complex are always PUBLIC
-             * Constraints and Embedded are always PROTECTED
+             * Columns are always PUBLIC
+             * Complex, Constraints and Embedded are always PROTECTED
              */
             $allVars = get_object_vars($this);
             $publicVars = Utils::getObjectVars($this);
@@ -327,18 +329,18 @@ abstract class Mapper extends Singleton
 
     /**
      * Special getter to access protected and private properties
-     * @param $name
+     * @param string $property
      *
      * @return mixed
      * @throws EntityException
      */
-    public function __get($name)
+    public function __get(string $property)
     {
-        if (!property_exists($this, $name)) {
-            throw new EntityException(sprintf("Can't find property '\$%s' of '%s'", $name, get_class($this)));
+        if (!property_exists($this, $property)) {
+            throw new EntityException(sprintf("Can't find property '\$%s' of '%s'", $property, get_class($this)));
         }
 
-        return $this->$name;
+        return $this->$property;
     }
 
     /**
@@ -360,7 +362,7 @@ abstract class Mapper extends Singleton
     /**
      * @param Column $column
      *
-     * @return mixed
+     * @return int|string
      * @throws EntityException
      */
     public function getVarNameByColumn(Column $column)
