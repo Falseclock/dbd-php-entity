@@ -39,7 +39,11 @@ class Embedded
     public const IS_ITERABLE = "embeddedIsIterable";
     /** @var string set to FALSE if you want avoid exceptions for Strictly Filled Entity */
     public const NAME = "embeddedName";
-    /** @var string $name name of the columns in view or selected with AS. Set to FALSE if you don't gonna pass data, but wont set data manually */
+    /**
+     * Set to FALSE if you don't gonna pass data, but wont set data manually, or calculate in postProcessing
+     * @see Entity::postProcessing()
+     * @var string $name name of the columns in view or selected with AS.
+     */
     public $name;
     /** @var bool $isIterable */
     public $isIterable = false;

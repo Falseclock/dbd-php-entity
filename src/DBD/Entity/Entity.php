@@ -381,12 +381,11 @@ abstract class Entity
      * If entity data should be modified after setModelData, create same function in Entity.
      * For example it is heavy cost to aggregate some data in SQL side, any more cost efficient will do that with PHP
      *
+     * @see Embedded::$name
      * @see setModelData()
      */
     protected function postProcessing(): void
     {
-        /** @noinspection PhpUnnecessaryStopStatementInspection */
-        return;
     }
 
     /**
