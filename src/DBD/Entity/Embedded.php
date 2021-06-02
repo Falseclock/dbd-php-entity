@@ -27,7 +27,7 @@ use DBD\Entity\Common\EntityException;
 /**
  * Class Embedded used when you generate value with view or with calculations or need
  * to decode JSON value or get iterable property
- * Should be always public when mapped in Mapper
+ * Should be always protected when mapped in Mapper
  *
  * @package DBD\Entity
  */

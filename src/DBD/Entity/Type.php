@@ -36,6 +36,7 @@ use MyCLabs\Enum\Enum;
  * @method static Type Int()
  * @method static Type Array()
  * @method static Type Object()
+ * @method static Type Text()
  */
 class Type extends Enum
 {
@@ -48,4 +49,5 @@ class Type extends Enum
     public const Json = "json";
     public const Varchar = "varchar";
     public const Object = "object";
+    public const Text = "text";
 }
