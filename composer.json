@@ -1,18 +1,19 @@
 {
   "name": "falseclock/dbd-php-entity",
   "type": "library",
-  "description": "Entities annotation for PHP Database driver",
+  "description": "DTO like library to fetch any data in an Object-Oriented manner (ORM)",
   "keywords": [
     "dbd",
     "entity",
     "primitive",
     "database",
-    "orm",
+    "ORM",
     "annotation",
     "view",
     "table",
     "constraint",
-    "mapping"
+    "mapping",
+    "DTO"
   ],
   "license": "Apache-2.0",
   "authors": [
