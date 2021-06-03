@@ -10,6 +10,8 @@
 [![Latest Unstable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v/unstable)](//packagist.org/packages/falseclock/dbd-php-entity)
 [![License](https://poser.pugx.org/falseclock/dbd-php-entity/license)](//packagist.org/packages/falseclock/dbd-php-entity)
 
+**NOTICE**: readme находится в процессе написания.
+
 Данная библиотека позволяет легко преобразовывать ассоциативные массивы в объекты по заранее предопределенным структурам
 (мапингу), иными словами реализует DTO. Изначально проект реализовывался как ORM библиотека, но не ограничивается этим.
 С помощью библиотеки можно описывать любые структурированные данные, а не только таблицы и их поля.
