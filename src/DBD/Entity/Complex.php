@@ -44,7 +44,7 @@ class Complex
      */
     public function __construct($complexNameOrArray)
     {
-        if (!is_string($complexNameOrArray) && !is_array($complexNameOrArray)) {
+        if (!is_array($complexNameOrArray) && !is_string($complexNameOrArray)) {
             throw new EntityException("Complex constructor accepts only string or array");
         }
 

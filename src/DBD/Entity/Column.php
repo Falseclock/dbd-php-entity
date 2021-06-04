@@ -77,7 +77,7 @@ class Column
      */
     public function __construct($columnNameOrArray)
     {
-        if (!is_string($columnNameOrArray) && !is_array($columnNameOrArray)) {
+        if (!is_array($columnNameOrArray) && !is_string($columnNameOrArray)) {
             throw new EntityException("column constructor accepts only string or array");
         }
 
