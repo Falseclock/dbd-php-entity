@@ -99,10 +99,7 @@ abstract class Mapper extends Singleton
             $publicVars = Utils::getObjectVars($this);
             $protectedVars = Utils::arrayDiff($allVars, $publicVars);
 
-            $constraints = [];
-            $embedded = [];
-            $complex = [];
-            $columns = [];
+            $constraints = $embedded = $complex = $columns = [];
 
             foreach ($publicVars as $varName => $varValue) {
                 $this->checkProperty($varValue, $varName);
@@ -123,13 +120,13 @@ abstract class Mapper extends Singleton
                 }
             }
 
-            $this->processComplexes($complex, $thisName);
+            $this->processComplexes($complex);
 
-            $this->processEmbedded($embedded, $thisName);
+            $this->processEmbedded($embedded);
 
-            $this->processColumns($thisName, $columns);
+            $this->processColumns($columns);
 
-            $this->processConstraints($thisName, $constraints, $columns, $embedded, $complex);
+            $this->processConstraints($constraints, $columns, $embedded, $complex);
 
         }
 
@@ -166,11 +163,12 @@ abstract class Mapper extends Singleton
 
     /**
      * @param array $complex
-     * @param $thisName
      * @throws EntityException
      */
-    private function processComplexes(array $complex, $thisName): void
+    private function processComplexes(array $complex): void
     {
+        $thisName = $this->name();
+
         /** ----------------------COMPLEX------------------------ */
         foreach ($complex as $complexName => $complexValue) {
             $this->$complexName = new Complex($complexValue);
@@ -184,11 +182,11 @@ abstract class Mapper extends Singleton
 
     /**
      * @param array $embedded
-     * @param $thisName
      * @throws EntityException
      */
-    private function processEmbedded(array $embedded, $thisName): void
+    private function processEmbedded(array $embedded): void
     {
+        $thisName = $this->name();
         /** ----------------------EMBEDDED------------------------ */
         foreach ($embedded as $embeddedName => $embeddedValue) {
             $this->$embeddedName = new Embedded($embeddedValue);
@@ -201,12 +199,13 @@ abstract class Mapper extends Singleton
     }
 
     /**
-     * @param $thisName
      * @param array $columns
      * @throws EntityException
      */
-    private function processColumns($thisName, array $columns): void
+    private function processColumns(array $columns): void
     {
+        $thisName = $this->name();
+
         /** ----------------------COLUMNS------------------------ */
         if (!isset(MapperCache::me()->columns[$thisName])) {
             foreach ($columns as $columnName => $columnValue) {
@@ -221,15 +220,16 @@ abstract class Mapper extends Singleton
     }
 
     /**
-     * @param $thisName
      * @param array $constraints
      * @param array $columns
      * @param array $embedded
      * @param array $complex
      * @throws EntityException
      */
-    private function processConstraints($thisName, array $constraints, array $columns, array $embedded, array $complex): void
+    private function processConstraints(array $constraints, array $columns, array $embedded, array $complex): void
     {
+        $thisName = $this->name();
+
         /** ----------------------CONSTRAINTS------------------------ */
         $temporaryConstraints = [];
         if (!isset(MapperCache::me()->constraints[$thisName])) {
