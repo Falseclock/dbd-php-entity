@@ -77,19 +77,19 @@ class Column
      */
     public function __construct($columnNameOrArray)
     {
-        if (isset($columnNameOrArray)) {
-            if (is_string($columnNameOrArray)) {
-                $this->name = $columnNameOrArray;
-            } else if (is_array($columnNameOrArray)) {
-                foreach ($columnNameOrArray as $key => $value) {
-                    if ($key == self::PRIMITIVE_TYPE) {
-                        $this->type = new Primitive($value);
-                    } else {
-                        $this->$key = $value;
-                    }
+        if (!is_string($columnNameOrArray) && !is_array($columnNameOrArray)) {
+            throw new EntityException("column constructor accepts only string or array");
+        }
+
+        if (is_string($columnNameOrArray)) {
+            $this->name = $columnNameOrArray;
+        } else {
+            foreach ($columnNameOrArray as $key => $value) {
+                if ($key == self::PRIMITIVE_TYPE) {
+                    $this->type = new Primitive($value);
+                } else {
+                    $this->$key = $value;
                 }
-            } else {
-                throw new EntityException("column constructor accepts only string or array");
             }
         }
 

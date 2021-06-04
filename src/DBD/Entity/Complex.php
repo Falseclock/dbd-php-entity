@@ -42,17 +42,17 @@ class Complex
      * @param string|array $complexNameOrArray
      * @throws EntityException
      */
-    public function __construct($complexNameOrArray = null)
+    public function __construct($complexNameOrArray)
     {
-        if (isset($complexNameOrArray)) {
-            if (is_string($complexNameOrArray)) {
-                $this->complexClass = $complexNameOrArray;
-            } else if (is_array($complexNameOrArray)) {
-                foreach ($complexNameOrArray as $key => $value) {
-                    $this->$key = $value;
-                }
-            } else {
-                throw new EntityException("Complex constructor accepts only string or array");
+        if (!is_string($complexNameOrArray) && !is_array($complexNameOrArray)) {
+            throw new EntityException("Complex constructor accepts only string or array");
+        }
+
+        if (is_string($complexNameOrArray)) {
+            $this->complexClass = $complexNameOrArray;
+        } else {
+            foreach ($complexNameOrArray as $key => $value) {
+                $this->$key = $value;
             }
         }
 
