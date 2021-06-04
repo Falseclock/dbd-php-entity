@@ -39,7 +39,7 @@ class KeyTest extends TestCase
     public function testConstruction()
     {
         $map = PersonBaseMap::me();
-        $columns = $map->getBaseColumns();
+        $columns = $map->getColumns();
         $key = array_shift($columns);
         $keyInstance = new Key($key);
 

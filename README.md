@@ -64,6 +64,7 @@ composer require falseclock/dbd-php-entity
 4. Класс не должен иметь методы.
 5. Константа `ANNOTATION` должна быть переопределена.
 6. Название класса должно иметь тоже самое название что и основной класс `Entity` с постфиксом `Map`.
+7. Оба класс `Entity` и `Mapper` должны быть в одном `namespace`.
 
 #### Пример
 
@@ -88,7 +89,6 @@ class CityMap extends Mapper
 * [findColumnByOriginName](#findColumnByOriginName)
 * [getAllVariables](#getAllVariables)
 * [getAnnotation](#getAnnotation)
-* [getBaseColumns](#getBaseColumns)
 * [getColumns](#getColumns)
 * [getComplex](#getComplex)
 * [getConstraints](#getConstraints)
@@ -185,3 +185,91 @@ getAnnotation — получение константы `ANNOTATION`
 public getAnnotation(): string
 ```
 
+* * *
+
+### **getColumns**
+
+getColumns — получение массива стандартных полей
+
+#### Описание
+
+```php
+public getColumns(): array
+```
+
+Данная функция возвращает массив `Columns`, которые определены в Mapper классе. Следует помнить, что комплексные поля
+объявляются как `public`.
+
+* * *
+
+### **getComplex**
+
+getComplex — получение массива комплексных полей
+
+#### Описание
+
+```php
+public getComplex(): array
+```
+
+Данная функция возвращает массив `Complex`, которые определены в Mapper классе. Следует помнить, что комплексные поля
+объявляются как `protected`.
+
+* * *
+
+### **getConstraints**
+
+getConstraints — получение массива ограничений
+
+#### Описание
+
+```php
+public getConstraints(): array
+```
+
+Данная функция возвращает массив `Constraint`, которые определены в Mapper классе. Следует помнить, что ограничения
+объявляются как `protected`.
+
+* * *
+
+### **getEmbedded**
+
+getEmbedded — получение массива встроенных полей
+
+#### Описание
+
+```php
+public getEmbedded(): array
+```
+
+Данная функция возвращает массив `Embedded`, которые определены в Mapper классе. Следует помнить, что встроенные поля
+объявляются как `protected`.
+
+* * *
+
+### **getEntityClass**
+
+getEntityClass — получение класса, который использует данный маппинг
+
+#### Описание
+
+```php
+public getEntityClass(): string
+```
+
+Следует осторожно использовать данную функцию, если вы не объявили `Entity` и `Mapper` в одном `namespace`
+
+* * *
+
+### **getOriginFieldNames**
+
+getOriginFieldNames — получение массива объявленных `public` полей
+
+#### Описание
+
+```php
+public getOriginFieldNames(): array
+```
+
+Данная функция возвращает ассоциативный массив, где ключ — наименование переменной класса `Mapper`, а значение —
+наименование поля.

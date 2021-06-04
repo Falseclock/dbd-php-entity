@@ -33,7 +33,12 @@ class MapperCache extends Singleton
 {
     /** @var array $allVariables */
     public $allVariables = [];
-    /** @var array $baseColumns */
+    /**
+     * @var array $baseColumns
+     * @deprecated
+     * @see MapperCache::$columns
+     * @todo Remove in 2.4 version
+     */
     public $baseColumns = [];
     /** @var array $columns */
     public $columns = [];

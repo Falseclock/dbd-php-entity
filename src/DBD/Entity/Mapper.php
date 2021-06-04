@@ -145,16 +145,12 @@ abstract class Mapper extends Singleton
             if (!isset(MapperCache::me()->columns[$thisName])) {
                 foreach ($columns as $columnName => $columnValue) {
                     $this->$columnName = new Column($columnValue);
-                    MapperCache::me()->baseColumns[$thisName][$columnName] = $this->$columnName;
                     MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
                 }
             }
             // У нас может не быть колонок
             if (!isset(MapperCache::me()->columns[$thisName])) {
                 MapperCache::me()->columns[$thisName] = [];
-            }
-            if (!isset(MapperCache::me()->baseColumns[$thisName])) {
-                MapperCache::me()->baseColumns[$thisName] = [];
             }
             /** ----------------------CONSTRAINTS------------------------ */
             $temporaryConstraints = [];
@@ -220,16 +216,6 @@ abstract class Mapper extends Singleton
     }
 
     /**
-     * Returns Entity class name which uses this Mapper
-     *
-     * @return string
-     */
-    public function getEntityClass(): string
-    {
-        return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
-    }
-
-    /**
      * @param string $originName
      *
      * @return Column
@@ -266,7 +252,7 @@ abstract class Mapper extends Singleton
             /** @var Entity $parentClass */
             $table->name = $parentClass::TABLE;
             $table->scheme = $parentClass::SCHEME;
-            $table->columns = $this->getBaseColumns();
+            $table->columns = $this->getColumns();
             $table->constraints = $this->getConstraints();
             $table->keys = $this->getPrimaryKey();
             $table->annotation = $this->getAnnotation();
@@ -278,11 +264,13 @@ abstract class Mapper extends Singleton
     }
 
     /**
-     * @return mixed
+     * Returns Entity class name which uses this Mapper
+     *
+     * @return string
      */
-    public function getBaseColumns()
+    public function getEntityClass(): string
     {
-        return MapperCache::me()->baseColumns[$this->name()];
+        return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
     }
 
     /**
@@ -325,6 +313,17 @@ abstract class Mapper extends Singleton
     public static function meWithoutEnforcer(): Mapper
     {
         return self::instantiate(false);
+    }
+
+    /**
+     * @return mixed
+     * @deprecated
+     * @see Mapper::getColumns()
+     * @todo Remove in 2.4 version
+     */
+    public function getBaseColumns()
+    {
+        return MapperCache::me()->baseColumns[$this->name()];
     }
 
     /**
