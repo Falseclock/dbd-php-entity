@@ -56,7 +56,7 @@ class Complex
             }
         }
 
-        if (is_null($this->complexClass)) {
+        if (!isset($this->complexClass)) {
             throw new EntityException("Complex className not set");
         }
     }

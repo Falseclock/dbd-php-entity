@@ -77,7 +77,7 @@ class Embedded
             }
         }
 
-        if (is_null($this->name)) {
+        if (!isset($this->name)) {
             throw new EntityException("Embedded name not set");
         }
     }

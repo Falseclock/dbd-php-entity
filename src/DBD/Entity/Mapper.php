@@ -167,7 +167,7 @@ abstract class Mapper extends Singleton
                     //$temporaryConstraint->localTable = $this->getTable();
 
                     // If we use View - we do not always need to define constraint fields
-                    if ($entityClass !== View::class) {
+                    if ($entityClass !== View::class && is_string($temporaryConstraint->localColumn)) {
                         $temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
                     }
                     $temporaryConstraints[$constraintName] = $temporaryConstraint;
