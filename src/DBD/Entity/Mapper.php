@@ -123,65 +123,14 @@ abstract class Mapper extends Singleton
                 }
             }
 
-            /** ----------------------COMPLEX------------------------ */
-            foreach ($complex as $complexName => $complexValue) {
-                $this->$complexName = new Complex($complexValue);
-                MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
-            }
-            // У нас может не быть комплексов
-            if (!isset(MapperCache::me()->complex[$thisName])) {
-                MapperCache::me()->complex[$thisName] = [];
-            }
-            /** ----------------------EMBEDDED------------------------ */
-            foreach ($embedded as $embeddedName => $embeddedValue) {
-                $this->$embeddedName = new Embedded($embeddedValue);
-                MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
-            }
-            // У нас может не быть эмбедов
-            if (!isset(MapperCache::me()->embedded[$thisName])) {
-                MapperCache::me()->embedded[$thisName] = [];
-            }
-            /** ----------------------COLUMNS------------------------ */
-            if (!isset(MapperCache::me()->columns[$thisName])) {
-                foreach ($columns as $columnName => $columnValue) {
-                    $this->$columnName = new Column($columnValue);
-                    MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
-                }
-            }
-            // У нас может не быть колонок
-            if (!isset(MapperCache::me()->columns[$thisName])) {
-                MapperCache::me()->columns[$thisName] = [];
-            }
-            /** ----------------------CONSTRAINTS------------------------ */
-            $temporaryConstraints = [];
-            if (!isset(MapperCache::me()->constraints[$thisName])) {
-                $entityClass = get_parent_class($this);
+            $this->processComplexes($complex, $thisName);
 
-                foreach ($constraints as $constraintName => $constraintValue) {
-                    $temporaryConstraint = new Constraint($constraintValue);
-                    // we asking provide self instance while table still not ready
-                    //$temporaryConstraint->localTable = $this->getTable();
+            $this->processEmbedded($embedded, $thisName);
 
-                    // If we use View - we do not always need to define constraint fields
-                    if ($entityClass !== View::class && is_string($temporaryConstraint->localColumn)) {
-                        $temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
-                    }
-                    $temporaryConstraints[$constraintName] = $temporaryConstraint;
-                }
-            }
+            $this->processColumns($thisName, $columns);
 
-            // У нас может не быть констрейнтов
-            if (!isset(MapperCache::me()->constraints[$thisName])) {
-                MapperCache::me()->constraints[$thisName] = [];
-            }
-            MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $embedded, $complex);
+            $this->processConstraints($thisName, $constraints, $columns, $embedded, $complex);
 
-            // Now fill constraint as map is ready
-            foreach ($temporaryConstraints as $constraintName => $temporaryConstraint) {
-                $temporaryConstraint->localTable = $this->getTable();
-                $this->$constraintName = $temporaryConstraint;
-                MapperCache::me()->constraints[$thisName][$constraintName] = $this->$constraintName;
-            }
         }
 
         return MapperCache::me()->allVariables[$thisName];
@@ -212,6 +161,104 @@ abstract class Mapper extends Singleton
         }
         if (count($varValue) == 0) {
             throw new EntityException(sprintf("property '\$%s' of %s does not have definitions", $varName, get_class($this)));
+        }
+    }
+
+    /**
+     * @param array $complex
+     * @param $thisName
+     * @throws EntityException
+     */
+    private function processComplexes(array $complex, $thisName): void
+    {
+        /** ----------------------COMPLEX------------------------ */
+        foreach ($complex as $complexName => $complexValue) {
+            $this->$complexName = new Complex($complexValue);
+            MapperCache::me()->complex[$thisName][$complexName] = $this->$complexName;
+        }
+        // У нас может не быть комплексов
+        if (!isset(MapperCache::me()->complex[$thisName])) {
+            MapperCache::me()->complex[$thisName] = [];
+        }
+    }
+
+    /**
+     * @param array $embedded
+     * @param $thisName
+     * @throws EntityException
+     */
+    private function processEmbedded(array $embedded, $thisName): void
+    {
+        /** ----------------------EMBEDDED------------------------ */
+        foreach ($embedded as $embeddedName => $embeddedValue) {
+            $this->$embeddedName = new Embedded($embeddedValue);
+            MapperCache::me()->embedded[$thisName][$embeddedName] = $this->$embeddedName;
+        }
+        // У нас может не быть эмбедов
+        if (!isset(MapperCache::me()->embedded[$thisName])) {
+            MapperCache::me()->embedded[$thisName] = [];
+        }
+    }
+
+    /**
+     * @param $thisName
+     * @param array $columns
+     * @throws EntityException
+     */
+    private function processColumns($thisName, array $columns): void
+    {
+        /** ----------------------COLUMNS------------------------ */
+        if (!isset(MapperCache::me()->columns[$thisName])) {
+            foreach ($columns as $columnName => $columnValue) {
+                $this->$columnName = new Column($columnValue);
+                MapperCache::me()->columns[$thisName][$columnName] = $this->$columnName;
+            }
+        }
+        // У нас может не быть колонок
+        if (!isset(MapperCache::me()->columns[$thisName])) {
+            MapperCache::me()->columns[$thisName] = [];
+        }
+    }
+
+    /**
+     * @param $thisName
+     * @param array $constraints
+     * @param array $columns
+     * @param array $embedded
+     * @param array $complex
+     * @throws EntityException
+     */
+    private function processConstraints($thisName, array $constraints, array $columns, array $embedded, array $complex): void
+    {
+        /** ----------------------CONSTRAINTS------------------------ */
+        $temporaryConstraints = [];
+        if (!isset(MapperCache::me()->constraints[$thisName])) {
+            $entityClass = get_parent_class($this);
+
+            foreach ($constraints as $constraintName => $constraintValue) {
+                $temporaryConstraint = new Constraint($constraintValue);
+                // we asking provide self instance while table still not ready
+                //$temporaryConstraint->localTable = $this->getTable();
+
+                // If we use View - we do not always need to define constraint fields
+                if ($entityClass !== View::class && is_string($temporaryConstraint->localColumn)) {
+                    $temporaryConstraint->localColumn = $this->findColumnByOriginName($temporaryConstraint->localColumn);
+                }
+                $temporaryConstraints[$constraintName] = $temporaryConstraint;
+            }
+        }
+
+        // У нас может не быть ограничений
+        if (!isset(MapperCache::me()->constraints[$thisName])) {
+            MapperCache::me()->constraints[$thisName] = [];
+        }
+        MapperCache::me()->allVariables[$thisName] = new MapperVariables($columns, $constraints, $embedded, $complex);
+
+        // Now fill constraint as map is ready
+        foreach ($temporaryConstraints as $constraintName => $temporaryConstraint) {
+            $temporaryConstraint->localTable = $this->getTable();
+            $this->$constraintName = $temporaryConstraint;
+            MapperCache::me()->constraints[$thisName][$constraintName] = $this->$constraintName;
         }
     }
 
