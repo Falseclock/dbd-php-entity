@@ -419,7 +419,7 @@ abstract class Entity
     {
         $lookupMethod = $methodName;
 
-        if (ctype_lower($methodName{0})) {
+        if (ctype_lower($methodName[0])) {
             $lookupMethod = ucfirst($methodName);
         }
 

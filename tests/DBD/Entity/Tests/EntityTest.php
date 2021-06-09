@@ -138,6 +138,7 @@ class EntityTest extends TestCase
         // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
         $this->expectException(EntityException::class);
 
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $c->$missingProperty;
     }
 
@@ -164,6 +165,7 @@ class EntityTest extends TestCase
         // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
         $this->expectException(EntityException::class);
 
+        /** @noinspection PhpExpressionResultUnusedInspection */
         $b->$missingProperty;
     }
 
