@@ -18,6 +18,7 @@
         <exclude>
             <directory>src/DBD/Entity/Interfaces/</directory>
             <directory>src/DBD/Entity/Join/</directory>
+            <directory>src/DBD/Entity/Primitives</directory>
             <file>src/DBD/Entity/Join.php</file>
             <file>src/DBD/Entity/Order.php</file>
             <file>src/DBD/Entity/View.php</file>
