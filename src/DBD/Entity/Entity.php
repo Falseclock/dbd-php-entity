@@ -407,4 +407,27 @@ abstract class Entity
     {
         return $this->rawData;
     }
+
+    /**
+     * Special getter to access properties with getters
+     * For example, having method getName you can access $name property declared with (@)property annotation
+     * @param string $methodName
+     * @return mixed
+     * @throws EntityException
+     */
+    public function __get(string $methodName)
+    {
+        $lookupMethod = $methodName;
+
+        if (ctype_lower($methodName{0})) {
+            $lookupMethod = ucfirst($methodName);
+        }
+
+        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+        if (!method_exists($this, "get{$lookupMethod}")) {
+            throw new EntityException(sprintf("Can't find property or getter method for '\$%s' of '%s'", $methodName, get_class($this)));
+        }
+
+        return $this->$methodName();
+    }
 }
