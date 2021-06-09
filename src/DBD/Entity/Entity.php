@@ -423,11 +423,12 @@ abstract class Entity
             $lookupMethod = ucfirst($methodName);
         }
 
-        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
-        if (!method_exists($this, "get{$lookupMethod}")) {
+        $lookupMethod = "get" . $lookupMethod;
+
+        if (!method_exists($this, $lookupMethod)) {
             throw new EntityException(sprintf("Can't find property or getter method for '\$%s' of '%s'", $methodName, get_class($this)));
         }
 
-        return $this->$methodName();
+        return $this->$lookupMethod();
     }
 }
