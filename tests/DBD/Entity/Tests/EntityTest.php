@@ -136,10 +136,7 @@ class EntityTest extends TestCase
         self::assertFalse(isset($c->$missingProperty), "C class still has property '{$missingProperty}'");
 
         // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
-        if (version_compare(phpversion(), '8.0.0', '>='))
-            self::expectWarning();
-        else
-            self::expectNotice();
+        $this->expectException(EntityException::class);
 
         $c->$missingProperty;
     }
@@ -165,10 +162,8 @@ class EntityTest extends TestCase
         self::assertFalse(isset($b->$missingProperty));
 
         // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
-        if (version_compare(phpversion(), '8.0.0', '>='))
-            self::expectWarning();
-        else
-            self::expectNotice();
+        $this->expectException(EntityException::class);
+
         $b->$missingProperty;
     }
 
@@ -233,7 +228,6 @@ class EntityTest extends TestCase
 
     /**
      * All Entity variables must be mapped in case of FullEntity or StrictlyFilledEntity
-     * @noinspection PhpExpressionResultUnusedInspection
      */
     public function testUnmappedProperty()
     {
