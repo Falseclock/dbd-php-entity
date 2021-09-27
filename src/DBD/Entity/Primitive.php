@@ -53,7 +53,7 @@ use MyCLabs\Enum\Enum;
  */
 class Primitive extends Enum implements StringPrimitives, NumericPrimitives, TimePrimitives
 {
-    private const BOOLEAN = "boolean";
+    public const BOOLEAN = "boolean";
 
     /** @var string Binary-valued logic */
     public const Boolean = "Boolean";
