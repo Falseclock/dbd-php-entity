@@ -1,0 +1,34 @@
+[
+  {
+    "currency_id": 505,
+    "currency_name": "Доллар США",
+    "currency_short_name": "Доллар",
+    "currency_abbreviation": "долл",
+    "currency_symbol": "$",
+    "currency_code": "USD"
+  },
+  {
+    "currency_id": 36,
+    "currency_name": "Казахстанский Тенге",
+    "currency_short_name": "Тенге",
+    "currency_abbreviation": "тг",
+    "currency_symbol": "₸",
+    "currency_code": "KZT"
+  },
+  {
+    "currency_id": 506,
+    "currency_name": "Российский Рубль",
+    "currency_short_name": "Рубль",
+    "currency_abbreviation": "руб",
+    "currency_symbol": "₽",
+    "currency_code": "RUB"
+  },
+  {
+    "currency_id": 548,
+    "currency_name": "Евро",
+    "currency_short_name": "Евро",
+    "currency_abbreviation": "евро",
+    "currency_symbol": "€",
+    "currency_code": "EUR"
+  }
+]
