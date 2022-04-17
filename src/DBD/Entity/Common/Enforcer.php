@@ -45,7 +45,7 @@ class Enforcer
             $constantsForced = $reflection->getConstants();
             foreach ($constantsForced as $constant => $value) {
                 if (constant("$c::$constant") == "abstract") {
-                    trigger_error("Undefined constant $constant in " . (string)$c, E_USER_ERROR);
+                    trigger_error(sprintf("Undefined constant %s in %s", $constant, $c), E_USER_ERROR);
                 }
             }
         } catch (ReflectionException $e) {

@@ -10,4 +10,4 @@ vendor/*
 /phpunit
 /build/
 /.phpunit.cache/
-/.run/
+

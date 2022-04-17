@@ -363,17 +363,6 @@ abstract class Mapper extends Singleton
     }
 
     /**
-     * @return mixed
-     * @deprecated
-     * @see Mapper::getColumns()
-     * @todo Remove in 2.4 version
-     */
-    public function getBaseColumns()
-    {
-        return MapperCache::me()->baseColumns[$this->name()];
-    }
-
-    /**
      * Special getter to access protected and private properties
      * @param string $property
      *

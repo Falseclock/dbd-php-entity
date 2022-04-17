@@ -263,7 +263,7 @@ abstract class Entity
             }
 
             /** Note: Function names are case-insensitive, though it is usually good form to call functions as they appear in their declaration. */
-            $setterMethod = "set{$property}";
+            $setterMethod = sprintf("set%s", $property);
 
             /** @var Column $fieldDefinition */
             $fieldDefinition = $mapper->$property;
@@ -282,7 +282,7 @@ abstract class Entity
                 } else {
                     /**
                      * Entity public variables should not have default values.
-                     * But some times we need to have default value for column in case of $rowData has null value
+                     * But sometimes we need to have default value for column in case of $rowData has null value
                      * In this case we should not override default value if $columnValue is null
                      */
                     if (!isset($this->$property) and isset($columnValue)) {
@@ -379,7 +379,7 @@ abstract class Entity
 
     /**
      * If entity data should be modified after setModelData, create same function in Entity.
-     * For example it is heavy cost to aggregate some data in SQL side, any more cost efficient will do that with PHP
+     * For example, it is heavy cost to aggregate some data in SQL side, any more cost-efficient will do that with PHP
      *
      * @see Embedded::$name
      * @see setModelData()
@@ -429,6 +429,8 @@ abstract class Entity
             throw new EntityException(sprintf("Can't find property or getter method for '\$%s' of '%s'", $methodName, get_class($this)));
         }
 
-        return $this->$lookupMethod();
+        $this->$methodName = $this->$lookupMethod();
+
+        return $this->$methodName;
     }
 }

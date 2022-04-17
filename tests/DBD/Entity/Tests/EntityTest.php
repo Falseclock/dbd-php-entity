@@ -32,6 +32,7 @@ use DBD\Entity\Mapper;
 use DBD\Entity\Tests\Entities\DeclarationChain\B;
 use DBD\Entity\Tests\Entities\DeclarationChain\C;
 use DBD\Entity\Tests\Entities\DeclarationChain\D;
+use DBD\Entity\Tests\Entities\DeclarationChain\E;
 use DBD\Entity\Tests\Entities\JsonTypeColumn;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\PersonBase;
@@ -109,7 +110,6 @@ class EntityTest extends TestCase
 
             // but calling this property should trigger exception
             self::assertTrue(isset($d->$name));
-            $d->$name;
         }
     }
 
@@ -133,7 +133,7 @@ class EntityTest extends TestCase
         self::assertObjectHasAttribute($missingProperty, $c);
 
         // but calling this property should trigger exception
-        self::assertFalse(isset($c->$missingProperty), "C class still has property '{$missingProperty}'");
+        self::assertFalse(isset($c->$missingProperty), "C class still has property '$missingProperty'");
 
         // Undefined property: DBD\Entity\Tests\Entities\DeclarationChain\B::$a3
         $this->expectException(EntityException::class);
@@ -142,6 +142,17 @@ class EntityTest extends TestCase
         $c->$missingProperty;
     }
 
+    /**
+     * @return void
+     * @throws EntityException
+     */
+    public function testDeclaration() {
+        $e = new E(Data::getDeclarationChainData());
+
+        $result = $e->a4;
+
+        self::assertTrue($result);
+    }
     /**
      * @throws EntityException
      */
@@ -347,7 +358,7 @@ class EntityTest extends TestCase
     }
 
     /**
-     * Case when we selecting a lot of fields and forget to select some of them for FullEntity or StrictlyFilledEntity
+     * Case when we're selecting a lot of fields and forget to select some of them for FullEntity or StrictlyFilledEntity
      * @throws EntityException
      * @noinspection PhpExpressionResultUnusedInspection
      */

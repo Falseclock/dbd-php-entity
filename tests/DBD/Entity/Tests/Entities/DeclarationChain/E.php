@@ -18,50 +18,25 @@
  *                                                                              *
  ********************************************************************************/
 
-declare(strict_types=1);
+namespace DBD\Entity\Tests\Entities\DeclarationChain;
 
-namespace DBD\Entity;
+use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 
 /**
- * Class Constraint
- *
- * @package DBD\Entity
+ * @property bool $a4
  */
-class Constraint
+class E extends D implements OnlyDeclaredPropertiesEntity
 {
-    const BASE_CLASS = "class";
-    const FOREIGN_COLUMN = "foreignColumn";
-    const FOREIGN_SCHEME = "foreignScheme";
-    const FOREIGN_TABLE = "foreignTable";
-    const JOIN_TYPE = "join";
-    const LOCAL_COLUMN = "localColumn";
-    const LOCAL_TABLE = "localTable";
-    /** @var Column|string $localColumn */
-    public $localColumn;
-    /** @var Table $localTable */
-    public $localTable;
-    /** @var Table $foreignTable */
-    public $foreignTable;
-    /** @var Column $foreignColumn */
-    public $foreignColumn;
-    /** @var Join $joinType */
-    public $join;
-    /** @var string $class */
-    public $class;
-    /** @var string $foreignScheme */
-    public $foreignScheme;
-
     /**
-     * Constraint constructor.
-     *
-     * @param array|null $constraintParams
+     * @return bool
      */
-    public function __construct(?array $constraintParams = null)
+    public function getA4()
     {
-        if (is_array($constraintParams)) {
-            foreach ($constraintParams as $key => $value) {
-                $this->$key = $value;
-            }
-        }
+        return true;
     }
+}
+
+class EMap extends DMap
+{
+
 }
