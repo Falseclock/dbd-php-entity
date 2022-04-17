@@ -1,8 +1,8 @@
 # DBD-PHP-Entity
 
-[![Build Status](https://travis-ci.org/Falseclock/dbd-php-entity.svg?branch=master)](https://travis-ci.org/Falseclock/dbd-php-entity)
+[![scrutinizer build](https://scrutinizer-ci.com/g/Falseclock/dbd-php-entity/badges/build.png?b=master)](https://scrutinizer-ci.com/g/Falseclock/dbd-php-entity/?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/Falseclock/dbd-php-entity/badge.svg?branch=master)](https://coveralls.io/github/Falseclock/dbd-php-entity?branch=master)
-[![PHP 7 ready](https://php7ready.timesplinter.ch/Falseclock/dbd-php-entity/master/badge.svg)](https://travis-ci.org/Falseclock/dbd-php-entity)
+[![PHP Version Require](http://poser.pugx.org/falseclock/dbd-php-entity/require/php)](https://packagist.org/packages/falseclock/dbd-php-entity)
 
 [![Latest Stable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v)](//packagist.org/packages/falseclock/dbd-php-entity)
 [![Total Downloads](https://poser.pugx.org/falseclock/dbd-php-entity/downloads)](//packagist.org/packages/falseclock/dbd-php-entity)
