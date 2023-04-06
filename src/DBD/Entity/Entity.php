@@ -212,6 +212,7 @@ abstract class Entity
      * @param Mapper $mapper
      *
      * @throws EntityException
+     * @throws \ReflectionException
      */
     private function setBaseColumns(Mapper $mapper)
     {
@@ -284,10 +285,25 @@ abstract class Entity
                      * Entity public variables should not have default values.
                      * But sometimes we need to have default value for column in case of $rowData has null value
                      * In this case we should not override default value if $columnValue is null
+                     * Иными словами нельзя переписывать дефолтное значение, если из базы пришло null
+                     * но, если нет дефолтного значения, то мы должны его проинизиализировать null значением
                      */
-                    if (!isset($this->$property) and isset($columnValue)) {
-                        $this->$property = &$columnValue;
-                    }
+                    $reflection = new ReflectionObject($this);
+                    $reflectionProperty = $reflection->getProperty($property);
+
+                    // Если мы еще не инциализировали переменную и у нас есть значение для этой переменной
+                    //if (!isset($this->$property)) {
+
+                        // Если у нас есть значение, то ставим его
+                        if (isset($columnValue)) {
+                            $this->$property = &$columnValue;
+                        } else {
+                            // У нас нет прицепленного значения
+                            if (!$reflectionProperty->hasDefaultValue()) {
+                                $this->$property = $columnValue; // this is NULL value
+                            }
+                        }
+                    //}
                 }
             }
         }

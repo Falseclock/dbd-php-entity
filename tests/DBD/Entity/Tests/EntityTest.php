@@ -33,6 +33,7 @@ use DBD\Entity\Tests\Entities\DeclarationChain\B;
 use DBD\Entity\Tests\Entities\DeclarationChain\C;
 use DBD\Entity\Tests\Entities\DeclarationChain\D;
 use DBD\Entity\Tests\Entities\DeclarationChain\E;
+use DBD\Entity\Tests\Entities\EntityWithDefaults;
 use DBD\Entity\Tests\Entities\JsonTypeColumn;
 use DBD\Entity\Tests\Entities\JsonTypeColumnMap;
 use DBD\Entity\Tests\Entities\PersonBase;
@@ -63,6 +64,26 @@ class EntityTest extends TestCase
         $person = new PersonBaseSetters($personData);
 
         self::assertSame($personData, $person->raw());
+    }
+
+    public function testPrefilledWithNullValues() {
+        $data = [
+            'prefilled' => null,
+            'unfilled' => null,
+        ];
+
+        $entity = new EntityWithDefaults($data);
+        self::assertSame(EntityWithDefaults::PREFILL, $entity->prefiled);
+        self::assertSame(null, $entity->unfiled);
+
+        $data = [
+            'prefilled' => "123",
+            'unfilled' => "123",
+        ];
+
+        $entity = new EntityWithDefaults($data);
+        self::assertSame("123", $entity->prefiled);
+        self::assertSame("123", $entity->unfiled);
     }
 
     /**
