@@ -27,6 +27,8 @@ use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\Utils;
+use DBD\Entity\Interfaces\EntityMapper;
+
 
 /**
  * Class Mapper
@@ -35,8 +37,10 @@ use DBD\Entity\Common\Utils;
  *
  * @package DBD\Entity
  */
-abstract class Mapper extends Singleton
+abstract class Mapper extends Singleton implements EntityMapper
 {
+    use MapperTrait;
+
     const ANNOTATION = "abstract";
     const POSTFIX = "Map";
 
@@ -136,11 +140,31 @@ abstract class Mapper extends Singleton
     /**
      * Get simple Mapper class name without namespace
      */
-    public function name()
+    public function name(): string
     {
         $name = get_class($this);
 
         return substr($name, strrpos($name, '\\') + 1);
+    }
+
+    /**
+     * Returns Entity class name which uses this Mapper
+     *
+     * @return string
+     */
+    public function getEntityClass(): string
+    {
+        return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
+    }
+
+    public function getScheme(): string
+    {
+        return $this->getEntityClass()::SCHEME;
+    }
+
+    public function getTableName(): string
+    {
+        return $this->getEntityClass()::TABLE;
     }
 
     /**
@@ -263,87 +287,6 @@ abstract class Mapper extends Singleton
     }
 
     /**
-     * @param string $originName
-     *
-     * @return Column
-     * @throws EntityException
-     */
-    public function findColumnByOriginName(string $originName): Column
-    {
-        foreach ($this->getColumns() as $column) {
-            if ($column->name == $originName) {
-                return $column;
-            }
-        }
-        throw new EntityException(sprintf("Can't find origin column '%s' in %s", $originName, get_class($this)));
-    }
-
-    /**
-     * @return Column[]
-     */
-    public function getColumns(): array
-    {
-        return MapperCache::me()->columns[$this->name()];
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTable()
-    {
-        $thisName = $this->name();
-
-        if (!isset(MapperCache::me()->table[$thisName])) {
-            $parentClass = $this->getEntityClass();
-            $table = new Table();
-            /** @var Entity $parentClass */
-            $table->name = $parentClass::TABLE;
-            $table->scheme = $parentClass::SCHEME;
-            $table->columns = $this->getColumns();
-            $table->constraints = $this->getConstraints();
-            $table->keys = $this->getPrimaryKey();
-            $table->annotation = $this->getAnnotation();
-
-            MapperCache::me()->table[$thisName] = $table;
-        }
-
-        return MapperCache::me()->table[$thisName];
-    }
-
-    /**
-     * Returns Entity class name which uses this Mapper
-     *
-     * @return string
-     */
-    public function getEntityClass(): string
-    {
-        return substr(get_class($this), 0, strlen(self::POSTFIX) * -1);
-    }
-
-    /**
-     * @return Constraint[]
-     */
-    public function getConstraints(): array
-    {
-        return MapperCache::me()->constraints[$this->name()];
-    }
-
-    /**
-     * @return Column[] that is associative array where key is property name
-     */
-    public function getPrimaryKey(): array
-    {
-        $keys = [];
-        foreach (MapperCache::me()->columns[$this->name()] as $columnName => $column) {
-            if (isset($column->key) and $column->key === true) {
-                $keys[$columnName] = $column;
-            }
-        }
-
-        return $keys;
-    }
-
-    /**
      * Returns table comment
      *
      * @return string
@@ -364,8 +307,8 @@ abstract class Mapper extends Singleton
 
     /**
      * Special getter to access protected and private properties
-     * @param string $property
      *
+     * @param string $property
      * @return mixed
      * @throws EntityException
      */
@@ -376,57 +319,5 @@ abstract class Mapper extends Singleton
         }
 
         return $this->$property;
-    }
-
-    /**
-     * @return Complex[]
-     */
-    public function getComplex(): array
-    {
-        return MapperCache::me()->complex[$this->name()];
-    }
-
-    /**
-     * @return Embedded[]
-     */
-    public function getEmbedded(): array
-    {
-        return MapperCache::me()->embedded[$this->name()];
-    }
-
-    /**
-     * @param Column $column
-     *
-     * @return int|string
-     * @throws EntityException
-     */
-    public function getVarNameByColumn(Column $column)
-    {
-        foreach ($this->getOriginFieldNames() as $varName => $originFieldName) {
-            if ($originFieldName == $column->name) {
-                return $varName;
-            }
-        }
-
-        throw new EntityException(sprintf("Seems column '%s' does not belong to this mapper", $column->name));
-    }
-
-    /**
-     * @return array
-     */
-    public function getOriginFieldNames(): array
-    {
-        $thisName = $this->name();
-        if (!isset(MapperCache::me()->originFieldNames[$thisName])) {
-            if (count($this->getColumns())) {
-                foreach ($this->getColumns() as $columnName => $column) {
-                    MapperCache::me()->originFieldNames[$thisName][$columnName] = $column->name;
-                }
-            } else {
-                MapperCache::me()->originFieldNames[$thisName] = [];
-            }
-        }
-
-        return MapperCache::me()->originFieldNames[$thisName];
     }
 }

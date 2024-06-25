@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2022] [Nurlan Mukhanov <nurike@gmail.com>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -20,51 +20,23 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity;
+namespace DBD\Entity\Tests\Entities;
 
-use Attribute;
+use DBD\Entity\Columns\BigIntColumn;
+use DBD\Entity\Columns\StringColumn;
+use DBD\Entity\Entity;
+use DBD\Entity\EntityTable;
+use DBD\Entity\Interfaces\FullEntity;
 
-/**
- * Class Constraint
- *
- * @package DBD\Entity
- */
-#[Attribute(Attribute::TARGET_PROPERTY)]
-class Constraint
+#[EntityTable('public', 'attributed', 'Annotation')]
+class Attributed extends Entity implements FullEntity
 {
-    const BASE_CLASS = "class";
-    const FOREIGN_COLUMN = "foreignColumn";
-    const FOREIGN_SCHEME = "foreignScheme";
-    const FOREIGN_TABLE = "foreignTable";
-    const JOIN_TYPE = "join";
-    const LOCAL_COLUMN = "localColumn";
-    const LOCAL_TABLE = "localTable";
-    /** @var Column|string $localColumn */
-    public $localColumn;
-    /** @var Table $localTable */
-    public $localTable;
-    /** @var Table $foreignTable */
-    public $foreignTable;
-    /** @var Column $foreignColumn */
-    public $foreignColumn;
-    /** @var Join $joinType */
-    public $join;
-    /** @var string $class */
-    public $class;
-    /** @var string $foreignScheme */
-    public $foreignScheme;
+    const SCHEME = 'public';
+    const TABLE = 'attributed';
 
-    /**
-     * Constraint constructor.
-     *
-     * @param array|null $constraintParams
-     */
-    public function __construct(?array $constraintParams = null)
-    {
-        if (is_array($constraintParams)) {
-            foreach ($constraintParams as $key => $value) {
-                $this->$key = $value;
-            }
-        }
-    }
+    #[BigIntColumn(name: 'id', auto: true, primary: true, annotation: 'Key')]
+    public ?int $id = null;
+
+    #[StringColumn(name: 'name', length: 255, annotation: 'Annotated')]
+    public ?string $name = null;
 }

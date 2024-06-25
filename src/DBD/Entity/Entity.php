@@ -22,15 +22,16 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
-use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Interfaces\EntityMapper;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use Exception;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionObject;
 
 /**
@@ -126,18 +127,28 @@ abstract class Entity
     }
 
     /**
-     * @return Singleton|Mapper|static
+     * @return EntityMapper
      * @throws EntityException
      * @noinspection PhpDocMissingThrowsInspection ReflectionClass will never throw exception because of get_called_class()
      */
-    final public static function map()
+    final public static function map(): EntityMapper
     {
         $calledClass = get_called_class();
 
         $mapClass = $calledClass . Mapper::POSTFIX;
 
         if (!class_exists($mapClass, false)) {
-            throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+            static $mapper = [];
+
+            if (!isset($mapper[$mapClass])) {
+                $mapper[$mapClass] = new MapperAttributed($calledClass);
+            }
+
+            if (count($mapper[$mapClass]->getColumns()) === 0) {
+                throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+            }
+
+            return $mapper[$mapClass];
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -212,7 +223,7 @@ abstract class Entity
      * @param Mapper $mapper
      *
      * @throws EntityException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private function setBaseColumns(Mapper $mapper)
     {
@@ -405,7 +416,7 @@ abstract class Entity
     }
 
     /**
-     * get Entity table name
+     * Get Entity table name
      *
      * @return string
      */
@@ -427,6 +438,7 @@ abstract class Entity
     /**
      * Special getter to access properties with getters
      * For example, having method getName you can access $name property declared with (@)property annotation
+     *
      * @param string $methodName
      * @return mixed
      * @throws EntityException

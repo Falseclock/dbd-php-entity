@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
+use Attribute;
 use DBD\Entity\Common\EntityException;
 
 /**
@@ -31,6 +32,7 @@ use DBD\Entity\Common\EntityException;
  *
  * @package DBD\Entity
  */
+#[Attribute(Attribute::TARGET_PROPERTY)]
 class Embedded
 {
     /** @var string MANDATORY option */
@@ -55,7 +57,7 @@ class Embedded
     /**
      * Embedded constructor.
      *
-     * @param array|null $arrayOfValues
+     * @param array $arrayOfValues
      * @throws EntityException
      */
     public function __construct(array $arrayOfValues)

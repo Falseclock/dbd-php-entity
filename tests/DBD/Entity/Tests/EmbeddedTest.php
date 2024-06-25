@@ -197,7 +197,7 @@ class EmbeddedTest extends TestCase
         /** @var FalseNameMap $map */
         $map = FalseName::map();
         $entity = new FalseName([$map->id->name => 1, 'setter' => "{}"]);
-        self::assertObjectHasAttribute('debug', $entity);
+        self::assertObjectHasProperty('debug', $entity);
         self::assertNull($entity->debug);
     }
 

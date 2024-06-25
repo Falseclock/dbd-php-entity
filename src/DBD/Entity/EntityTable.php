@@ -25,46 +25,16 @@ namespace DBD\Entity;
 use Attribute;
 
 /**
- * Class Constraint
+ * Class EntityTable
  *
  * @package DBD\Entity
  */
-#[Attribute(Attribute::TARGET_PROPERTY)]
-class Constraint
+#[Attribute(Attribute::TARGET_CLASS)]
+final class EntityTable
 {
-    const BASE_CLASS = "class";
-    const FOREIGN_COLUMN = "foreignColumn";
-    const FOREIGN_SCHEME = "foreignScheme";
-    const FOREIGN_TABLE = "foreignTable";
-    const JOIN_TYPE = "join";
-    const LOCAL_COLUMN = "localColumn";
-    const LOCAL_TABLE = "localTable";
-    /** @var Column|string $localColumn */
-    public $localColumn;
-    /** @var Table $localTable */
-    public $localTable;
-    /** @var Table $foreignTable */
-    public $foreignTable;
-    /** @var Column $foreignColumn */
-    public $foreignColumn;
-    /** @var Join $joinType */
-    public $join;
-    /** @var string $class */
-    public $class;
-    /** @var string $foreignScheme */
-    public $foreignScheme;
-
-    /**
-     * Constraint constructor.
-     *
-     * @param array|null $constraintParams
-     */
-    public function __construct(?array $constraintParams = null)
-    {
-        if (is_array($constraintParams)) {
-            foreach ($constraintParams as $key => $value) {
-                $this->$key = $value;
-            }
-        }
-    }
+    public function __construct(
+        public string $scheme,
+        public string $name,
+        public string $annotation
+    ) {}
 }

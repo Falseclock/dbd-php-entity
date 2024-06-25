@@ -127,7 +127,7 @@ class EntityTest extends TestCase
             // Actually property exist
             self::assertTrue(property_exists($d, $name));
             // And has such attribute
-            self::assertObjectHasAttribute($name, $d);
+            self::assertObjectHasProperty($name, $d);
 
             // but calling this property should trigger exception
             self::assertTrue(isset($d->$name));
@@ -151,7 +151,7 @@ class EntityTest extends TestCase
         // Actually property exist
         self::assertTrue(property_exists($c, $missingProperty));
         // And has such attribute
-        self::assertObjectHasAttribute($missingProperty, $c);
+        self::assertObjectHasProperty($missingProperty, $c);
 
         // but calling this property should trigger exception
         self::assertFalse(isset($c->$missingProperty), "C class still has property '$missingProperty'");
@@ -189,7 +189,7 @@ class EntityTest extends TestCase
         // Actually property exist
         self::assertTrue(property_exists($b, $missingProperty));
         // And has such attribute
-        self::assertObjectHasAttribute($missingProperty, $b);
+        self::assertObjectHasProperty($missingProperty, $b);
 
         // but calling this property should trigger exception
         self::assertFalse(isset($b->$missingProperty));

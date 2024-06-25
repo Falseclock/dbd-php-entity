@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
+use Attribute;
 use DBD\Entity\Common\EntityException;
 
 /**
@@ -29,6 +30,7 @@ use DBD\Entity\Common\EntityException;
  *
  * @package DBD\Entity
  */
+#[Attribute(Attribute::TARGET_PROPERTY)]
 class Column
 {
     const ANNOTATION = "annotation";

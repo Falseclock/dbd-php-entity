@@ -20,51 +20,37 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity;
+namespace DBD\Entity\Columns;
 
 use Attribute;
+use DBD\Entity\Column;
+use DBD\Entity\Primitives\NumericPrimitives;
 
 /**
- * Class Constraint
+ * Class BigIntColumn
  *
- * @package DBD\Entity
+ * @package DBD\Entity\Columns
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class Constraint
+class BigIntColumn extends Column
 {
-    const BASE_CLASS = "class";
-    const FOREIGN_COLUMN = "foreignColumn";
-    const FOREIGN_SCHEME = "foreignScheme";
-    const FOREIGN_TABLE = "foreignTable";
-    const JOIN_TYPE = "join";
-    const LOCAL_COLUMN = "localColumn";
-    const LOCAL_TABLE = "localTable";
-    /** @var Column|string $localColumn */
-    public $localColumn;
-    /** @var Table $localTable */
-    public $localTable;
-    /** @var Table $foreignTable */
-    public $foreignTable;
-    /** @var Column $foreignColumn */
-    public $foreignColumn;
-    /** @var Join $joinType */
-    public $join;
-    /** @var string $class */
-    public $class;
-    /** @var string $foreignScheme */
-    public $foreignScheme;
-
-    /**
-     * Constraint constructor.
-     *
-     * @param array|null $constraintParams
-     */
-    public function __construct(?array $constraintParams = null)
-    {
-        if (is_array($constraintParams)) {
-            foreach ($constraintParams as $key => $value) {
-                $this->$key = $value;
-            }
-        }
+    public function __construct(
+        string $name,
+        bool $auto = false,
+        bool $nullable = false,
+        bool $primary = false,
+        ?string $defaultValue = null,
+        ?string $annotation = null
+    ) {
+        parent::__construct([
+            Column::NAME            => $name,
+            Column::PRIMITIVE_TYPE  => NumericPrimitives::Int64,
+            Column::ORIGIN_TYPE     => 'int8',
+            Column::IS_AUTO         => $auto,
+            Column::NULLABLE        => $nullable,
+            Column::KEY             => $primary,
+            Column::DEFAULT         => $defaultValue,
+            Column::ANNOTATION      => $annotation
+        ]);
     }
 }

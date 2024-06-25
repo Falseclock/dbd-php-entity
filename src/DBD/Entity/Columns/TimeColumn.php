@@ -20,51 +20,31 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity;
+namespace DBD\Entity\Columns;
 
 use Attribute;
+use DBD\Entity\Column;
+use DBD\Entity\Primitives\TimePrimitives;
 
 /**
- * Class Constraint
+ * Class TimeColumn
  *
- * @package DBD\Entity
+ * @package DBD\Entity\Columns
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class Constraint
+class TimeColumn extends Column
 {
-    const BASE_CLASS = "class";
-    const FOREIGN_COLUMN = "foreignColumn";
-    const FOREIGN_SCHEME = "foreignScheme";
-    const FOREIGN_TABLE = "foreignTable";
-    const JOIN_TYPE = "join";
-    const LOCAL_COLUMN = "localColumn";
-    const LOCAL_TABLE = "localTable";
-    /** @var Column|string $localColumn */
-    public $localColumn;
-    /** @var Table $localTable */
-    public $localTable;
-    /** @var Table $foreignTable */
-    public $foreignTable;
-    /** @var Column $foreignColumn */
-    public $foreignColumn;
-    /** @var Join $joinType */
-    public $join;
-    /** @var string $class */
-    public $class;
-    /** @var string $foreignScheme */
-    public $foreignScheme;
-
-    /**
-     * Constraint constructor.
-     *
-     * @param array|null $constraintParams
-     */
-    public function __construct(?array $constraintParams = null)
-    {
-        if (is_array($constraintParams)) {
-            foreach ($constraintParams as $key => $value) {
-                $this->$key = $value;
-            }
-        }
+    public function __construct(
+        string $name,
+        bool $nullable = false,
+        ?string $defaultValue = null
+    ) {
+        parent::__construct([
+            Column::NAME            => $name,
+            Column::PRIMITIVE_TYPE  => TimePrimitives::Date,
+            Column::ORIGIN_TYPE     => 'time',
+            Column::NULLABLE        => $nullable,
+            Column::DEFAULT         => $defaultValue,
+        ]);
     }
 }
