@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -35,22 +35,23 @@ use DBD\Entity\Primitives\NumericPrimitives;
 class IntColumn extends Column
 {
     public function __construct(
-        string $name,
-        bool $auto = false,
-        bool $nullable = false,
-        bool $primary = false,
+        string  $name,
+        bool    $auto = false,
+        bool    $nullable = false,
+        bool    $primary = false,
         ?string $defaultValue = null,
         ?string $annotation = null
-    ) {
+    )
+    {
         parent::__construct([
-            Column::NAME            => $name,
-            Column::PRIMITIVE_TYPE  => NumericPrimitives::Int32,
-            Column::ORIGIN_TYPE     => 'int4',
-            Column::IS_AUTO         => $auto,
-            Column::NULLABLE        => $nullable,
-            Column::KEY             => $primary,
-            Column::DEFAULT         => $defaultValue,
-            Column::ANNOTATION      => $annotation
+            Column::NAME => $name,
+            Column::PRIMITIVE_TYPE => NumericPrimitives::Int32,
+            Column::ORIGIN_TYPE => 'int4',
+            Column::IS_AUTO => $auto,
+            Column::NULLABLE => $nullable,
+            Column::KEY => $primary,
+            Column::DEFAULT => $defaultValue,
+            Column::ANNOTATION => $annotation
         ]);
     }
 }

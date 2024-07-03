@@ -74,10 +74,10 @@ class Column
     /**
      * Column constructor.
      *
-     * @param string|array $columnNameOrArray
+     * @param array|string|null $columnNameOrArray
      * @throws EntityException
      */
-    public function __construct($columnNameOrArray)
+    public function __construct(array|string|null $columnNameOrArray)
     {
         if (isset($columnNameOrArray)) {
             if (is_string($columnNameOrArray)) {
@@ -90,8 +90,6 @@ class Column
                         $this->$key = $value;
                     }
                 }
-            } else {
-                throw new EntityException("column constructor accepts only string or array");
             }
         }
 

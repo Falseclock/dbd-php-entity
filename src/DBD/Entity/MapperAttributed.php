@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -27,7 +27,6 @@ use DBD\Entity\Interfaces\EntityMapper;
 use ReflectionClass;
 use ReflectionException;
 
-
 /**
  * Class MapperAttributed
  *
@@ -38,17 +37,18 @@ class MapperAttributed implements EntityMapper
     use MapperTrait;
 
     /**
-     * @throws ReflectionException
+     * @throws ReflectionException|EntityException
      */
     public function __construct(
         protected string $entityClass
-    ) {
+    )
+    {
         $this->getAllVariables();
     }
 
     public function name(): string
     {
-        return substr($this->entityClass, strrpos($this->entityClass, '\\') + 1). 'Map';
+        return substr($this->entityClass, strrpos($this->entityClass, '\\') + 1) . 'Map';
     }
 
     public function getEntityClass(): string
@@ -70,8 +70,9 @@ class MapperAttributed implements EntityMapper
         foreach ($attributes as $attribute) {
             return $attribute->newInstance()->scheme;
         }
-
+        // @codeCoverageIgnoreStart
         throw new EntityException('Missing attribute scheme for ' . $this->entityClass);
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -88,8 +89,9 @@ class MapperAttributed implements EntityMapper
         foreach ($attributes as $attribute) {
             return $attribute->newInstance()->name;
         }
-
+        // @codeCoverageIgnoreStart
         throw new EntityException('Missing attribute name for ' . $this->entityClass);
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -106,8 +108,9 @@ class MapperAttributed implements EntityMapper
         foreach ($attributes as $attribute) {
             return $attribute->newInstance()->annotation;
         }
-
+        // @codeCoverageIgnoreStart
         throw new EntityException('Missing attribute annotation for ' . $this->entityClass);
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -138,14 +141,11 @@ class MapperAttributed implements EntityMapper
                 foreach ($attributes as $attribute) {
                     if ($attribute->getName() === Column::class || is_subclass_of($attribute->getName(), Column::class)) {
                         $columns[$property->getName()] = $attribute->newInstance();
-                    }
-                    else if ($attribute->getName() === Constraint::class || is_subclass_of($attribute->getName(), Constraint::class)) {
+                    } else if ($attribute->getName() === Constraint::class || is_subclass_of($attribute->getName(), Constraint::class)) {
                         $constraints[$property->getName()] = $attribute->newInstance();
-                    }
-                    else if ($attribute->getName() === Embedded::class || is_subclass_of($attribute->getName(), Embedded::class)) {
+                    } else if ($attribute->getName() === Embedded::class || is_subclass_of($attribute->getName(), Embedded::class)) {
                         $embedded[$property->getName()] = $attribute->newInstance();
-                    }
-                    else if ($attribute->getName() === Complex::class || is_subclass_of($attribute->getName(), Complex::class)) {
+                    } else if ($attribute->getName() === Complex::class || is_subclass_of($attribute->getName(), Complex::class)) {
                         $complexes[$property->getName()] = $attribute->newInstance();
                     }
                 }

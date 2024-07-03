@@ -20,23 +20,34 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity;
+namespace DBD\Entity\Columns;
 
 use Attribute;
+use DBD\Entity\Column;
+use DBD\Entity\Primitives\TimePrimitives;
 
 /**
- * Class EntityTable
+ * Class TimeStampColumn
  *
- * @package DBD\Entity
+ * @package DBD\Entity\Columns
  */
-#[Attribute(Attribute::TARGET_CLASS)]
-final class EntityTable
+#[Attribute(Attribute::TARGET_PROPERTY)]
+class TimeStampColumn extends Column
 {
     public function __construct(
-        public string $scheme,
-        public string $name,
-        public string $annotation
+        string  $name,
+        bool    $nullable = false,
+        ?string $defaultValue = null,
+        ?string $annotation = null
     )
     {
+        parent::__construct([
+            Column::NAME => $name,
+            Column::PRIMITIVE_TYPE => TimePrimitives::Date,
+            Column::ORIGIN_TYPE => 'timestamp',
+            Column::NULLABLE => $nullable,
+            Column::DEFAULT => $defaultValue,
+            Column::ANNOTATION => $annotation
+        ]);
     }
 }

@@ -134,22 +134,4 @@ class ComplexTest extends TestCase
         $this->expectException(EntityException::class);
         new Complex(null);
     }
-
-    /**
-     *
-     */
-    public function testBoolInstanceUsage()
-    {
-        $this->expectException(EntityException::class);
-        new Complex(true);
-    }
-
-    /**
-     * @throws EntityException
-     */
-    public function testObjectInstanceUsage()
-    {
-        $this->expectException(EntityException::class);
-        new Complex(new stdClass());
-    }
 }

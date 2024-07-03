@@ -28,7 +28,7 @@ use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Common\Utils;
 use DBD\Entity\Interfaces\EntityMapper;
-
+use ReflectionException;
 
 /**
  * Class Mapper
@@ -48,7 +48,7 @@ abstract class Mapper extends Singleton implements EntityMapper
      * Used for quick access to the mapper without instantiating it and have only one instance
      *
      * @return Mapper|static
-     * @throws EntityException
+     * @throws EntityException|ReflectionException
      */
     public static function me(): Instantiatable
     {
@@ -60,6 +60,7 @@ abstract class Mapper extends Singleton implements EntityMapper
      * @return Mapper|static
      * @throws Common\EntityException
      * @throws EntityException
+     * @throws ReflectionException
      */
     private static function instantiate(bool $callEnforcer = true): Mapper
     {
@@ -87,6 +88,7 @@ abstract class Mapper extends Singleton implements EntityMapper
      *
      * @return MapperVariables
      * @throws EntityException
+     * @throws ReflectionException
      */
     public function getAllVariables(): MapperVariables
     {
@@ -248,7 +250,7 @@ abstract class Mapper extends Singleton implements EntityMapper
      * @param array $columns
      * @param array $embedded
      * @param array $complex
-     * @throws EntityException
+     * @throws EntityException|ReflectionException
      */
     private function processConstraints(array $constraints, array $columns, array $embedded, array $complex): void
     {
@@ -299,6 +301,7 @@ abstract class Mapper extends Singleton implements EntityMapper
     /**
      * @return Mapper|static
      * @throws EntityException
+     * @throws ReflectionException
      */
     public static function meWithoutEnforcer(): Mapper
     {

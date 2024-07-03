@@ -38,7 +38,7 @@ class Enforcer
      *
      * @throws EntityException
      */
-    public static function __add($class, $c)
+    public static function __add($class, $c): void
     {
         try {
             $reflection = new ReflectionClass($class);

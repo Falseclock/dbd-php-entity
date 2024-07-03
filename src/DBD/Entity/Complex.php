@@ -41,10 +41,10 @@ class Complex
     /**
      * Complex constructor.
      *
-     * @param string|array $complexNameOrArray
+     * @param array|string|null $complexNameOrArray
      * @throws EntityException
      */
-    public function __construct($complexNameOrArray)
+    public function __construct(array|string|null $complexNameOrArray)
     {
         if (isset($complexNameOrArray)) {
             if (is_string($complexNameOrArray)) {
@@ -53,8 +53,6 @@ class Complex
                 foreach ($complexNameOrArray as $key => $value) {
                     $this->$key = $value;
                 }
-            } else {
-                throw new EntityException("Complex constructor accepts only string or array");
             }
         }
 

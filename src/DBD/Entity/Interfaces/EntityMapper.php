@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -29,7 +29,6 @@ use DBD\Entity\Embedded;
 use DBD\Entity\MapperVariables;
 use DBD\Entity\Table;
 
-
 /**
  * Interface EntityMapper
  *
@@ -37,6 +36,7 @@ use DBD\Entity\Table;
  */
 interface EntityMapper
 {
+
     /**
      * Get simple Mapper class name without namespace
      */
@@ -49,8 +49,14 @@ interface EntityMapper
      */
     public function getEntityClass(): string;
 
+    /**
+     * @return string
+     */
     public function getScheme(): string;
 
+    /**
+     * @return string
+     */
     public function getTableName(): string;
 
     /**
@@ -60,6 +66,9 @@ interface EntityMapper
      */
     public function getAnnotation(): string;
 
+    /**
+     * @return MapperVariables
+     */
     public function getAllVariables(): MapperVariables;
 
     /**

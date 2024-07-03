@@ -32,7 +32,7 @@ abstract class Singleton implements Instantiatable
     }
 
     /**
-     * @return Instantiatable|Singleton|static
+     * @return Instantiatable
      */
     public static function me(): Instantiatable
     {

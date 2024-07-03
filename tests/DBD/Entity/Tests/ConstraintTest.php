@@ -36,6 +36,7 @@ use DBD\Entity\Tests\Entities\Constraint\UserFullSynthetic;
 use DBD\Entity\Tests\Entities\Constraint\UserWithSetter;
 use DBD\Entity\Tests\Fixtures\Data;
 use PHPUnit\Framework\TestCase;
+use ReflectionException;
 
 /**
  * Class ConstraintTest
@@ -45,6 +46,7 @@ class ConstraintTest extends TestCase
 {
     /**
      * @throws EntityException
+     * @throws ReflectionException
      */
     public function testLongChain()
     {

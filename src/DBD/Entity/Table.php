@@ -30,17 +30,17 @@ namespace DBD\Entity;
 class Table
 {
     /** @var string $name */
-    public $name;
+    public string $name;
     /** @var string $scheme */
-    public $scheme;
+    public string $scheme;
     /** @var Column[] $columns */
-    public $columns = [];
+    public array $columns = [];
     /** @var Key[] $keys */
-    public $keys = [];
+    public array $keys = [];
     /** @var string $annotation */
-    public $annotation;
+    public string $annotation;
     /** @var Constraint[] $constraints */
-    public $constraints = [];
+    public array $constraints = [];
 
     /**
      * @param Mapper $mapper

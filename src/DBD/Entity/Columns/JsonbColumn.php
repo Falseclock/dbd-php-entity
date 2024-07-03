@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -35,15 +35,15 @@ use DBD\Entity\Primitives\StringPrimitives;
 class JsonbColumn extends Column
 {
     public function __construct(
-        string $name,
+        string  $name,
         ?string $annotation = null
-    ) {
+    )
+    {
         parent::__construct([
-            Column::NAME            => $name,
-            Column::PRIMITIVE_TYPE  => StringPrimitives::String,
-            Column::ORIGIN_TYPE     => 'jsonb',
-            Column::ANNOTATION      => $annotation
+            Column::NAME => $name,
+            Column::PRIMITIVE_TYPE => StringPrimitives::String,
+            Column::ORIGIN_TYPE => 'jsonb',
+            Column::ANNOTATION => $annotation
         ]);
     }
 }
-

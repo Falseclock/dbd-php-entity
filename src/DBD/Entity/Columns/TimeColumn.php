@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -35,16 +35,19 @@ use DBD\Entity\Primitives\TimePrimitives;
 class TimeColumn extends Column
 {
     public function __construct(
-        string $name,
-        bool $nullable = false,
-        ?string $defaultValue = null
-    ) {
+        string  $name,
+        bool    $nullable = false,
+        ?string $defaultValue = null,
+        ?string $annotation = null
+    )
+    {
         parent::__construct([
-            Column::NAME            => $name,
-            Column::PRIMITIVE_TYPE  => TimePrimitives::Date,
-            Column::ORIGIN_TYPE     => 'time',
-            Column::NULLABLE        => $nullable,
-            Column::DEFAULT         => $defaultValue,
+            Column::NAME => $name,
+            Column::PRIMITIVE_TYPE => TimePrimitives::TimeOfDay,
+            Column::ORIGIN_TYPE => 'time',
+            Column::NULLABLE => $nullable,
+            Column::DEFAULT => $defaultValue,
+            Column::ANNOTATION => $annotation
         ]);
     }
 }

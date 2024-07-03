@@ -72,22 +72,4 @@ class ColumnTest extends TestCase
         $this->expectException(EntityException::class);
         new Column(null);
     }
-
-    /**
-     *
-     */
-    public function testBoolInstanceUsage()
-    {
-        $this->expectException(EntityException::class);
-        new Column(true);
-    }
-
-    /**
-     * @throws EntityException
-     */
-    public function testObjectInstanceUsage()
-    {
-        $this->expectException(EntityException::class);
-        new Column(new stdClass());
-    }
 }

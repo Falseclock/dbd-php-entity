@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -27,24 +27,27 @@ use DBD\Entity\Column;
 use DBD\Entity\Primitives\TimePrimitives;
 
 /**
- * Class TimeColumn
+ * Class TimeStampColumn
  *
  * @package DBD\Entity\Columns
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class TimestampColumn extends Column
+class TimeStampTZColumn extends Column
 {
     public function __construct(
-        string $name,
-        bool $nullable = false,
-        ?string $defaultValue = null
-    ) {
+        string  $name,
+        bool    $nullable = false,
+        ?string $defaultValue = null,
+        ?string $annotation = null
+    )
+    {
         parent::__construct([
-            Column::NAME            => $name,
-            Column::PRIMITIVE_TYPE  => TimePrimitives::Date,
-            Column::ORIGIN_TYPE     => 'timestamp',
-            Column::NULLABLE        => $nullable,
-            Column::DEFAULT         => $defaultValue,
+            Column::NAME => $name,
+            Column::PRIMITIVE_TYPE => TimePrimitives::DateTimeOffset,
+            Column::ORIGIN_TYPE => 'timestamptz',
+            Column::NULLABLE => $nullable,
+            Column::DEFAULT => $defaultValue,
+            Column::ANNOTATION => $annotation
         ]);
     }
 }
