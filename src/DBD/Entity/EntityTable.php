@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -20,36 +20,23 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity;
 
-use ReflectionClass;
-use ReflectionException;
+use Attribute;
 
 /**
- * Class Enforcer
+ * Class EntityTable
  *
- * @package DBD\Entity\Common
+ * @package DBD\Entity
  */
-class Enforcer
+#[Attribute(Attribute::TARGET_CLASS)]
+final class EntityTable
 {
-    /**
-     * @param $class
-     * @param $c
-     *
-     * @throws EntityException
-     */
-    public static function __add($class, $c): void
+    public function __construct(
+        public string $scheme,
+        public string $name,
+        public string $annotation
+    )
     {
-        try {
-            $reflection = new ReflectionClass($class);
-            $constantsForced = $reflection->getConstants();
-            foreach ($constantsForced as $constant => $value) {
-                if (constant("$c::$constant") == "abstract") {
-                    trigger_error(sprintf("Undefined constant %s in %s", $constant, $c), E_USER_ERROR);
-                }
-            }
-        } catch (ReflectionException $e) {
-            throw new EntityException($e->getMessage());
-        }
     }
 }

@@ -147,20 +147,11 @@ class Primitive extends Enum implements StringPrimitives, NumericPrimitives, Tim
      */
     public function getPhpVarType(): string
     {
-        switch ($this->value) {
-            case self::Int16:
-            case self::Int32:
-            case self::Int64:
-                return self::INTEGER;
-
-            case self::Boolean;
-                return self::BOOLEAN;
-
-            case self::Double:
-            case self::Single;
-                return self::FLOAT;
-            default:
-                return self::STRING;
-        }
+        return match ($this->value) {
+            self::Int16, self::Int32, self::Int64 => self::INTEGER,
+            self::Boolean => self::BOOLEAN,
+            self::Double, self::Single => self::FLOAT,
+            default => self::STRING,
+        };
     }
 }

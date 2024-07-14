@@ -22,11 +22,14 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
+use Attribute;
+
 /**
  * Class Constraint
  *
  * @package DBD\Entity
  */
+#[Attribute(Attribute::TARGET_PROPERTY)]
 class Constraint
 {
     const BASE_CLASS = "class";

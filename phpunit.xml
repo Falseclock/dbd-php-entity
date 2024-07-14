@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.2/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
-         verbose="true">
+         failOnRisky="true"
+         failOnWarning="true">
     <testsuites>
         <testsuite name="default">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
 
-    <coverage cacheDirectory="build/code-coverage"
-              processUncoveredFiles="true">
+    <source restrictNotices="true" restrictWarnings="true">
         <include>
             <directory>src</directory>
         </include>
@@ -27,5 +27,16 @@
             <file>src/DBD/Entity/EntityCache.php</file>
             <file>src/DBD/Entity/MapperCache.php</file>
         </exclude>
+    </source>
+
+    <logging>
+        <junit outputFile="build/coverage/junit.xml"/>
+    </logging>
+
+    <coverage>
+        <report>
+            <clover outputFile="build/coverage/clover.xml"/>
+            <cobertura outputFile="build/coverage/cobertura.xml"/>
+        </report>
     </coverage>
 </phpunit>

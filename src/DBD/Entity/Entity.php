@@ -22,15 +22,16 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
-use DBD\Common\Singleton;
 use DBD\Entity\Common\Enforcer;
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Interfaces\EntityMapper;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Interfaces\OnlyDeclaredPropertiesEntity;
 use DBD\Entity\Interfaces\StrictlyFilledEntity;
 use DBD\Entity\Interfaces\SyntheticEntity;
 use Exception;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionObject;
 
 /**
@@ -43,8 +44,8 @@ abstract class Entity
     const SCHEME = "abstract";
     const TABLE = "abstract";
 
-    /** @var array */
-    private $rawData;
+    /** @var array|null */
+    private ?array $rawData;
 
     /**
      * Конструктор модели
@@ -54,6 +55,7 @@ abstract class Entity
      * @param int $currentLevel
      *
      * @throws EntityException
+     * @throws ReflectionException
      */
     public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
     {
@@ -126,21 +128,30 @@ abstract class Entity
     }
 
     /**
-     * @return Singleton|Mapper|static
+     * @return EntityMapper
      * @throws EntityException
-     * @noinspection PhpDocMissingThrowsInspection ReflectionClass will never throw exception because of get_called_class()
+     * @throws ReflectionException
      */
-    final public static function map()
+    final public static function map(): EntityMapper
     {
         $calledClass = get_called_class();
 
         $mapClass = $calledClass . Mapper::POSTFIX;
 
         if (!class_exists($mapClass, false)) {
-            throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+            static $mapper = [];
+
+            if (!isset($mapper[$mapClass])) {
+                $mapper[$mapClass] = new MapperAttributed($calledClass);
+            }
+
+            if (count($mapper[$mapClass]->getColumns()) === 0) {
+                throw new EntityException(sprintf("Class %s does not have Map definition", $calledClass));
+            }
+
+            return $mapper[$mapClass];
         }
 
-        /** @noinspection PhpUnhandledExceptionInspection */
         $reflection = new ReflectionClass($calledClass);
         $interfaces = $reflection->getInterfaces();
 
@@ -190,7 +201,7 @@ abstract class Entity
      * @param int $maxLevels
      * @param int $currentLevel
      *
-     * @throws EntityException
+     * @throws EntityException|ReflectionException
      */
     private function setModelData(Mapper $map, int $maxLevels, int $currentLevel): void
     {
@@ -212,9 +223,9 @@ abstract class Entity
      * @param Mapper $mapper
      *
      * @throws EntityException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    private function setBaseColumns(Mapper $mapper)
+    private function setBaseColumns(Mapper $mapper): void
     {
         $calledClass = get_called_class();
 
@@ -294,15 +305,15 @@ abstract class Entity
                     // Если мы еще не инциализировали переменную и у нас есть значение для этой переменной
                     //if (!isset($this->$property)) {
 
-                        // Если у нас есть значение, то ставим его
-                        if (isset($columnValue)) {
-                            $this->$property = &$columnValue;
-                        } else {
-                            // У нас нет прицепленного значения
-                            if (!$reflectionProperty->hasDefaultValue()) {
-                                $this->$property = $columnValue; // this is NULL value
-                            }
+                    // Если у нас есть значение, то ставим его
+                    if (isset($columnValue)) {
+                        $this->$property = &$columnValue;
+                    } else {
+                        // У нас нет прицепленного значения
+                        if (!$reflectionProperty->hasDefaultValue()) {
+                            $this->$property = $columnValue; // this is NULL value
                         }
+                    }
                     //}
                 }
             }
@@ -316,7 +327,7 @@ abstract class Entity
      *
      * @throws EntityException
      */
-    private function setEmbedded(Mapper $map, int $maxLevels, int $currentLevel)
+    private function setEmbedded(Mapper $map, int $maxLevels, int $currentLevel): void
     {
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
             /** @var Embedded[] $embeddings */
@@ -379,7 +390,7 @@ abstract class Entity
      * @param int $maxLevels
      * @param int $currentLevel
      */
-    private function setComplex(Mapper $map, int $maxLevels, int $currentLevel)
+    private function setComplex(Mapper $map, int $maxLevels, int $currentLevel): void
     {
         foreach ($map->getComplex() as $complexName => $complexValue) {
             //if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
@@ -405,7 +416,7 @@ abstract class Entity
     }
 
     /**
-     * get Entity table name
+     * Get Entity table name
      *
      * @return string
      */
@@ -427,6 +438,7 @@ abstract class Entity
     /**
      * Special getter to access properties with getters
      * For example, having method getName you can access $name property declared with (@)property annotation
+     *
      * @param string $methodName
      * @return mixed
      * @throws EntityException

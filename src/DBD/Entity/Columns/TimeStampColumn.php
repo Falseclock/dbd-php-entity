@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -20,36 +20,34 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Columns;
 
-use ReflectionClass;
-use ReflectionException;
+use Attribute;
+use DBD\Entity\Column;
+use DBD\Entity\Primitives\TimePrimitives;
 
 /**
- * Class Enforcer
+ * Class TimeStampColumn
  *
- * @package DBD\Entity\Common
+ * @package DBD\Entity\Columns
  */
-class Enforcer
+#[Attribute(Attribute::TARGET_PROPERTY)]
+class TimeStampColumn extends Column
 {
-    /**
-     * @param $class
-     * @param $c
-     *
-     * @throws EntityException
-     */
-    public static function __add($class, $c): void
+    public function __construct(
+        string  $name,
+        bool    $nullable = false,
+        ?string $defaultValue = null,
+        ?string $annotation = null
+    )
     {
-        try {
-            $reflection = new ReflectionClass($class);
-            $constantsForced = $reflection->getConstants();
-            foreach ($constantsForced as $constant => $value) {
-                if (constant("$c::$constant") == "abstract") {
-                    trigger_error(sprintf("Undefined constant %s in %s", $constant, $c), E_USER_ERROR);
-                }
-            }
-        } catch (ReflectionException $e) {
-            throw new EntityException($e->getMessage());
-        }
+        parent::__construct([
+            Column::NAME => $name,
+            Column::PRIMITIVE_TYPE => TimePrimitives::Date,
+            Column::ORIGIN_TYPE => 'timestamp',
+            Column::NULLABLE => $nullable,
+            Column::DEFAULT => $defaultValue,
+            Column::ANNOTATION => $annotation
+        ]);
     }
 }

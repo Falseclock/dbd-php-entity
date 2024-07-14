@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
+use Attribute;
 use DBD\Entity\Common\EntityException;
 
 /**
@@ -30,6 +31,7 @@ use DBD\Entity\Common\EntityException;
  *
  * @package DBD\Entity
  */
+#[Attribute(Attribute::TARGET_PROPERTY)]
 class Complex
 {
     const TYPE = "complexClass";
@@ -39,10 +41,10 @@ class Complex
     /**
      * Complex constructor.
      *
-     * @param string|array $complexNameOrArray
+     * @param array|string|null $complexNameOrArray
      * @throws EntityException
      */
-    public function __construct($complexNameOrArray)
+    public function __construct(array|string|null $complexNameOrArray)
     {
         if (isset($complexNameOrArray)) {
             if (is_string($complexNameOrArray)) {
@@ -51,8 +53,6 @@ class Complex
                 foreach ($complexNameOrArray as $key => $value) {
                     $this->$key = $value;
                 }
-            } else {
-                throw new EntityException("Complex constructor accepts only string or array");
             }
         }
 

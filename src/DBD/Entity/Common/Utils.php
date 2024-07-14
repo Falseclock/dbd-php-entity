@@ -34,7 +34,7 @@ class Utils
      *
      * @return array
      */
-    public static function getObjectVars($object): array
+    public static function getObjectVars(object $object): array
     {
         return get_object_vars($object);
     }
@@ -69,13 +69,10 @@ class Utils
             $variable = strtolower(trim($variable));
         }
 
-        switch ($variable) {
-            case 't':
-                return true;
-            case 'f':
-                return false;
-            default:
-                return filter_var($variable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        }
+        return match ($variable) {
+            't' => true,
+            'f' => false,
+            default => filter_var($variable, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+        };
     }
 }

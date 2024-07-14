@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2020] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -20,36 +20,44 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Tests;
 
-use ReflectionClass;
+use DBD\Entity\Column;
+use DBD\Entity\Common\EntityException;
+use DBD\Entity\Tests\Entities\Attributed;
+use PHPUnit\Framework\TestCase;
 use ReflectionException;
 
-/**
- * Class Enforcer
- *
- * @package DBD\Entity\Common
- */
-class Enforcer
+class AttributedTest extends TestCase
 {
     /**
-     * @param $class
-     * @param $c
-     *
+     * @return void
+     */
+    public function testConstruction(): void
+    {
+        new Attributed();
+
+        self::assertTrue(true);
+    }
+
+    /**
+     * @throws ReflectionException
      * @throws EntityException
      */
-    public static function __add($class, $c): void
+    public function testAttribute(): void
     {
-        try {
-            $reflection = new ReflectionClass($class);
-            $constantsForced = $reflection->getConstants();
-            foreach ($constantsForced as $constant => $value) {
-                if (constant("$c::$constant") == "abstract") {
-                    trigger_error(sprintf("Undefined constant %s in %s", $constant, $c), E_USER_ERROR);
-                }
-            }
-        } catch (ReflectionException $e) {
-            throw new EntityException($e->getMessage());
+        $map = Attributed::map();
+
+        $columns= $map->getColumns();
+
+        foreach ($columns as $column) {
+            self::assertInstanceOf(Column::class, $column);
+            self::assertSame($column->name, $column->annotation);
         }
+
+        $table = $map->getTable();
+        self::assertSame($table->name, Attributed::TABLE);
+        self::assertSame($table->scheme, Attributed::SCHEME);
+
     }
 }
