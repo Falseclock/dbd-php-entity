@@ -32,9 +32,15 @@ use DBD\Entity\Columns\TextColumn;
 use DBD\Entity\Columns\TimeColumn;
 use DBD\Entity\Columns\TimeStampColumn;
 use DBD\Entity\Columns\TimeStampTZColumn;
+use DBD\Entity\Complex;
+use DBD\Entity\Constraint;
+use DBD\Entity\Embedded;
 use DBD\Entity\Entity;
 use DBD\Entity\EntityTable;
 use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Tests\Entities\Constraint\Company;
+use DBD\Entity\Tests\Entities\SelfReference\OneComplex;
+use DBD\Entity\Tests\Entities\SelfReference\TwoEmbedded;
 
 #[EntityTable('public', 'attributed', 'Annotation')]
 class Attributed extends Entity implements FullEntity
@@ -46,7 +52,7 @@ class Attributed extends Entity implements FullEntity
     public ?int $BigIntColumn = null;
 
     #[IntColumn(name: 'IntColumn', annotation: 'IntColumn')]
-    public ?string $IntColumn = null;
+    public ?int $IntColumn = null;
 
     #[JsonbColumn(name: 'JsonbColumn', annotation: 'JsonbColumn')]
     public ?string $JsonbColumn = null;
@@ -71,4 +77,23 @@ class Attributed extends Entity implements FullEntity
 
     #[TimeStampTZColumn(name: 'TimeStampTZColumn', annotation: 'TimeStampTZColumn')]
     public ?string $TimeStampTZColumn = null;
+
+    #[Complex(OneComplex::class)]
+    public OneComplex $oneComplex;
+
+    #[Constraint([
+        Constraint::LOCAL_COLUMN => 'BigIntColumn',
+        Constraint::BASE_CLASS => Company::class,
+        Constraint::FOREIGN_COLUMN => 'company_id',
+        Constraint::FOREIGN_SCHEME => Company::SCHEME,
+        Constraint::FOREIGN_TABLE => Company::TABLE,
+    ])]
+    public ?Company $Company = null;
+
+    #[Embedded([
+        Embedded::NAME => 'two',
+        Embedded::ENTITY_CLASS => TwoEmbedded::class,
+        Embedded::IS_ITERABLE => false
+    ])]
+    public TwoEmbedded $TwoEmbedded;
 }
