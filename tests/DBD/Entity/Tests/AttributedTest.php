@@ -24,9 +24,12 @@ namespace DBD\Entity\Tests;
 
 use DBD\Entity\Column;
 use DBD\Entity\Common\EntityException;
+use DBD\Entity\Entity;
 use DBD\Entity\Tests\Entities\Attributed;
+use DBD\Entity\Tests\Entities\SelfReference\FourEmbedded;
+use DBD\Entity\Tests\Entities\SelfReference\ThreeEmbedded;
+use DBD\Entity\Tests\Entities\SelfReference\TwoEmbedded;
 use PHPUnit\Framework\TestCase;
-use ReflectionException;
 
 class AttributedTest extends TestCase
 {
@@ -41,14 +44,14 @@ class AttributedTest extends TestCase
     }
 
     /**
-     * @throws ReflectionException
-     * @throws EntityException
+     * @return void
+     * @throws \Throwable
      */
     public function testAttribute(): void
     {
         $map = Attributed::map();
 
-        $columns= $map->getColumns();
+        $columns = $map->getColumns();
 
         foreach ($columns as $column) {
             self::assertInstanceOf(Column::class, $column);
@@ -56,8 +59,52 @@ class AttributedTest extends TestCase
         }
 
         $table = $map->getTable();
+
         self::assertSame($table->name, Attributed::TABLE);
         self::assertSame($table->scheme, Attributed::SCHEME);
+    }
 
+    /**
+     * @return void
+     * @throws \Throwable
+     */
+    public function testEmbedded(): void
+    {
+        $map = Attributed::map();
+
+        $data = [
+            $map->BigIntColumn->name  => 1,
+            $map->IntColumn->name  => 1,
+            $map->JsonbColumn->name  => null,
+            $map->JsonColumn->name  => null,
+            $map->ShortIntColumn->name  => 1,
+            $map->StringColumn->name  => '1',
+            $map->TextColumn->name  => '1',
+            $map->TimeColumn->name  => date('Y-m-d H:i:s'),
+            $map->TimeStampColumn->name  => ''.time(),
+            $map->TimeStampTZColumn->name  => ''.time(),
+            'two'   => [
+                TwoEmbedded::map()->id->name => 2,
+                'three'     => [
+                    ThreeEmbedded::map()->id->name  => 3,
+                    'four'      => [
+                        FourEmbedded::map()->id->name   => 4,
+                        'one'       => [
+                            'one_id'    => 1
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $entity = new Attributed($data, 2);
+        self::assertInstanceOf(Entity::class, $entity);
+        self::assertCount(1, get_object_vars($entity->TwoEmbedded->ThreeEmbedded));
+
+        $entity = new Attributed($data, 3);
+        self::assertCount(2, get_object_vars($entity->TwoEmbedded->ThreeEmbedded));
+
+        $this->expectException(EntityException::class);
+        new Attributed($data, 4);
     }
 }

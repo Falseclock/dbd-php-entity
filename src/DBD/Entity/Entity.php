@@ -197,13 +197,13 @@ abstract class Entity
     }
 
     /**
-     * @param Mapper $map
+     * @param EntityMapper $map
      * @param int $maxLevels
      * @param int $currentLevel
      *
      * @throws EntityException|ReflectionException
      */
-    private function setModelData(Mapper $map, int $maxLevels, int $currentLevel): void
+    private function setModelData(EntityMapper $map, int $maxLevels, int $currentLevel): void
     {
         $currentLevel++;
 
@@ -220,12 +220,12 @@ abstract class Entity
     /**
      * Reads public variables and set them to the self instance
      *
-     * @param Mapper $mapper
+     * @param EntityMapper $mapper
      *
      * @throws EntityException
      * @throws ReflectionException
      */
-    private function setBaseColumns(Mapper $mapper): void
+    private function setBaseColumns(EntityMapper $mapper): void
     {
         $calledClass = get_called_class();
 
@@ -321,13 +321,13 @@ abstract class Entity
     }
 
     /**
-     * @param Mapper $map
+     * @param EntityMapper $map
      * @param int $maxLevels
      * @param int $currentLevel
      *
      * @throws EntityException
      */
-    private function setEmbedded(Mapper $map, int $maxLevels, int $currentLevel): void
+    private function setEmbedded(EntityMapper $map, int $maxLevels, int $currentLevel): void
     {
         if ($this instanceof FullEntity or $this instanceof StrictlyFilledEntity) {
             /** @var Embedded[] $embeddings */
@@ -386,11 +386,11 @@ abstract class Entity
     }
 
     /**
-     * @param Mapper $map
+     * @param EntityMapper $map
      * @param int $maxLevels
      * @param int $currentLevel
      */
-    private function setComplex(Mapper $map, int $maxLevels, int $currentLevel): void
+    private function setComplex(EntityMapper $map, int $maxLevels, int $currentLevel): void
     {
         foreach ($map->getComplex() as $complexName => $complexValue) {
             //if (!property_exists($this, $complexName) or isset(EntityCache::$mapCache[get_called_class()][EntityCache::UNSET_PROPERTIES][$complexName]))
