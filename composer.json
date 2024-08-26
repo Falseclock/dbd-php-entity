@@ -1,7 +1,7 @@
 {
   "name": "falseclock/dbd-php-entity",
   "type": "library",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "DTO like library to fetch any data in an Object-Oriented manner (ORM)",
   "keywords": [
     "dbd",
