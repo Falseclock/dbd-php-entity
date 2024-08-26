@@ -36,14 +36,16 @@ class JsonbColumn extends Column
 {
     public function __construct(
         string  $name,
-        ?string $annotation = null
+        ?string $annotation = null,
+        bool    $nullable = true,
     )
     {
         parent::__construct([
             Column::NAME => $name,
             Column::PRIMITIVE_TYPE => StringPrimitives::String,
             Column::ORIGIN_TYPE => 'jsonb',
-            Column::ANNOTATION => $annotation
+            Column::ANNOTATION => $annotation,
+            Column::NULLABLE => $nullable
         ]);
     }
 }

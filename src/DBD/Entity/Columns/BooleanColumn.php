@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
+ *   Copyright [2024] [Nurlan Mukhanov <nurike@gmail.com>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -24,28 +24,28 @@ namespace DBD\Entity\Columns;
 
 use Attribute;
 use DBD\Entity\Column;
-use DBD\Entity\Primitives\StringPrimitives;
+use DBD\Entity\Primitive;
 
 /**
- * Class JsonColumn
+ * Class BooleanColumn
  *
  * @package DBD\Entity\Columns
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class JsonColumn extends Column
+class BooleanColumn extends Column
 {
     public function __construct(
         string  $name,
-        ?string $annotation = null,
         bool    $nullable = true,
+        ?string $annotation = null
     )
     {
         parent::__construct([
             Column::NAME => $name,
-            Column::PRIMITIVE_TYPE => StringPrimitives::String,
-            Column::ORIGIN_TYPE => 'json',
-            Column::ANNOTATION => $annotation,
-            Column::NULLABLE => $nullable
+            Column::PRIMITIVE_TYPE => Primitive::Boolean,
+            Column::ORIGIN_TYPE => 'boolean',
+            Column::NULLABLE => $nullable,
+            Column::ANNOTATION => $annotation
         ]);
     }
 }
