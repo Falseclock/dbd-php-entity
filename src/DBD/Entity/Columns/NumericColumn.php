@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                 *
+ *   Copyright [2024] [Nurlan Mukhanov <nurike@gmail.com>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -24,30 +24,34 @@ namespace DBD\Entity\Columns;
 
 use Attribute;
 use DBD\Entity\Column;
-use DBD\Entity\Primitives\StringPrimitives;
+use DBD\Entity\Primitives\NumericPrimitives;
 
 /**
- * Class StringColumn
+ * Class NumericColumn
  *
  * @package DBD\Entity\Columns
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class StringColumn extends Column
+class NumericColumn extends Column
 {
     public function __construct(
         string  $name,
-        int     $length = 255,
-        bool    $nullable = false,
-        bool    $primary = false,
-        ?string $defaultValue = null,
-        ?string $annotation = null
+        int     $length,
+        int     $precision,
+        ?string $annotation = null,
+        bool    $nullable = true,
+        float   $defaultValue = null,
+        bool    $auto = false,
+        bool    $primary = false
     )
     {
         parent::__construct([
             Column::NAME => $name,
-            Column::PRIMITIVE_TYPE => StringPrimitives::String,
-            Column::ORIGIN_TYPE => 'varchar',
             Column::MAXLENGTH => $length,
+            Column::PRECISION => $precision,
+            Column::PRIMITIVE_TYPE => NumericPrimitives::Decimal,
+            Column::ORIGIN_TYPE => 'numeric',
+            Column::IS_AUTO => $auto,
             Column::NULLABLE => $nullable,
             Column::KEY => $primary,
             Column::DEFAULT => $defaultValue,
