@@ -37,6 +37,7 @@ class TimeColumn extends Column
     public function __construct(
         string  $name,
         bool    $nullable = false,
+        bool    $isAuto = false,
         ?string $defaultValue = null,
         ?string $annotation = null
     )
@@ -47,7 +48,8 @@ class TimeColumn extends Column
             Column::ORIGIN_TYPE => 'time',
             Column::NULLABLE => $nullable,
             Column::DEFAULT => $defaultValue,
-            Column::ANNOTATION => $annotation
+            Column::ANNOTATION => $annotation,
+            Column::IS_AUTO => $isAuto
         ]);
     }
 }
