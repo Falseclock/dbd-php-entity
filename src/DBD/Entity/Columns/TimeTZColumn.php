@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                 *
+ *   Copyright [2024] [Nurlan Mukhanov <nurike@gmail.com>]                      *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -24,28 +24,32 @@ namespace DBD\Entity\Columns;
 
 use Attribute;
 use DBD\Entity\Column;
-use DBD\Entity\Primitives\StringPrimitives;
+use DBD\Entity\Primitives\TimePrimitives;
 
 /**
- * Class JsonColumn
+ * Class TimeColumnTZ
  *
  * @package DBD\Entity\Columns
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class JsonColumn extends Column
+class TimeTZColumn extends Column
 {
     public function __construct(
         string  $name,
-        bool    $nullable = true,
-        ?string $annotation = null,
+        bool    $nullable = false,
+        bool    $isAuto = false,
+        ?string $defaultValue = null,
+        ?string $annotation = null
     )
     {
         parent::__construct([
             Column::NAME => $name,
-            Column::PRIMITIVE_TYPE => StringPrimitives::String,
-            Column::ORIGIN_TYPE => 'json',
+            Column::PRIMITIVE_TYPE => TimePrimitives::TimeOfDay,
+            Column::ORIGIN_TYPE => 'timetz',
+            Column::NULLABLE => $nullable,
+            Column::DEFAULT => $defaultValue,
             Column::ANNOTATION => $annotation,
-            Column::NULLABLE => $nullable
+            Column::IS_AUTO => $isAuto
         ]);
     }
 }

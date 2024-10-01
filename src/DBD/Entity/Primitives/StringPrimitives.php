@@ -37,7 +37,7 @@ interface StringPrimitives
     public const Stream = "Stream";
 
     /** @var string 16-byte (128-bit) unique identifier */
-    public const  Guid = "Guid";
+    public const Guid = "Guid";
 
     /** @var string Binary data */
     public const Binary = "Binary";

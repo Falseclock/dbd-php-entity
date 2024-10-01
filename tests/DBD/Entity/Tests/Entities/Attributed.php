@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                 *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -22,10 +22,12 @@ declare(strict_types=1);
 
 namespace DBD\Entity\Tests\Entities;
 
+use DBD\Entity\Column;
 use DBD\Entity\Columns\BigIntColumn;
 use DBD\Entity\Columns\IntColumn;
 use DBD\Entity\Columns\JsonbColumn;
 use DBD\Entity\Columns\JsonColumn;
+use DBD\Entity\Columns\NumericColumn;
 use DBD\Entity\Columns\ShortIntColumn;
 use DBD\Entity\Columns\StringColumn;
 use DBD\Entity\Columns\TextColumn;
@@ -37,11 +39,15 @@ use DBD\Entity\Constraint;
 use DBD\Entity\Embedded;
 use DBD\Entity\Entity;
 use DBD\Entity\EntityTable;
+use DBD\Entity\Interfaces\EntityMapper;
 use DBD\Entity\Interfaces\FullEntity;
 use DBD\Entity\Tests\Entities\Constraint\Company;
 use DBD\Entity\Tests\Entities\SelfReference\OneComplex;
 use DBD\Entity\Tests\Entities\SelfReference\TwoEmbedded;
 
+/**
+ * @method static AttributedMapper map()
+ */
 #[EntityTable('public', 'attributed', 'Annotation')]
 class Attributed extends Entity implements FullEntity
 {
@@ -78,6 +84,9 @@ class Attributed extends Entity implements FullEntity
     #[TimeStampTZColumn(name: 'TimeStampTZColumn', annotation: 'TimeStampTZColumn')]
     public ?string $TimeStampTZColumn = null;
 
+    #[NumericColumn(name: 'numericColumn', annotation: 'numeric')]
+    public ?string $numericColumn;
+
     #[Complex(OneComplex::class)]
     public OneComplex $oneComplex;
 
@@ -96,4 +105,19 @@ class Attributed extends Entity implements FullEntity
         Embedded::IS_ITERABLE => false
     ])]
     public TwoEmbedded $TwoEmbedded;
+}
+
+abstract class AttributedMapper implements EntityMapper
+{
+    public Column $BigIntColumn;
+    public Column $IntColumn;
+    public Column $JsonColumn;
+    public Column $JsonbColumn;
+    public Column $ShortIntColumn;
+    public Column $StringColumn;
+    public Column $TimeColumn;
+    public Column $TextColumn;
+    public Column $TimeStampColumn;
+    public Column $TimeStampTZColumn;
+    public Column $numericColumn;
 }
