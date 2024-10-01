@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                 *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace DBD\Entity;
 
+use AllowDynamicProperties;
 use DBD\Entity\Common\EntityException;
 use DBD\Entity\Interfaces\EntityMapper;
 use ReflectionClass;
@@ -32,6 +33,7 @@ use ReflectionException;
  *
  * @package DBD\Entity
  */
+#[AllowDynamicProperties]
 class MapperAttributed implements EntityMapper
 {
     use MapperTrait;

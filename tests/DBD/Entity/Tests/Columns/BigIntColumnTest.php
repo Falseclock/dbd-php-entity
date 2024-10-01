@@ -2,7 +2,7 @@
 /********************************************************************************
  *   Apache License, Version 2.0                                                *
  *                                                                              *
- *   Copyright [2024] [Nurlan Mukhanov <nurike@gmail.com>]                      *
+ *   Copyright [2024] [Nick Ispandiarov <nikolay.i@maddevs.io>]                 *
  *                                                                              *
  *   Licensed under the Apache License, Version 2.0 (the "License");            *
  *   you may not use this file except in compliance with the License.           *
@@ -20,36 +20,39 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Columns;
+namespace DBD\Entity\Tests\Columns;
 
-use Attribute;
-use DBD\Entity\Column;
-use DBD\Entity\Primitives\TimePrimitives;
+use DBD\Entity\Columns\BigIntColumn;
+use DBD\Entity\Entity;
+use DBD\Entity\EntityTable;
+use DBD\Entity\Interfaces\FullEntity;
+use PHPUnit\Framework\TestCase;
 
-/**
- * Class TimeColumnTZ
- *
- * @package DBD\Entity\Columns
- */
-#[Attribute(Attribute::TARGET_PROPERTY)]
-class TimeColumnTZ extends Column
+class BigIntColumnTest extends TestCase
 {
-    public function __construct(
-        string  $name,
-        bool    $nullable = false,
-        bool    $isAuto = false,
-        ?string $defaultValue = null,
-        ?string $annotation = null
-    )
+    /**
+     * @return void
+     */
+    public function testInEntity(): void
     {
-        parent::__construct([
-            Column::NAME => $name,
-            Column::PRIMITIVE_TYPE => TimePrimitives::TimeOfDay,
-            Column::ORIGIN_TYPE => 'timetz',
-            Column::NULLABLE => $nullable,
-            Column::DEFAULT => $defaultValue,
-            Column::ANNOTATION => $annotation,
-            Column::IS_AUTO => $isAuto
-        ]);
+        $data = [
+            'test_id'         => 1000000
+        ];
+
+        $entity = new #[EntityTable('public', 'test')] class($data) extends Entity implements FullEntity {
+            const SCHEME = 'public';
+            const TABLE = 'test';
+
+            #[BigIntColumn(
+                name: 'test_id',
+                auto: true,
+                nullable: false,
+                primary: true,
+                annotation: 'Test id'
+            )]
+            public int $id;
+        };
+
+        self::assertSame($data['test_id'], $entity->id);
     }
 }

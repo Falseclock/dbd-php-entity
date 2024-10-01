@@ -36,8 +36,8 @@ class JsonbColumn extends Column
 {
     public function __construct(
         string  $name,
-        ?string $annotation = null,
         bool    $nullable = true,
+        ?string $annotation = null,
     )
     {
         parent::__construct([

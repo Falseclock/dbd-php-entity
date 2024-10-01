@@ -20,32 +20,41 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Columns;
+namespace DBD\Entity\Tests\Columns;
 
-use Attribute;
-use DBD\Entity\Column;
-use DBD\Entity\Primitives\StringPrimitives;
+use DBD\Entity\Columns\CustomColumn;
+use DBD\Entity\Entity;
+use DBD\Entity\EntityTable;
+use DBD\Entity\Interfaces\FullEntity;
+use DBD\Entity\Primitive;
+use PHPUnit\Framework\TestCase;
 
-/**
- * Class JsonColumn
- *
- * @package DBD\Entity\Columns
- */
-#[Attribute(Attribute::TARGET_PROPERTY)]
-class JsonColumn extends Column
+class CustomColumnTest extends TestCase
 {
-    public function __construct(
-        string  $name,
-        bool    $nullable = true,
-        ?string $annotation = null,
-    )
+    /**
+     * @return void
+     */
+    public function testInEntity(): void
     {
-        parent::__construct([
-            Column::NAME => $name,
-            Column::PRIMITIVE_TYPE => StringPrimitives::String,
-            Column::ORIGIN_TYPE => 'json',
-            Column::ANNOTATION => $annotation,
-            Column::NULLABLE => $nullable
-        ]);
+        $data = [
+            'test_value'         => 12.101
+        ];
+
+        $entity = new #[EntityTable('public', 'test')] class($data) extends Entity implements FullEntity {
+            const SCHEME = 'public';
+            const TABLE = 'test';
+
+            #[CustomColumn(
+                name: 'test_value',
+                primitiveType: Primitive::Single,
+                originType: 'float4',
+                length: 10,
+                precision: 2,
+                annotation: 'Test id'
+            )]
+            public ?float $value;
+        };
+
+        self::assertSame($data['test_value'], $entity->value);
     }
 }

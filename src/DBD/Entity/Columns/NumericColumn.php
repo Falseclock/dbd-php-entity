@@ -36,22 +36,20 @@ class NumericColumn extends Column
 {
     public function __construct(
         string  $name,
-        int     $length,
-        int     $precision,
-        ?string $annotation = null,
+        int     $length = null,
+        int     $precision = null,
         bool    $nullable = true,
-        float   $defaultValue = null,
-        bool    $auto = false,
-        bool    $primary = false
+        bool    $primary = false,
+        string  $defaultValue = null,
+        string  $annotation = null
     )
     {
         parent::__construct([
             Column::NAME => $name,
-            Column::MAXLENGTH => $length,
-            Column::PRECISION => $precision,
             Column::PRIMITIVE_TYPE => NumericPrimitives::Decimal,
             Column::ORIGIN_TYPE => 'numeric',
-            Column::IS_AUTO => $auto,
+            Column::MAXLENGTH => $length,
+            Column::PRECISION => $precision,
             Column::NULLABLE => $nullable,
             Column::KEY => $primary,
             Column::DEFAULT => $defaultValue,
