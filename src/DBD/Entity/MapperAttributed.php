@@ -32,6 +32,7 @@ use ReflectionException;
  *
  * @package DBD\Entity
  */
+#[\AllowDynamicProperties]
 class MapperAttributed implements EntityMapper
 {
     use MapperTrait;

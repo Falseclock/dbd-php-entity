@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace DBD\Entity\Common;
 
+use Error;
 use ReflectionClass;
 use ReflectionException;
 
@@ -37,6 +38,7 @@ class Enforcer
      * @param $c
      *
      * @throws EntityException
+     * @throws Error when a required constant still has the "abstract" placeholder value
      */
     public static function __add($class, $c): void
     {
@@ -45,7 +47,8 @@ class Enforcer
             $constantsForced = $reflection->getConstants();
             foreach ($constantsForced as $constant => $value) {
                 if (constant("$c::$constant") == "abstract") {
-                    trigger_error(sprintf("Undefined constant %s in %s", $constant, $c), E_USER_ERROR);
+                    // trigger_error(E_USER_ERROR) is deprecated since PHP 8.4; an explicit Error keeps the same contract
+                    throw new Error(sprintf("Undefined constant %s in %s", $constant, $c), E_USER_ERROR);
                 }
             }
         } catch (ReflectionException $e) {

@@ -39,6 +39,7 @@ use ReflectionObject;
  *
  * @package DBD\Entity
  */
+#[\AllowDynamicProperties]
 abstract class Entity
 {
     const SCHEME = "abstract";
@@ -57,7 +58,7 @@ abstract class Entity
      * @throws EntityException
      * @throws ReflectionException
      */
-    public function __construct(array $data = null, int $maxLevels = 2, int $currentLevel = 0)
+    public function __construct(?array $data = null, int $maxLevels = 2, int $currentLevel = 0)
     {
         $this->rawData = $data;
 
@@ -167,7 +168,7 @@ abstract class Entity
      * @param string $calledClass
      * @param string|null $parentClass
      */
-    private function collectDeclarationsOnly(ReflectionClass $reflectionObject, string $calledClass, string $parentClass = null): void
+    private function collectDeclarationsOnly(ReflectionClass $reflectionObject, string $calledClass, ?string $parentClass = null): void
     {
         foreach ($reflectionObject->getProperties() as $property) {
 

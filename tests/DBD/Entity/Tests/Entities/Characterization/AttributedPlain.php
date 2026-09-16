@@ -20,27 +20,27 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Tests\Entities\Characterization;
 
-use Exception;
+use DBD\Entity\Columns\IntColumn;
+use DBD\Entity\Columns\TextColumn;
+use DBD\Entity\Entity;
+use DBD\Entity\EntityTable;
+use DBD\Entity\Interfaces\FullEntity;
 
 /**
- * Class EntityException
- *
- * @package DBD\Entity\Common
+ * Attribute-mapped entity that is used by DynamicPropertiesTest only, so that the first construction
+ * of its MapperAttributed instance is guaranteed to happen inside that test.
  */
-class EntityException extends Exception
+#[EntityTable('public', 'attributed_plain', 'Attribute mapped fixture')]
+class AttributedPlain extends Entity implements FullEntity
 {
-    /**
-     * EntityException constructor.
-     * Переопределим исключение так, что параметр message станет обязательным
-     *
-     * @param                $message
-     * @param int $code
-     * @param Exception|null $previous
-     */
-    public function __construct($message, int $code = 0, ?Exception $previous = null)
-    {
-        parent::__construct($message, $code, $previous);
-    }
+    const SCHEME = 'public';
+    const TABLE = 'attributed_plain';
+
+    #[IntColumn(name: 'attributed_plain_id', auto: true, primary: true, annotation: 'Identifier')]
+    public ?int $id = null;
+
+    #[TextColumn(name: 'attributed_plain_title', annotation: 'Title')]
+    public ?string $title = null;
 }

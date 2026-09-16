@@ -36,50 +36,84 @@ use PHPUnit\Framework\TestCase;
  */
 class EnforcerTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        set_error_handler(function($errno, $errstr) {
-            throw new Error($errstr, $errno);
-        }, E_ALL);
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        restore_error_handler();
-    }
-
-    public function testEnforcerException()
+    public function testEnforcerException(): void
     {
         self::expectException(EntityException::class);
 
         Enforcer::__add(__DIR__, __LINE__);
     }
 
-    /**
-     *
-     */
     public function testExceptionOnEntity(): void
     {
         self::expectException(Error::class);
-        self::expectExceptionCode(256);
+        self::expectExceptionCode(E_USER_ERROR);
         self::expectExceptionMessageMatches('/Undefined constant/');
+        self::expectExceptionMessage('Undefined constant SCHEME in ' . WithoutConstants::class);
 
         new WithoutConstants();
     }
 
-    /**
-     * @throws EntityException
-     */
     public function testExceptionOnMapper(): void
     {
         self::expectException(Error::class);
-        self::expectExceptionCode(256);
+        self::expectExceptionCode(E_USER_ERROR);
         self::expectExceptionMessageMatches('/Undefined constant/');
+        self::expectExceptionMessage('Undefined constant ANNOTATION in ' . WithoutConstantsMap::class);
+
+        // WithoutConstantsMap is declared in the WithoutConstants fixture file and is not PSR-4 discoverable on its own
+        class_exists(WithoutConstants::class);
 
         WithoutConstantsMap::me();
+    }
+
+    /**
+     * The Error is thrown directly by Enforcer: no user error handler is needed to observe it,
+     * and it is a plain Error (not an EntityException) carrying E_USER_ERROR as its code.
+     */
+    public function testMissingConstantIsCatchableWithoutErrorHandler(): void
+    {
+        try {
+            new WithoutConstants();
+        } catch (Error $error) {
+            self::assertSame(Error::class, get_class($error));
+            self::assertSame(E_USER_ERROR, $error->getCode());
+            self::assertSame('Undefined constant SCHEME in ' . WithoutConstants::class, $error->getMessage());
+
+            return;
+        }
+
+        self::fail('Constructing an Entity without SCHEME/TABLE constants must throw Error');
+    }
+
+    /**
+     * Regression for PHP 8.4+: trigger_error(E_USER_ERROR) emitted
+     * "Passing E_USER_ERROR to trigger_error() is deprecated since 8.4" before the actual error.
+     * Enforcer must raise no PHP error or deprecation at all, on any supported PHP version.
+     */
+    public function testMissingConstantDoesNotEmitPhpErrorsOrDeprecations(): void
+    {
+        // autoload everything involved first: compile-time diagnostics of other files (PHP 8.4 implicit nullable
+        // parameters in Entity/EntityException) are not Enforcer's and must not leak into the capture window below
+        class_exists(WithoutConstants::class);
+        class_exists(Enforcer::class);
+
+        $diagnostics = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$diagnostics): bool {
+            $diagnostics[] = sprintf('[%d] %s', $errno, $errstr);
+
+            return true;
+        }, E_ALL);
+
+        try {
+            try {
+                new WithoutConstants();
+            } catch (Error) {
+                // expected, see testMissingConstantIsCatchableWithoutErrorHandler()
+            }
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $diagnostics);
     }
 }

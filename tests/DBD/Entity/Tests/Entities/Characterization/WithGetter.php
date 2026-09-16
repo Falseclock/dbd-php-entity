@@ -20,27 +20,45 @@
 
 declare(strict_types=1);
 
-namespace DBD\Entity\Common;
+namespace DBD\Entity\Tests\Entities\Characterization;
 
-use Exception;
+use DBD\Entity\Column;
+use DBD\Entity\Entity;
+use DBD\Entity\Interfaces\SyntheticEntity;
+use DBD\Entity\Mapper;
+use DBD\Entity\Primitive;
 
 /**
- * Class EntityException
+ * Entity exposing getter-backed virtual properties (accessed through Entity::__get()).
  *
- * @package DBD\Entity\Common
+ * @property string $computed
+ * @property mixed $nothing
  */
-class EntityException extends Exception
+class WithGetter extends Entity implements SyntheticEntity
 {
-    /**
-     * EntityException constructor.
-     * Переопределим исключение так, что параметр message станет обязательным
-     *
-     * @param                $message
-     * @param int $code
-     * @param Exception|null $previous
-     */
-    public function __construct($message, int $code = 0, ?Exception $previous = null)
+    /** @var int how many times getComputed() has been invoked; tests reset it */
+    public static int $getterCalls = 0;
+
+    public $id;
+
+    public function getComputed(): string
     {
-        parent::__construct($message, $code, $previous);
+        self::$getterCalls++;
+
+        return sprintf('computed-%s-%d', $this->id, self::$getterCalls);
     }
+
+    public function getNothing()
+    {
+        return null;
+    }
+}
+
+class WithGetterMap extends Mapper
+{
+    public $id = [
+        Column::NAME => 'with_getter_id',
+        Column::PRIMITIVE_TYPE => Primitive::Int32,
+        Column::ORIGIN_TYPE => 'int4',
+    ];
 }
