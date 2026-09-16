@@ -1,51 +1,81 @@
-name: PHP
+name: CI
 
 on:
   push:
     branches:
       - master
   pull_request:
-    types:
-      - opened
-      - reopened
-      - edited
-      - synchronize
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  tests:
+    name: Tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # composer.json requires php ^8.2; 8.2 and 8.3 are the release gate
+        php: [ '8.2', '8.3' ]
+        experimental: [ false ]
+        include:
+          # compatibility preview: the library still has PHP 8.4+ deprecations
+          # (implicit nullable parameters, trigger_error(E_USER_ERROR) in Enforcer), tracked separately
+          - php: '8.4'
+            experimental: true
+          - php: '8.5'
+            experimental: true
 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate composer.json
+        # not --strict: the intentional "version" field is reported as a publish warning, which --strict turns into a failure
+        run: composer validate --no-check-lock
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: vendor/bin/phpunit --no-coverage
+
+  coverage:
+    name: Coverage (PHP 8.3)
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      - name: Set up PHP 8.3 with Xdebug
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: json
+          coverage: xdebug
+          tools: composer:v2
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      - name: Run tests with coverage
+        run: vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
-
-    - name: Run test suite
-      #run: vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-      run: vendor/bin/phpunit
-      working-directory: './'
-
-    #- name: Build coverage report
-    #  env:
-    #    COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-    #  run: vendor/bin/php-coveralls --verbose --coverage_clover=build/logs/clover.xm
+      - name: Upload coverage to Coveralls
+        # secondary external service: an outage must not block a release; forks do not get a token that can post
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: vendor/bin/php-coveralls --verbose --coverage_clover=build/logs/clover.xml --json_path=build/logs/coveralls-upload.json
