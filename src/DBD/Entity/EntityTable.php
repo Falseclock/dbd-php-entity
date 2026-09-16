@@ -35,7 +35,7 @@ final class EntityTable
     public function __construct(
         public string $scheme,
         public string $name,
-        public string $annotation
+        public string $annotation = ''
     )
     {
     }

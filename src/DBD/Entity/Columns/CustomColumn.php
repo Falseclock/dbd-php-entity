@@ -38,11 +38,12 @@ class CustomColumn extends Column
         string  $name,
         string  $primitiveType,
         string  $originType,
-        int     $length = null,
+        ?int    $length = null,
         bool    $nullable = false,
         bool    $primary = false,
         ?string $defaultValue = null,
         ?string $annotation = null,
+        ?int    $precision = null,
     )
     {
         parent::__construct([
@@ -50,6 +51,7 @@ class CustomColumn extends Column
             Column::PRIMITIVE_TYPE => $primitiveType,
             Column::ORIGIN_TYPE => $originType,
             Column::MAXLENGTH => $length,
+            Column::PRECISION => $precision,
             Column::NULLABLE => $nullable,
             Column::KEY => $primary,
             Column::DEFAULT => $defaultValue,

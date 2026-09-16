@@ -36,11 +36,11 @@ class NumericColumn extends Column
 {
     public function __construct(
         string  $name,
-        int     $length,
-        int     $precision,
+        ?int    $length = null,
+        ?int    $precision = null,
         ?string $annotation = null,
         bool    $nullable = true,
-        float   $defaultValue = null,
+        float|string|null $defaultValue = null,
         bool    $auto = false,
         bool    $primary = false
     )

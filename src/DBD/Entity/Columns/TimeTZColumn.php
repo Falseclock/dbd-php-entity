@@ -27,12 +27,12 @@ use DBD\Entity\Column;
 use DBD\Entity\Primitives\TimePrimitives;
 
 /**
- * Class TimeColumnTZ
+ * Class TimeTZColumn
  *
  * @package DBD\Entity\Columns
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class TimeColumnTZ extends Column
+class TimeTZColumn extends Column
 {
     public function __construct(
         string  $name,
