@@ -1,13 +1,11 @@
 # DBD-PHP-Entity
 
-[![scrutinizer build](https://scrutinizer-ci.com/g/Falseclock/dbd-php-entity/badges/build.png?b=master)](https://scrutinizer-ci.com/g/Falseclock/dbd-php-entity/?branch=master)
+[![CI](https://github.com/Falseclock/dbd-php-entity/actions/workflows/php.yml/badge.svg)](https://github.com/Falseclock/dbd-php-entity/actions/workflows/php.yml)
 [![Coverage Status](https://coveralls.io/repos/github/Falseclock/dbd-php-entity/badge.svg?branch=master)](https://coveralls.io/github/Falseclock/dbd-php-entity?branch=master)
-[![PHP Version Require](http://poser.pugx.org/falseclock/dbd-php-entity/require/php)](https://packagist.org/packages/falseclock/dbd-php-entity)
-
-[![Latest Stable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v)](//packagist.org/packages/falseclock/dbd-php-entity)
-[![Total Downloads](https://poser.pugx.org/falseclock/dbd-php-entity/downloads)](//packagist.org/packages/falseclock/dbd-php-entity)
-[![Latest Unstable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v/unstable)](//packagist.org/packages/falseclock/dbd-php-entity)
-[![License](https://poser.pugx.org/falseclock/dbd-php-entity/license)](//packagist.org/packages/falseclock/dbd-php-entity)
+[![Latest Stable Version](https://poser.pugx.org/falseclock/dbd-php-entity/v)](https://packagist.org/packages/falseclock/dbd-php-entity)
+[![PHP Version Require](https://poser.pugx.org/falseclock/dbd-php-entity/require/php)](https://packagist.org/packages/falseclock/dbd-php-entity)
+[![Total Downloads](https://poser.pugx.org/falseclock/dbd-php-entity/downloads)](https://packagist.org/packages/falseclock/dbd-php-entity)
+[![License](https://poser.pugx.org/falseclock/dbd-php-entity/license)](https://packagist.org/packages/falseclock/dbd-php-entity)
 
 **NOTICE**: readme находится в процессе написания.
 
